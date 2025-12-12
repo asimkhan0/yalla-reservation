@@ -190,4 +190,9 @@ const customerSchema = new Schema<ICustomer>(
 customerSchema.index({ phone: 1, restaurant: 1 }, { unique: true });
 customerSchema.index({ restaurant: 1 });
 
+
 export const Customer = mongoose.model<ICustomer>('Customer', customerSchema);
+
+export * from './conversation.js';
+export * from './message.js';
+

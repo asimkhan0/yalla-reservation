@@ -20,15 +20,12 @@ const fastify = Fastify({
     },
 });
 
-// Register plugins
-await fastify.register(cors, {
-    origin: env.CORS_ORIGIN,
-    credentials: true,
-});
+import formbody from '@fastify/formbody';
 
-await fastify.register(jwt, {
-    secret: env.JWT_SECRET,
-});
+// Register plugins
+await fastify.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
+await fastify.register(formbody);
+await fastify.register(jwt, { secret: env.JWT_SECRET });
 
 // Decorator for authenticated user
 fastify.decorate('authenticate', async function (request: any, reply: any) {
@@ -103,6 +100,13 @@ await fastify.register(authRoutes, { prefix: '/api/auth' });
 // Reservation routes
 import { reservationRoutes } from './modules/reservations/index.js';
 await fastify.register(reservationRoutes, { prefix: '/api/reservations' });
+
+// WhatsApp routes
+import { whatsappRoutes } from './modules/whatsapp/index.js';
+// Twilio sends form-urlencoded usually, and we need raw body sometimes for validation
+// ContentTypeParser might be needed if fastify-formbody isn't registered, 
+// but fastify handles application/x-www-form-urlencoded if mapped.
+await fastify.register(whatsappRoutes, { prefix: '/api/whatsapp' });
 
 // ==================== START SERVER ====================
 
