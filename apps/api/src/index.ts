@@ -5,6 +5,7 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { connectDatabase } from './config/database.js';
 import { env } from './config/env.js';
+import { authRoutes } from './modules/auth/index.js';
 
 // Initialize Fastify
 const fastify = Fastify({
@@ -29,6 +30,15 @@ await fastify.register(jwt, {
     secret: env.JWT_SECRET,
 });
 
+// Decorator for authenticated user
+fastify.decorate('authenticate', async function (request: any, reply: any) {
+    try {
+        await request.jwtVerify();
+    } catch (err) {
+        reply.status(401).send({ error: 'Unauthorized' });
+    }
+});
+
 await fastify.register(swagger, {
     openapi: {
         info: {
@@ -50,6 +60,15 @@ await fastify.register(swagger, {
             { name: 'customers', description: 'Customer CRM' },
             { name: 'webhooks', description: 'WhatsApp webhooks' },
         ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
+        },
     },
 });
 
@@ -77,6 +96,9 @@ fastify.get('/', async () => {
         health: '/health',
     };
 });
+
+// Auth routes
+await fastify.register(authRoutes, { prefix: '/api/auth' });
 
 // ==================== START SERVER ====================
 
