@@ -4,11 +4,16 @@ import { CreateReservationInput, UpdateReservationInput } from './reservations.s
 // List reservations for a restaurant
 export async function listReservations(
     restaurantId: string,
-    options: { date?: string; status?: string } = {}
+    options: { date?: string; startDate?: string; endDate?: string; status?: string } = {}
 ) {
     const query: Record<string, unknown> = { restaurant: restaurantId };
 
-    if (options.date) {
+    if (options.startDate && options.endDate) {
+        query.date = {
+            $gte: new Date(options.startDate),
+            $lte: new Date(options.endDate),
+        };
+    } else if (options.date) {
         const dateStart = new Date(options.date);
         dateStart.setHours(0, 0, 0, 0);
         const dateEnd = new Date(options.date);

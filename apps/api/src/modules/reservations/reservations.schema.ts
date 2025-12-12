@@ -24,6 +24,8 @@ export const updateReservationSchema = createReservationSchema.partial().extend(
 
 export const listReservationsQuerySchema = z.object({
     date: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
     status: z.string().optional(),
 });
 

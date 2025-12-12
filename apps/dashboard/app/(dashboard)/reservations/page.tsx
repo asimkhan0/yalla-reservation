@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, addDays } from "date-fns";
 import {
     Calendar as CalendarIcon,
     ChevronLeft,
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, statusColors, API_URL } from "@/lib/utils";
 import { CreateReservationDialog } from "@/components/reservations/create-reservation-dialog";
+import { CalendarView } from "@/components/reservations/calendar-view";
 
 interface Reservation {
     _id: string;
@@ -24,6 +25,7 @@ interface Reservation {
     partySize: number;
     status: string;
     table?: { name: string };
+    date: string;
 }
 
 export default function ReservationsPage() {
@@ -38,8 +40,20 @@ export default function ReservationsPage() {
             const token = localStorage.getItem("accessToken");
             if (!token) return;
 
-            const dateStr = date.toISOString().split("T")[0];
-            const response = await fetch(`${API_URL}/api/reservations?date=${dateStr}`, {
+            let queryParams = "";
+            if (view === "list") {
+                const dateStr = date.toISOString().split("T")[0];
+                queryParams = `?date=${dateStr}`;
+            } else {
+                // For calendar view, fetch the whole week
+                const start = startOfWeek(date, { weekStartsOn: 1 });
+                const end = endOfWeek(date, { weekStartsOn: 1 });
+                const startStr = start.toISOString().split("T")[0];
+                const endStr = end.toISOString().split("T")[0];
+                queryParams = `?startDate=${startStr}&endDate=${endStr}`;
+            }
+
+            const response = await fetch(`${API_URL}/api/reservations${queryParams}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -52,11 +66,35 @@ export default function ReservationsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [date]);
+    }, [date, view]);
 
     useEffect(() => {
         fetchReservations();
     }, [fetchReservations]);
+
+    const handlePrevious = () => {
+        setDate(d => {
+            if (view === "list") {
+                const newDate = new Date(d);
+                newDate.setDate(newDate.getDate() - 1);
+                return newDate;
+            } else {
+                return addDays(d, -7);
+            }
+        });
+    };
+
+    const handleNext = () => {
+        setDate(d => {
+            if (view === "list") {
+                const newDate = new Date(d);
+                newDate.setDate(newDate.getDate() + 1);
+                return newDate;
+            } else {
+                return addDays(d, 7);
+            }
+        });
+    };
 
     return (
         <div className="space-y-6">
@@ -92,22 +130,17 @@ export default function ReservationsPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => setDate(d => {
-                                const newDate = new Date(d);
-                                newDate.setDate(newDate.getDate() - 1);
-                                return newDate;
-                            })}>
+                            <Button variant="ghost" size="icon" onClick={handlePrevious}>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <div className="flex items-center gap-2 min-w-[150px] justify-center font-medium">
                                 <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                                {format(date, "EEE, MMM d, yyyy")}
+                                {view === "list"
+                                    ? format(date, "EEE, MMM d, yyyy")
+                                    : `Week of ${format(startOfWeek(date, { weekStartsOn: 1 }), "MMM d")}`
+                                }
                             </div>
-                            <Button variant="ghost" size="icon" onClick={() => setDate(d => {
-                                const newDate = new Date(d);
-                                newDate.setDate(newDate.getDate() + 1);
-                                return newDate;
-                            })}>
+                            <Button variant="ghost" size="icon" onClick={handleNext}>
                                 <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
@@ -120,6 +153,7 @@ export default function ReservationsPage() {
                 <CardContent className="p-0">
                     {view === "list" ? (
                         <div className="relative w-full overflow-auto">
+                            {/* List View Table */}
                             <table className="w-full caption-bottom text-sm text-left">
                                 <thead className="[&_tr]:border-b">
                                     <tr className="border-b transition-colors hover:bg-muted/50">
@@ -169,9 +203,14 @@ export default function ReservationsPage() {
                             </table>
                         </div>
                     ) : (
-                        <div className="p-8 text-center text-muted-foreground">
-                            Calendar view coming soon...
-                        </div>
+                        <CalendarView
+                            reservations={reservations}
+                            currentDate={date}
+                            onDateSelect={(d) => {
+                                setDate(d);
+                                setView("list");
+                            }}
+                        />
                     )}
                 </CardContent>
             </Card>

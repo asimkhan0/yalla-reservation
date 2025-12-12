@@ -18,12 +18,14 @@ export async function reservationRoutes(fastify: FastifyInstance) {
                 type: 'object',
                 properties: {
                     date: { type: 'string', description: 'Filter by date (YYYY-MM-DD)' },
+                    startDate: { type: 'string', description: 'Start date for range' },
+                    endDate: { type: 'string', description: 'End date for range' },
                     status: { type: 'string', description: 'Filter by status' },
                 },
             },
         },
         preHandler: [fastify.authenticate],
-    }, async (request: FastifyRequest<{ Querystring: { date?: string; status?: string } }>, reply: FastifyReply) => {
+    }, async (request: FastifyRequest<{ Querystring: { date?: string; startDate?: string; endDate?: string; status?: string } }>, reply: FastifyReply) => {
         const user = request.user as AuthUser;
         const query = listReservationsQuerySchema.parse(request.query);
         const reservations = await service.listReservations(user.restaurantId, query);
