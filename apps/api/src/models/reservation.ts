@@ -79,7 +79,6 @@ const reservationSchema = new Schema<IReservation>(
 reservationSchema.index({ restaurant: 1, date: 1 });
 reservationSchema.index({ customer: 1 });
 reservationSchema.index({ status: 1 });
-reservationSchema.index({ confirmationCode: 1 });
 
 // Generate confirmation code before saving
 reservationSchema.pre('save', function (next) {

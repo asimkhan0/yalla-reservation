@@ -16,16 +16,38 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     const phone = WaId; // Pure number
 
     // 1. Find or create Customer
+    // TODO: We need a Restaurant ID. For now, we'll pick the first one.
+    // Assuming single restaurant for MVP context
+    const { Restaurant } = await import('../../models/index.js');
+    const restaurant = await Restaurant.findOne();
+    if (!restaurant) throw new Error('No restaurant found');
+
     let customer = await Customer.findOne({ phone });
+
     if (!customer) {
+        // Parse name from profile or default
+        const fullName = ProfileName || 'Unknown WhatsApp User';
+        const nameParts = fullName.split(' ');
+        const firstName = nameParts[0] || 'Unknown';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        // Extract country code from phone or default
+        // WhatsApp ID format is usually "1234567890" (no +), but commonly has country code.
+        // We'll set a default if we can't parse easily without libphonenumber
+        const phoneCountry = 'US'; // Default or parse from phone
+
         customer = await Customer.create({
-            name: ProfileName || 'Unknown WhatsApp User',
             phone,
+            phoneCountry,
+            firstName,
+            lastName,
+            email: undefined,
+            restaurant: restaurant._id, // REQUIRED
             isVip: false,
             preferences: {}
         });
     }
-
+    // https://timberwolf-mastiff-9776.twil.io/demo-reply
     // 2. Find active conversation (within 24h window roughly)
     // For simplicity, we get the most recent active one or create new
     let conversation = await Conversation.findOne({
@@ -75,7 +97,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     }));
 
     // Initial call to AI
-    let aiResponse = await processUserMessage(Body, formattedHistory as any);
+    let aiResponse = await processUserMessage(Body, formattedHistory as any[]);
     let iterations = 0;
     const MAX_ITERATIONS = 3; // Prevent infinite loops
 
@@ -127,10 +149,23 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     }
 }
 
-// Helper to send message (Simulated)
+// Helper to send message
 export async function sendWhatsAppMessage(to: string, body: string) {
-    // In production, use Twilio SDK
-    // const client = require('twilio')(accountSid, authToken);
-    // await client.messages.create({ body, from: 'whatsapp:+14155238886', to });
-    console.log(`[WHATSAPP OUTBOUND] To: ${to}, Body: ${body}`);
+    if (env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_NUMBER) {
+        try {
+            const client = require('twilio')(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+            await client.messages.create({
+                body,
+                from: env.TWILIO_WHATSAPP_NUMBER,
+                to
+            });
+            console.log(`[WHATSAPP OUTBOUND] Sent to ${to}`);
+            return;
+        } catch (error) {
+            console.error('[WHATSAPP ERROR] Failed to send message:', error);
+            // Fallback to log
+        }
+    }
+
+    console.log(`[WHATSAPP OUTBOUND SIMULATION] To: ${to}, Body: ${body}`);
 }

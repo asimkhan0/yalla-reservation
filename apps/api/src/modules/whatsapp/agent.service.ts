@@ -1,9 +1,25 @@
 import OpenAI from 'openai';
 import { env } from '../../config/env.js';
 
-const openai = new OpenAI({
-    apiKey: env.OPENAI_API_KEY,
-});
+const getOpenAIClient = () => {
+    debugger
+    console.log('asim', env.LLM_PROVIDER)
+    if (env.LLM_PROVIDER === 'deepseek') {
+        if (!env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is missing');
+        return new OpenAI({
+            baseURL: 'https://api.deepseek.com',
+            apiKey: env.DEEPSEEK_API_KEY,
+        });
+    }
+
+    // Default to OpenAI
+    if (!env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is missing');
+    return new OpenAI({
+        apiKey: env.OPENAI_API_KEY,
+    });
+};
+
+const openai = getOpenAIClient();
 
 // System prompt for the reservation agent
 const SYSTEM_PROMPT = `
@@ -37,7 +53,7 @@ export async function processUserMessage(
         ];
 
         const completion = await openai.chat.completions.create({
-            model: 'gpt-4o', // or gpt-3.5-turbo
+            model: env.LLM_MODEL,
             messages,
             tools: [
                 {

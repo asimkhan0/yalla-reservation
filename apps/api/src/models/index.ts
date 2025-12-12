@@ -32,7 +32,6 @@ const userSchema = new Schema<IUser>(
     { timestamps: true }
 );
 
-userSchema.index({ email: 1 });
 userSchema.index({ restaurant: 1 });
 
 userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
@@ -110,8 +109,6 @@ const restaurantSchema = new Schema<IRestaurant>(
     { timestamps: true }
 );
 
-restaurantSchema.index({ slug: 1 });
-restaurantSchema.index({ whatsappNumber: 1 });
 
 export const Restaurant = mongoose.model<IRestaurant>('Restaurant', restaurantSchema);
 

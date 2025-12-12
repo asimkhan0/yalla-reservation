@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env file manually to ensure it's available before validation
+// resolving from CWD (which should be apps/api or root)
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 // Environment variables schema
 const envSchema = z.object({
@@ -24,6 +30,13 @@ const envSchema = z.object({
 
     // OpenAI
     OPENAI_API_KEY: z.string().optional(),
+
+    // Deepseek
+    DEEPSEEK_API_KEY: z.string().optional(),
+
+    // LLM Configuration
+    LLM_PROVIDER: z.enum(['openai', 'deepseek']).default('deepseek'),
+    LLM_MODEL: z.string().default('deepseek-chat'),
 
     // CORS
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
