@@ -23,7 +23,41 @@ export async function restaurantRoutes(fastify: FastifyInstance) {
                     whatsappEnabled: { type: 'boolean' },
                     address: { type: 'string' },
                     phone: { type: 'string' },
+                    email: { type: 'string' },
                     website: { type: 'string' },
+                    logo: { type: 'string' },
+                    aiPrompt: { type: 'string' },
+                    additionalContext: { type: 'string' },
+                    location: {
+                        type: 'object',
+                        properties: {
+                            address: { type: 'string' },
+                            googleMapsUrl: { type: 'string' }
+                        }
+                    },
+                    operatingHours: {
+                        type: 'object',
+                        additionalProperties: {
+                            type: 'object',
+                            properties: {
+                                open: { type: 'string' },
+                                close: { type: 'string' },
+                                closed: { type: 'boolean' }
+                            }
+                        }
+                    },
+                    services: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                name: { type: 'string' },
+                                description: { type: 'string' },
+                                duration: { type: 'array', items: { type: 'number' } },
+                                price: { type: 'number' }
+                            }
+                        }
+                    }
                 },
             },
         },

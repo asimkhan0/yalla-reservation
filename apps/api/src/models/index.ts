@@ -57,6 +57,10 @@ export interface IRestaurant extends Document {
     email: string;
     website?: string;
     address: string;
+    location?: {
+        address?: string;
+        googleMapsUrl?: string;
+    };
     city: string;
     state: string;
     country: string;
@@ -72,6 +76,23 @@ export interface IRestaurant extends Document {
     whatsappEnabled: boolean;
     botEnabled: boolean;
     botPersonality?: Record<string, unknown>;
+
+    aiPrompt?: string;
+    additionalContext?: string;
+    operatingHours?: {
+        [key in 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday']: {
+            open?: string;
+            close?: string;
+            closed?: boolean;
+        }
+    };
+    services?: Array<{
+        name: string;
+        description?: string;
+        duration: number[];
+        price?: number;
+    }>;
+
     plan: 'STARTER' | 'GROWTH' | 'ENTERPRISE';
     planExpiresAt?: Date;
     createdAt: Date;
@@ -79,34 +100,62 @@ export interface IRestaurant extends Document {
 }
 
 const restaurantSchema = new Schema<IRestaurant>(
-    {
-        name: { type: String, required: true },
-        slug: { type: String, required: true, unique: true, lowercase: true },
-        description: String,
+{
+    name: { type: String, required: true },
+    slug: { type: String, required: true, unique: true, lowercase: true },
+    description: String,
         cuisine: [String],
-        phone: { type: String, required: true },
-        email: { type: String, required: true },
-        website: String,
+            phone: { type: String, required: true },
+    email: { type: String, required: true },
+    website: String,
         address: { type: String, required: true },
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-        country: { type: String, required: true },
-        postalCode: { type: String, required: true },
-        latitude: Number,
-        longitude: Number,
-        timezone: { type: String, default: 'UTC' },
-        logo: String,
-        coverImage: String,
-        primaryColor: { type: String, default: '#2563eb' },
-        accentColor: { type: String, default: '#3b82f6' },
-        whatsappNumber: { type: String, unique: true, sparse: true },
-        whatsappEnabled: { type: Boolean, default: false },
-        botEnabled: { type: Boolean, default: true },
-        botPersonality: Schema.Types.Mixed,
-        plan: { type: String, enum: ['STARTER', 'GROWTH', 'ENTERPRISE'], default: 'STARTER' },
-        planExpiresAt: Date,
+    location: {
+        address: String,
+            googleMapsUrl: String
     },
-    { timestamps: true }
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    country: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    latitude: Number,
+        longitude: Number,
+            timezone: { type: String, default: 'UTC' },
+    logo: String,
+        coverImage: String,
+            primaryColor: { type: String, default: '#2563eb' },
+    accentColor: { type: String, default: '#3b82f6' },
+    whatsappNumber: { type: String, unique: true, sparse: true },
+    whatsappEnabled: { type: Boolean, default: false },
+    botEnabled: { type: Boolean, default: true },
+    botPersonality: Schema.Types.Mixed,
+
+        // AI & Context
+        aiPrompt: String,
+            additionalContext: String,
+
+                // Operating Hours
+                operatingHours: {
+        monday: { open: String, close: String, closed: Boolean },
+        tuesday: { open: String, close: String, closed: Boolean },
+        wednesday: { open: String, close: String, closed: Boolean },
+        thursday: { open: String, close: String, closed: Boolean },
+        friday: { open: String, close: String, closed: Boolean },
+        saturday: { open: String, close: String, closed: Boolean },
+        sunday: { open: String, close: String, closed: Boolean }
+    },
+
+    // Services
+    services: [{
+        name: { type: String, required: true },
+        description: String,
+        duration: [Number], // Array of durations in minutes
+        price: Number
+    }],
+
+        plan: { type: String, enum: ['STARTER', 'GROWTH', 'ENTERPRISE'], default: 'STARTER' },
+    planExpiresAt: Date,
+    },
+{ timestamps: true }
 );
 
 
