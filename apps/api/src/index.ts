@@ -100,6 +100,10 @@ fastify.get('/', async () => {
 // Auth routes
 await fastify.register(authRoutes, { prefix: '/api/auth' });
 
+// Reservation routes
+import { reservationRoutes } from './modules/reservations/index.js';
+await fastify.register(reservationRoutes, { prefix: '/api/reservations' });
+
 // ==================== START SERVER ====================
 
 const start = async () => {
