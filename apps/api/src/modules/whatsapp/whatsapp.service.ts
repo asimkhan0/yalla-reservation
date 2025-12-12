@@ -2,24 +2,33 @@ import { Message, Conversation, Customer } from '../../models/index.js';
 import { env } from '../../config/env.js';
 import { processUserMessage } from './agent.service.js';
 import { executeTool } from './tools.service.js';
+import twilio from 'twilio';
 
 interface TwilioMessage {
     Body: string;
-    From: string; // format: "whatsapp:+1234567890"
-    WaId: string; // format: "1234567890"
+    From: string; // "whatsapp:+1234567890"
+    To: string;   // "whatsapp:+1987654321" (Restaurant Number)
+    WaId: string; // "1234567890"
     ProfileName?: string;
     MessageSid: string;
 }
 
 export async function handleIncomingMessage(data: TwilioMessage) {
-    const { WaId, Body, ProfileName, From } = data;
-    const phone = WaId; // Pure number
+    const { WaId, Body, ProfileName, From, To } = data;
+    const phone = WaId; // Pure number user phone
 
-    // 1. Find or create Customer
-    // TODO: We need a Restaurant ID. For now, we'll pick the first one.
-    // Assuming single restaurant for MVP context
+    // 1. Find the Restaurant this message is intended for
     const { Restaurant } = await import('../../models/index.js');
-    const restaurant = await Restaurant.findOne();
+
+    // Try to find restaurant by matching the 'To' number (e.g. whatsapp:+1555...)
+    // If not found, fall back to the first one (legacy logic) or error out.
+    let restaurant = await Restaurant.findOne({ whatsappNumber: To });
+
+    if (!restaurant) {
+        console.warn(`[WhatsApp] No restaurant found for number ${To}. Falling back to first found.`);
+        restaurant = await Restaurant.findOne();
+    }
+
     if (!restaurant) throw new Error('No restaurant found');
 
     let customer = await Customer.findOne({ phone });
@@ -153,11 +162,23 @@ export async function handleIncomingMessage(data: TwilioMessage) {
 export async function sendWhatsAppMessage(to: string, body: string) {
     if (env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_NUMBER) {
         try {
-            const client = require('twilio')(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+            // Dynamic import to avoid top-level dependency issues if envs are missing
+            // const { default: twilio } = await import('twilio');
+            const client = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+
+            // Ensure numbers have whatsapp: prefix
+            const fromNumber = env.TWILIO_WHATSAPP_NUMBER.startsWith('whatsapp:')
+                ? env.TWILIO_WHATSAPP_NUMBER
+                : `whatsapp:${env.TWILIO_WHATSAPP_NUMBER}`;
+
+            const toNumber = to.startsWith('whatsapp:')
+                ? to
+                : `whatsapp:${to}`;
+
             await client.messages.create({
                 body,
-                from: env.TWILIO_WHATSAPP_NUMBER,
-                to
+                from: fromNumber,
+                to: toNumber
             });
             console.log(`[WHATSAPP OUTBOUND] Sent to ${to}`);
             return;

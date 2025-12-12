@@ -2,8 +2,6 @@ import OpenAI from 'openai';
 import { env } from '../../config/env.js';
 
 const getOpenAIClient = () => {
-    debugger
-    console.log('asim', env.LLM_PROVIDER)
     if (env.LLM_PROVIDER === 'deepseek') {
         if (!env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is missing');
         return new OpenAI({

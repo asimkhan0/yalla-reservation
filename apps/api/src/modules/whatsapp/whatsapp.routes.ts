@@ -12,6 +12,7 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
                 properties: {
                     Body: { type: 'string' },
                     From: { type: 'string' },
+                    To: { type: 'string' },
                     WaId: { type: 'string' },
                     ProfileName: { type: 'string' }
                 },
@@ -32,10 +33,10 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
 
         try {
             await handleIncomingMessage(body);
-            return reply.status(200).send('OK');
+            return reply.status(200).send(''); // Returning empty body is standard for Twilio to do nothing
         } catch (error) {
             request.log.error(error);
-            return reply.status(200).send('OK'); // Always return 200 to Twilio to prevent retries
+            return reply.status(200).send(''); // Always return 200 to Twilio to prevent retries
         }
     });
 }

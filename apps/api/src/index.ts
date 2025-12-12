@@ -101,6 +101,10 @@ await fastify.register(authRoutes, { prefix: '/api/auth' });
 import { reservationRoutes } from './modules/reservations/index.js';
 await fastify.register(reservationRoutes, { prefix: '/api/reservations' });
 
+// Restaurant routes
+import { restaurantRoutes } from './modules/restaurants/index.js';
+await fastify.register(restaurantRoutes, { prefix: '/api/restaurants' });
+
 // WhatsApp routes
 import { whatsappRoutes } from './modules/whatsapp/index.js';
 // Twilio sends form-urlencoded usually, and we need raw body sometimes for validation
