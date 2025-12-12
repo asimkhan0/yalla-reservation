@@ -27,7 +27,7 @@ export const generateRefreshToken = (user: IUser): string => {
     return jwt.sign(
         { userId: user._id.toString() },
         env.JWT_SECRET,
-        { expiresIn: env.JWT_EXPIRES_IN }
+        { expiresIn: env.JWT_EXPIRES_IN as any }
     );
 };
 
