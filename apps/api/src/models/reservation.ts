@@ -35,7 +35,7 @@ export interface IReservation extends Document {
 
 const reservationSchema = new Schema<IReservation>(
     {
-        confirmationCode: { type: String, required: true, unique: true },
+        confirmationCode: { type: String, unique: true },
         date: { type: Date, required: true },
         time: { type: String, required: true },
         partySize: { type: Number, required: true },
