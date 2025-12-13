@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Trash2, Plus, Clock, MapPin, Phone, Mail, MessageCircle, Briefcase, FileText, BadgeInfo, Image as ImageIcon } from "lucide-react";
+import { Loader2, Trash2, Plus, Clock, MapPin, Phone, Mail, MessageCircle, Briefcase, FileText, BadgeInfo, Image as ImageIcon, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -16,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 
 // Schema matching the API
 const operatingHoursSchema = z.object({
