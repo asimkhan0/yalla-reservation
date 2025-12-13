@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import '@/types/fastify.js';
 import * as service from './reservations.service.js';
 import { createReservationSchema, updateReservationSchema, listReservationsQuerySchema } from './reservations.schema.js';
 
@@ -25,7 +26,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
             },
         },
         preHandler: [fastify.authenticate],
-    }, async (request: FastifyRequest<{ Querystring: { date?: string; startDate?: string; endDate?: string; status?: string } }>, reply: FastifyReply) => {
+    }, async (request, reply) => {
         const user = request.user as AuthUser;
         const query = listReservationsQuerySchema.parse(request.query);
         const reservations = await service.listReservations(user.restaurantId, query);
@@ -44,9 +45,10 @@ export async function reservationRoutes(fastify: FastifyInstance) {
             },
         },
         preHandler: [fastify.authenticate],
-    }, async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    }, async (request, reply) => {
         const user = request.user as AuthUser;
-        const reservation = await service.getReservationById(request.params.id, user.restaurantId);
+        const params = request.params as { id: string };
+        const reservation = await service.getReservationById(params.id, user.restaurantId);
         return reply.send(reservation);
     });
 
@@ -74,7 +76,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
             },
         },
         preHandler: [fastify.authenticate],
-    }, async (request: FastifyRequest, reply: FastifyReply) => {
+    }, async (request, reply) => {
         const user = request.user as AuthUser;
         const data = createReservationSchema.parse(request.body);
         const reservation = await service.createReservation(user.restaurantId, data);
@@ -93,10 +95,11 @@ export async function reservationRoutes(fastify: FastifyInstance) {
             },
         },
         preHandler: [fastify.authenticate],
-    }, async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    }, async (request, reply) => {
         const user = request.user as AuthUser;
+        const params = request.params as { id: string };
         const data = updateReservationSchema.parse(request.body);
-        const reservation = await service.updateReservation(request.params.id, user.restaurantId, data);
+        const reservation = await service.updateReservation(params.id, user.restaurantId, data);
         return reply.send(reservation);
     });
 
@@ -112,9 +115,10 @@ export async function reservationRoutes(fastify: FastifyInstance) {
             },
         },
         preHandler: [fastify.authenticate],
-    }, async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    }, async (request, reply) => {
         const user = request.user as AuthUser;
-        await service.deleteReservation(request.params.id, user.restaurantId);
+        const params = request.params as { id: string };
+        await service.deleteReservation(params.id, user.restaurantId);
         return reply.status(204).send();
     });
 }

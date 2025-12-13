@@ -30,6 +30,7 @@ const formSchema = z.object({
     description: z.string().optional(),
     whatsappNumber: z.string().optional(),
     address: z.string().optional(),
+    phone: z.string().optional(),
     email: z.string().email("Invalid email").optional().or(z.literal("")),
     website: z.string().optional(),
     logo: z.string().optional(),

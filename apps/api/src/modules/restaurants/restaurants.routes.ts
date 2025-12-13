@@ -1,4 +1,5 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import '@/types/fastify.js';
 import { updateRestaurantSchema } from './restaurants.schema.js';
 import { getRestaurant, updateRestaurant } from './restaurants.service.js';
 

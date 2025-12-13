@@ -59,7 +59,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     // https://timberwolf-mastiff-9776.twil.io/demo-reply
     // 2. Find active conversation (within 24h window roughly)
     // For simplicity, we get the most recent active one or create new
-    let conversation = await Conversation.findOne({
+    let conversation = await (Conversation as any).findOne({
         customer: customer._id,
         status: { $ne: 'resolved' }
     }).sort({ updatedAt: -1 });
@@ -73,7 +73,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
 
         if (!restaurant) throw new Error('No restaurant found');
 
-        conversation = await Conversation.create({
+        conversation = await (Conversation as any).create({
             customer: customer._id,
             restaurant: restaurant._id,
             status: 'ACTIVE',
@@ -83,7 +83,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     }
 
     // 3. Store the incoming message
-    await Message.create({
+    await (Message as any).create({
         content: Body,
         direction: 'INBOUND',
         sender: 'CUSTOMER',
@@ -94,7 +94,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
 
     // 4. Trigger AI Agent
     // Fetch conversation history
-    const history = await Message.find({ conversation: conversation._id })
+    const history = await (Message as any).find({ conversation: conversation._id })
         .sort({ createdAt: 1 })
         .limit(10) // Limit context window
         .select('role content sender -_id') // We need to map this to OpenAI format
@@ -148,7 +148,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     if (aiResponse && aiResponse.content) {
         await sendWhatsAppMessage(From, aiResponse.content);
 
-        await Message.create({
+        await (Message as any).create({
             content: aiResponse.content,
             direction: 'OUTBOUND',
             sender: 'BOT',
