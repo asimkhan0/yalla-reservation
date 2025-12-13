@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import '@/types/fastify.js';
+
 import * as service from './reservations.service.js';
 import { createReservationSchema, updateReservationSchema, listReservationsQuerySchema } from './reservations.schema.js';
 

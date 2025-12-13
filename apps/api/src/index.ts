@@ -110,6 +110,27 @@ import { whatsappRoutes } from './modules/whatsapp/index.js';
 // Twilio sends form-urlencoded usually, and we need raw body sometimes for validation
 // ContentTypeParser might be needed if fastify-formbody isn't registered, 
 // but fastify handles application/x-www-form-urlencoded if mapped.
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Register multipart support
+await fastify.register(multipart);
+
+// Register static file serving for uploads
+await fastify.register(fastifyStatic, {
+    root: path.join(process.cwd(), 'uploads'),
+    prefix: '/uploads/',
+});
+
+// Upload routes
+import { uploadRoutes } from './modules/uploads/uploads.routes.js';
+await fastify.register(uploadRoutes, { prefix: '/api/upload' });
+
 await fastify.register(whatsappRoutes, { prefix: '/api/whatsapp' });
 
 // ==================== START SERVER ====================
