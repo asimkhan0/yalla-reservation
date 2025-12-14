@@ -11,10 +11,10 @@ export function UpcomingReservations({ reservations, loading }: UpcomingReservat
     const today = formatDate(new Date());
 
     return (
-        <Card className="lg:col-span-1 h-full">
+        <Card className="col-span-1 transition-all duration-200 hover:shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                    <span>Upcoming Today</span>
+                    <span>Upcoming Reservations</span>
                     <span className="text-sm font-normal text-muted-foreground">
                         {today}
                     </span>

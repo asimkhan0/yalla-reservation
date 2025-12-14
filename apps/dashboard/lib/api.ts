@@ -40,7 +40,7 @@ api.interceptors.response.use(
 
                 // Call refresh endpoint
                 // Note: We use a fresh axios instance to avoid infinite loops
-                const { data } = await axios.post(`${API_URL}/api/auth/refresh`, {
+                const { data } = await axios.post(`${API_URL}/auth/refresh`, {
                     refreshToken,
                 });
 

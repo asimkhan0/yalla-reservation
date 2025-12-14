@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export function QuickActions() {
     return (
-        <Card className="lg:col-span-1 h-fit">
+        <Card className="col-span-1 transition-all duration-200 hover:shadow-lg">
             <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
