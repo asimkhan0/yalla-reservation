@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_URL } from "@/lib/utils";
+import api from "@/lib/api";
 
 const registerSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
@@ -56,33 +56,22 @@ export default function RegisterPage() {
         );
     };
 
-    const onSubmit = async (data: RegisterForm) => {
+    async function onSubmit(values: z.infer<typeof registerSchema>) {
         setIsLoading(true);
-        setError(null);
-
+        setError(null); // Reset error state
         try {
-            const response = await fetch(`${API_URL}/api/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
-            });
+            const { data } = await api.post("/auth/register", values);
 
-            const result = await response.json();
+            localStorage.setItem("accessToken", data.accessToken);
+            localStorage.setItem("refreshToken", data.refreshToken);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            localStorage.setItem("restaurant", JSON.stringify(data.restaurant));
 
-            if (!response.ok) {
-                throw new Error(result.error || "Registration failed");
-            }
-
-            // Store tokens
-            localStorage.setItem("accessToken", result.accessToken);
-            localStorage.setItem("refreshToken", result.refreshToken);
-            localStorage.setItem("user", JSON.stringify(result.user));
-            localStorage.setItem("restaurant", JSON.stringify(result.restaurant));
-
-            // Redirect to dashboard
             router.push("/");
         } catch (err: any) {
-            setError(err.message);
+            console.error(err);
+            setError(err.response?.data?.error || "Registration failed");
+            // toast({ variant: "destructive", title: "Registration failed" });
         } finally {
             setIsLoading(false);
         }

@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import api from "@/lib/api";
 
 // Schema matching the API
 const operatingHoursSchema = z.object({
@@ -91,25 +92,14 @@ export default function SettingsPage() {
     useEffect(() => {
         const fetchRestaurant = async () => {
             try {
-                const token = localStorage.getItem("accessToken");
-                if (!token) return;
-
-                const res = await fetch("http://localhost:3001/api/restaurants/me", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                if (!res.ok) throw new Error("Failed to fetch restaurant");
-
-                const data = await res.json();
+                const { data } = await api.get("/restaurants/me");
 
                 form.reset({
                     name: data.name,
                     description: data.description || "",
                     whatsappNumber: data.whatsappNumber || "",
                     address: data.address || "",
-                    phone: data.phone || "", // Added phone to reset
+                    phone: data.phone || "",
                     email: data.email || "",
                     website: data.website || "",
                     logo: data.logo || "",
@@ -123,7 +113,7 @@ export default function SettingsPage() {
                     services: data.services || [],
                 });
             } catch (error) {
-                console.error(error);
+                console.error("Failed to fetch restaurant", error);
             } finally {
                 setIsLoading(false);
             }
@@ -141,19 +131,11 @@ export default function SettingsPage() {
         formData.append('file', file);
 
         try {
-            const token = localStorage.getItem("accessToken");
-            const res = await fetch("http://localhost:3001/api/upload", {
-                method: "POST",
+            const { data } = await api.post("/upload", formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
+                    'Content-Type': 'multipart/form-data'
+                }
             });
-
-            if (!res.ok) throw new Error("Upload failed");
-
-            const data = await res.json();
-            // Assuming the backend returns { url: string }
             form.setValue('logo', data.url, { shouldDirty: true });
         } catch (error) {
             console.error(error);
@@ -166,21 +148,11 @@ export default function SettingsPage() {
     const onSubmit = async (values: FormValues) => {
         setIsSaving(true);
         try {
-            const token = localStorage.getItem("accessToken");
             if (values.location?.address) {
                 values.address = values.location.address;
             }
 
-            const res = await fetch("http://localhost:3001/api/restaurants/me", {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(values),
-            });
-
-            if (!res.ok) throw new Error("Failed to update settings");
+            await api.patch("/restaurants/me", values);
 
             alert("Settings saved successfully");
         } catch (error) {

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_URL } from "@/lib/utils";
+import api from "@/lib/api";
 
 const loginSchema = z.object({
     email: z.string().email("Please enter a valid email"),
@@ -37,17 +37,8 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const response = await fetch(`${API_URL}/api/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || "Login failed");
-            }
+            const response = await api.post("/auth/login", data);
+            const result = response.data; // Axios wraps the response in a 'data' property
 
             // Store tokens
             localStorage.setItem("accessToken", result.accessToken);
@@ -58,7 +49,13 @@ export default function LoginPage() {
             // Redirect to dashboard
             router.push("/");
         } catch (err: any) {
-            setError(err.message);
+            console.error(err);
+            // Check if it's an Axios error with a response message
+            if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else {
+                setError(err.message || "Login failed");
+            }
         } finally {
             setIsLoading(false);
         }

@@ -17,7 +17,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { API_URL } from "@/lib/utils";
+
+import api from "@/lib/api";
 
 const formSchema = z.object({
     date: z.string().min(1, "Date is required"),
@@ -49,37 +50,27 @@ export function CreateReservationDialog({ onSuccess }: Props) {
         },
     });
 
-    const onSubmit = async (data: FormData) => {
+    const onSubmit = async (values: FormData) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const token = localStorage.getItem("accessToken");
-            const dateTime = new Date(`${data.date}T${data.time}:00`);
+            const formattedDate = new Date(values.date);
+            const [hoursStr, minutesStr] = values.time.split(":");
+            formattedDate.setHours(parseInt(hoursStr || "0", 10), parseInt(minutesStr || "0", 10));
 
-            const response = await fetch(`${API_URL}/api/reservations`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    ...data,
-                    date: dateTime.toISOString(),
-                    guestEmail: data.guestEmail || undefined,
-                }),
+            await api.post("/reservations", {
+                ...values,
+                date: formattedDate.toISOString(),
+                guestEmail: values.guestEmail || undefined,
             });
-
-            if (!response.ok) {
-                const result = await response.json();
-                throw new Error(result.message || "Failed to create reservation");
-            }
 
             reset();
             setOpen(false);
             onSuccess();
         } catch (err: any) {
-            setError(err.message);
+            console.error("Failed to create reservation", err);
+            setError(err.response?.data?.message || err.message || "Failed to create reservation");
         } finally {
             setIsLoading(false);
         }

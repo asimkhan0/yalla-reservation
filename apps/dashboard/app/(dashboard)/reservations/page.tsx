@@ -13,10 +13,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn, statusColors, API_URL } from "@/lib/utils";
+import { cn, statusColors } from "@/lib/utils";
 import { CreateReservationDialog } from "@/components/reservations/create-reservation-dialog";
 import { CalendarView } from "@/components/reservations/calendar-view";
-
+import api from "@/lib/api";
 interface Reservation {
     _id: string;
     time: string;
@@ -37,9 +37,6 @@ export default function ReservationsPage() {
     const fetchReservations = useCallback(async () => {
         setIsLoading(true);
         try {
-            const token = localStorage.getItem("accessToken");
-            if (!token) return;
-
             let queryParams = "";
             if (view === "list") {
                 const dateStr = date.toISOString().split("T")[0];
@@ -53,14 +50,9 @@ export default function ReservationsPage() {
                 queryParams = `?startDate=${startStr}&endDate=${endStr}`;
             }
 
-            const response = await fetch(`${API_URL}/api/reservations${queryParams}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const { data } = await api.get(`/reservations${queryParams}`);
+            setReservations(data.reservations || []);
 
-            if (response.ok) {
-                const data = await response.json();
-                setReservations(data.reservations || []);
-            }
         } catch (error) {
             console.error("Failed to fetch reservations:", error);
         } finally {
