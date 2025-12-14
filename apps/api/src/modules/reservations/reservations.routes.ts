@@ -30,7 +30,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
         const user = request.user as AuthUser;
         const query = listReservationsQuerySchema.parse(request.query);
         const reservations = await service.listReservations(user.restaurantId, query);
-        return reply.send(reservations);
+        return reply.send({ reservations });
     });
 
     // GET /api/reservations/:id - Get single reservation

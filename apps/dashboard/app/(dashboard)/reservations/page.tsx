@@ -59,7 +59,7 @@ export default function ReservationsPage() {
 
             if (response.ok) {
                 const data = await response.json();
-                setReservations(data);
+                setReservations(data.reservations || []);
             }
         } catch (error) {
             console.error("Failed to fetch reservations:", error);

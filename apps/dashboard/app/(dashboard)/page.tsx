@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarDays, Users, MessageSquare, Clock } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Users, MessageSquare, Clock, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 // Stat card component
 function StatCard({
@@ -47,21 +49,57 @@ function StatCard({
     );
 }
 
-// Sample upcoming reservations
-const upcomingReservations = [
-    { id: 1, name: "John Smith", time: "18:00", partySize: 4, status: "CONFIRMED" },
-    { id: 2, name: "Sarah Johnson", time: "18:30", partySize: 2, status: "PENDING" },
-    { id: 3, name: "Michael Brown", time: "19:00", partySize: 6, status: "CONFIRMED" },
-    { id: 4, name: "Emily Davis", time: "19:30", partySize: 3, status: "CONFIRMED" },
-    { id: 5, name: "David Wilson", time: "20:00", partySize: 2, status: "PENDING" },
-];
-
 export default function DashboardPage() {
-    const [restaurant, setRestaurant] = useState<{ name: string } | null>(null);
+    const [user, setUser] = useState<{ firstName: string } | null>(null);
+    const [reservations, setReservations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        todayCount: 0,
+        totalCovers: 0,
+        activeChats: 0
+    });
 
     useEffect(() => {
-        const storedRestaurant = localStorage.getItem("restaurant");
-        if (storedRestaurant) setRestaurant(JSON.parse(storedRestaurant));
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem("accessToken");
+                if (!token) return;
+
+                const headers = { Authorization: `Bearer ${token}` };
+
+                // 1. Fetch User
+                const userRes = await fetch("http://localhost:3001/api/auth/me", { headers });
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    setUser(userData);
+                }
+
+                // 2. Fetch Reservations for Today
+                const todayStr = new Date().toISOString().split('T')[0];
+                const resRes = await fetch(`http://localhost:3001/api/reservations?date=${todayStr}`, { headers });
+
+                if (resRes.ok) {
+                    const resData = await resRes.json();
+                    const todays = resData.reservations || [];
+                    setReservations(todays);
+
+                    // Calc stats
+                    const covers = todays.reduce((acc: number, r: any) => acc + (r.partySize || 0), 0);
+                    setStats(prev => ({ ...prev, todayCount: todays.length, totalCovers: covers }));
+                }
+
+                // 3. Fetch Active Chats (Optional/Placeholder for now)
+                // const chatsRes = await fetch("http://localhost:3001/api/conversations?status=ACTIVE", { headers });
+                // if (chatsRes.ok) { ... }
+
+            } catch (error) {
+                console.error("Failed to fetch dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     const today = formatDate(new Date());
@@ -71,7 +109,7 @@ export default function DashboardPage() {
             {/* Welcome header */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">
-                    Welcome back{restaurant ? `, ${restaurant.name}` : ""}! 👋
+                    Welcome back{user ? `, ${user.firstName}` : ""}! 👋
                 </h1>
                 <p className="text-muted-foreground">
                     Here's what's happening with your reservations today.
@@ -82,27 +120,26 @@ export default function DashboardPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Today's Reservations"
-                    value={12}
-                    description="vs yesterday"
+                    value={stats.todayCount}
+                    description="scheduled for today"
                     icon={CalendarDays}
-                    trend={{ value: 15, positive: true }}
                 />
                 <StatCard
                     title="Total Covers"
-                    value={45}
+                    value={stats.totalCovers}
                     description="guests expected"
                     icon={Users}
                 />
                 <StatCard
                     title="Active Chats"
-                    value={3}
+                    value={stats.activeChats} // Placeholder
                     description="need attention"
                     icon={MessageSquare}
                 />
                 <StatCard
                     title="Avg. Wait Time"
-                    value="12m"
-                    description="response time"
+                    value="--"
+                    description="insufficient data"
                     icon={Clock}
                 />
             </div>
@@ -110,7 +147,7 @@ export default function DashboardPage() {
             {/* Main content grid */}
             <div className="grid gap-6 lg:grid-cols-2">
                 {/* Upcoming reservations */}
-                <Card className="lg:col-span-1">
+                <Card className="lg:col-span-1 h-full">
                     <CardHeader>
                         <CardTitle className="flex items-center justify-between">
                             <span>Upcoming Today</span>
@@ -120,64 +157,90 @@ export default function DashboardPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-3">
-                            {upcomingReservations.map((res) => (
-                                <div
-                                    key={res.id}
-                                    className="flex items-center justify-between rounded-lg border p-3"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                                            <span className="text-sm font-medium text-primary">
-                                                {res.time}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <p className="font-medium">{res.name}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {res.partySize} guests
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <span
-                                        className={cn(
-                                            "rounded-full px-2 py-1 text-xs font-medium",
-                                            res.status === "CONFIRMED"
-                                                ? "bg-green-100 text-green-800"
-                                                : "bg-amber-100 text-amber-800"
-                                        )}
+                        {loading ? (
+                            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                        ) : reservations.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                                No reservations scheduled for today.
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {reservations.slice(0, 5).map((res) => (
+                                    <div
+                                        key={res._id}
+                                        className="flex items-center justify-between rounded-lg border p-3"
                                     >
-                                        {res.status}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                                                <span className="text-sm font-medium text-primary">
+                                                    {res.time}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium">{res.guestName}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {res.partySize} guests
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span
+                                            className={cn(
+                                                "rounded-full px-2 py-1 text-xs font-medium",
+                                                res.status === "CONFIRMED"
+                                                    ? "bg-green-100 text-green-800"
+                                                    : "bg-amber-100 text-amber-800"
+                                            )}
+                                        >
+                                            {res.status}
+                                        </span>
+                                    </div>
+                                ))}
+                                {reservations.length > 5 && (
+                                    <div className="pt-2 text-center">
+                                        <Link href="/reservations" className="text-sm text-primary hover:underline">
+                                            View all {reservations.length} reservations
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
-                {/* Quick actions / Recent activity */}
-                <Card className="lg:col-span-1">
+                {/* Quick actions */}
+                <Card className="lg:col-span-1 h-fit">
                     <CardHeader>
                         <CardTitle>Quick Actions</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 gap-3">
-                            <button className="flex flex-col items-center justify-center rounded-lg border p-4 transition-colors hover:bg-muted">
-                                <CalendarDays className="mb-2 h-6 w-6 text-primary" />
-                                <span className="text-sm font-medium">New Reservation</span>
-                            </button>
-                            <button className="flex flex-col items-center justify-center rounded-lg border p-4 transition-colors hover:bg-muted">
-                                <Users className="mb-2 h-6 w-6 text-primary" />
-                                <span className="text-sm font-medium">Add Walk-in</span>
-                            </button>
-                            <button className="flex flex-col items-center justify-center rounded-lg border p-4 transition-colors hover:bg-muted">
-                                <MessageSquare className="mb-2 h-6 w-6 text-primary" />
-                                <span className="text-sm font-medium">View Messages</span>
-                            </button>
-                            <button className="flex flex-col items-center justify-center rounded-lg border p-4 transition-colors hover:bg-muted">
-                                <Clock className="mb-2 h-6 w-6 text-primary" />
-                                <span className="text-sm font-medium">Manage Waitlist</span>
-                            </button>
+                            <Link href="/reservations">
+                                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 hover:bg-muted hover:text-foreground">
+                                    <CalendarDays className="h-6 w-6 text-primary" />
+                                    <span className="font-medium">New Reservation</span>
+                                </Button>
+                            </Link>
+
+                            <Link href="/reservations">
+                                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 hover:bg-muted hover:text-foreground">
+                                    <Users className="h-6 w-6 text-primary" />
+                                    <span className="font-medium">Add Walk-in</span>
+                                </Button>
+                            </Link>
+
+                            <Link href="/conversations">
+                                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 hover:bg-muted hover:text-foreground">
+                                    <MessageSquare className="h-6 w-6 text-primary" />
+                                    <span className="font-medium">View Messages</span>
+                                </Button>
+                            </Link>
+
+                            <Link href="/settings">
+                                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 hover:bg-muted hover:text-foreground">
+                                    <Clock className="h-6 w-6 text-primary" />
+                                    <span className="font-medium">Settings / Hours</span>
+                                </Button>
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>
