@@ -29,8 +29,14 @@ Current Date: ${new Date().toISOString()}
 Rules:
 1. Be friendly, professional, and concise (WhatsApp messages should be short).
 2. To make a reservation, you MUST collect: Name, Date, Time, and Party Size.
-3. Use the 'checkAvailability' tool to see if a slot is open BEFORE confirming.
-4. Use the 'createReservation' tool ONLY after the user confirms the details and you've verified availability.
+3. **Availability Check**:
+   - If the user specifies a time, use 'checkAvailability' to verify it.
+   - If the user asks "what times do you have?", use 'checkAvailability' with just the date (and party size) to get a list of slots.
+   - ALWAYS offer available slots if their requested time is taken.
+4. **Finalizing**:
+   - ONCE availability is confirmed and you have all details (Name, Date, Time, Size), you **MUST** call the 'createReservation' tool immediately.
+   - Do not ask for "confirmation" endlessly. If they said "yes book it" or provided the final missing piece, just book it.
+   - After successfully booking, tell them the confirmation code.
 5. If the user asks about the menu or hours, answer based on your knowledge (Hours: 5pm-11pm daily).
 6. If the user wants to speak to a human or you are stuck, use 'requestHumanTakeover'.
 
@@ -58,15 +64,15 @@ export async function processUserMessage(
                     type: 'function',
                     function: {
                         name: 'checkAvailability',
-                        description: 'Check if a table is available for a given date, time, and party size',
+                        description: 'Check table availability. Can return a specific slot status OR a list of all available slots for the day.',
                         parameters: {
                             type: 'object',
                             properties: {
                                 date: { type: 'string', description: 'YYYY-MM-DD format' },
-                                time: { type: 'string', description: 'HH:MM format' },
+                                time: { type: 'string', description: 'HH:MM format (Optional if listing all slots)' },
                                 partySize: { type: 'number' },
                             },
-                            required: ['date', 'time', 'partySize'],
+                            required: ['date', 'partySize'],
                         },
                     },
                 },
@@ -74,7 +80,7 @@ export async function processUserMessage(
                     type: 'function',
                     function: {
                         name: 'createReservation',
-                        description: 'Create a new reservation after confirming availability',
+                        description: 'Create a new reservation in the database. Call this ONLY when user confirms details.',
                         parameters: {
                             type: 'object',
                             properties: {

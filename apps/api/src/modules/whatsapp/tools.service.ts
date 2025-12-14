@@ -7,29 +7,75 @@ export async function executeTool(name: string, args: any) {
 
     try {
         if (name === 'checkAvailability') {
-            // Logic: check reservations for that date/time
-            // Default restaurant ID for now (MVP)
-            // Ideally passed in context, but let's find one or use a hardcoded one if needed
-            // Actually, listReservations needs a restaurantId.
-            // We'll fetch the first Restaurant again
-            const { Restaurant } = await import('../../models/index.js');
+            const { Restaurant, Table } = await import('../../models/index.js');
             const restaurant = await Restaurant.findOne();
             if (!restaurant) return { error: 'No restaurant configured' };
 
-            const { date, time, partySize } = args;
-            const reservations = await listReservations(restaurant._id.toString(), { date });
+            const { date, partySize } = args; // time is optional now if we want to list all
+            const requestedTime = args.time;
 
-            // Simple heuristic: check if any existing reservation at that time
-            // In a real system, we'd check tables capacity vs reservations
-            const conflict = reservations.some((res: any) => res.time === time);
+            // 1. Determine Day of Week
+            const dateObj = new Date(date);
+            const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const dayName = days[dateObj.getDay()];
 
-            if (conflict) {
-                // Very basic capacity check
-                // Check finding next available slot?
-                return { available: false, message: 'Time slot is taken.' };
+            // 2. Get Operating Hours
+            // @ts-ignore
+            const hours = restaurant.operatingHours?.[dayName];
+
+            if (!hours || hours.closed || !hours.open || !hours.close) {
+                return { available: false, message: `We are closed on ${dayName}s.` };
             }
 
-            return { available: true, message: 'Table is available.' };
+            // 3. Generate Slots (30 min intervals)
+            const slots: string[] = [];
+            let [openHour, openMin] = hours.open.split(':').map(Number);
+            const [closeHour, closeMin] = hours.close.split(':').map(Number);
+
+            let current = new Date(date);
+            current.setHours(openHour, openMin, 0, 0);
+
+            const closeTime = new Date(date);
+            closeTime.setHours(closeHour, closeMin, 0, 0);
+
+            // Fetch all reservations for the day
+            const dayReservations = await listReservations(restaurant._id.toString(), { date });
+
+            // Fetch tables to determine capacity
+            const tables = await Table.find({ restaurant: restaurant._id, isActive: true });
+            const totalCapacity = tables.reduce((sum: number, t: any) => sum + (t.capacity >= (partySize || 1) ? 1 : 0), 0) || 5; // Default to 5 "tables" if none defined
+
+            // Simple loop to generate slots
+            while (current < closeTime) {
+                const timeString = current.toTimeString().slice(0, 5); // "HH:MM"
+
+                // Check capacity for this slot
+                const usage = dayReservations.filter((r: any) => r.time === timeString).length;
+
+                if (usage < totalCapacity) {
+                    slots.push(timeString);
+                }
+
+                current.setMinutes(current.getMinutes() + 30);
+            }
+
+            // 4. Return result
+            if (requestedTime) {
+                if (slots.includes(requestedTime)) {
+                    return { available: true, message: `Yes, ${requestedTime} is available for ${partySize} people.` };
+                } else {
+                    const suggestions = slots.length > 0 ? slots.slice(0, 5).join(', ') : 'No other times';
+                    return { available: false, message: `Sorry, ${requestedTime} is not available. We have openings at: ${suggestions}` };
+                }
+            } else {
+                // Return list of slots
+                if (slots.length === 0) {
+                    return { available: false, message: `Fully booked for this date.` };
+                }
+                // Determine appropriate logical "chunks" to show? for now, list first few and some evening ones?
+                // Or just first 10?
+                return { available: true, slots, message: `We have the following times available: ${slots.join(', ')}` };
+            }
         }
 
         if (name === 'createReservation') {

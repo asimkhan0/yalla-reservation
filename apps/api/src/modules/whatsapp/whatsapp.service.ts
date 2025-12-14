@@ -83,7 +83,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     }
 
     // 3. Store the incoming message
-    await (Message as any).create({
+    const currentMessage = await (Message as any).create({
         content: Body,
         direction: 'INBOUND',
         sender: 'CUSTOMER',
@@ -93,15 +93,21 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     });
 
     // 4. Trigger AI Agent
-    // Fetch conversation history
-    const history = await (Message as any).find({ conversation: conversation._id })
-        .sort({ createdAt: 1 })
+    // Fetch conversation history (Get NEWEST 10, excluding the one we just saved)
+    const rawHistory = await (Message as any).find({
+        conversation: conversation._id,
+        _id: { $ne: currentMessage._id }
+    })
+        .sort({ createdAt: -1 }) // Newest first
         .limit(10) // Limit context window
-        .select('role content sender -_id') // We need to map this to OpenAI format
+        .select('role content sender -_id')
         .lean();
 
+    // Reverse to be chronological (Oldest -> Newest)
+    const history = rawHistory.reverse();
+
     const formattedHistory = history.map((msg: any) => ({
-        role: msg.sender === 'BOT' ? 'assistant' : 'user', // Map 'BOT' to 'assistant'
+        role: msg.sender === 'BOT' ? 'assistant' : 'user',
         content: msg.content,
     }));
 
