@@ -105,6 +105,10 @@ await fastify.register(reservationRoutes, { prefix: '/api/reservations' });
 import { conversationRoutes } from './modules/conversations/index.js';
 await fastify.register(conversationRoutes, { prefix: '/api/conversations' });
 
+// Customer routes
+import { customerRoutes } from './modules/customers/index.js';
+await fastify.register(customerRoutes, { prefix: '/api/customers' });
+
 // Restaurant routes
 import { restaurantRoutes } from './modules/restaurants/index.js';
 await fastify.register(restaurantRoutes, { prefix: '/api/restaurants' });
