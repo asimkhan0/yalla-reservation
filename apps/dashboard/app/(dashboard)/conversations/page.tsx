@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
 import { format } from "date-fns";
-import { Send, User, Phone, Calendar, Search, MoreVertical, Paperclip } from "lucide-react";
+import { Send, User, Phone, Calendar, Search, MoreVertical, Paperclip, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,6 +33,7 @@ interface Conversation {
     _id: string;
     customer: Customer;
     status: string;
+    assignedTo: 'BOT' | 'AGENT';
     updatedAt: string;
     lastMessage?: Message;
 }
@@ -103,6 +104,19 @@ export default function ConversationsPage() {
         // TODO: Implement send message API
         // await api.post(`/conversations/${selectedId}/messages`, { content: input });
         // fetchMessages();
+    };
+
+    const handleAssignmentChange = async (newStatus: 'BOT' | 'AGENT') => {
+        if (!selectedId) return;
+        try {
+            await api.patch(`/conversations/${selectedId}/assign`, { assignedTo: newStatus });
+            // Update local state
+            setConversations(prev => prev.map(c =>
+                c._id === selectedId ? { ...c, assignedTo: newStatus } : c
+            ));
+        } catch (error) {
+            console.error("Failed to update assignment", error);
+        }
     };
 
     return (
@@ -289,47 +303,93 @@ export default function ConversationsPage() {
             )}
 
             {/* --- Right Sidebar: Contact Info (Optional / Collapsible) --- */}
+            {/* --- Right Sidebar: Contact Info --- */}
             {selectedConversation && (
-                <div className="hidden xl:flex w-80 flex-col border-l bg-background">
-                    <div className="p-6 border-b flex flex-col items-center text-center">
-                        <Avatar className="h-24 w-24 mb-4">
-                            <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                                {selectedConversation.customer?.firstName?.[0]}
-                            </AvatarFallback>
-                        </Avatar>
-                        <h3 className="font-semibold text-lg">
-                            {selectedConversation.customer?.firstName} {selectedConversation.customer?.lastName}
-                        </h3>
-                        <p className="text-muted-foreground">{selectedConversation.customer?.phone}</p>
-                    </div>
-
-                    <ScrollArea className="flex-1 p-6">
-                        <div className="space-y-6">
+                <div className="w-80 border-l bg-background flex flex-col h-full hidden xl:flex">
+                    <div className="h-full flex flex-col">
+                        <div className="p-5 border-b">
+                            <h3 className="text-lg font-semibold">Contact Information</h3>
+                        </div>
+                        <div className="p-4 space-y-4">
                             <div>
-                                <h4 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">About</h4>
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <User className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                                        <span>Customer</span>
+                                <h4 className="text-sm font-medium mb-2">Contact Details</h4>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <User className="h-4 w-4 text-muted-foreground" />
+                                        <span>{selectedConversation.customer?.firstName} {selectedConversation.customer?.lastName}</span>
                                     </div>
-                                    <div className="flex items-start gap-3 text-sm">
-                                        <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                                        <span>Last visited: 5 days ago</span>
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Phone className="h-4 w-4 text-muted-foreground" />
+                                        <span>{selectedConversation.customer?.phone}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t">
-                                <h4 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Actions</h4>
-                                <Button className="w-full" variant="outline">
-                                    View Past Reservations
-                                </Button>
-                                <Button className="w-full mt-2" variant="destructive">
-                                    Block Contact
-                                </Button>
+                            <div data-orientation="horizontal" role="none" className="bg-border shrink-0 h-[1px] w-full"></div>
+
+                            <div>
+                                <h4 className="text-sm font-medium mb-2">Conversation Owner</h4>
+                                <div className="flex items-center gap-2">
+                                    {selectedConversation.assignedTo === 'BOT' ? (
+                                        <>
+                                            <Bot className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm">Assigned to AI bot</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <User className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm">Assigned to Agent</span>
+                                        </>
+                                    )}
+                                </div>
+                                {selectedConversation.assignedTo === 'BOT' ? (
+                                    <div className="mt-3">
+                                        <Button
+                                            onClick={() => handleAssignmentChange('AGENT')}
+                                            className="w-full h-8 text-xs"
+                                        >
+                                            Join Conversation
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="mt-3">
+                                        <Button
+                                            onClick={() => handleAssignmentChange('BOT')}
+                                            variant="outline"
+                                            className="w-full h-8 text-xs"
+                                        >
+                                            Assign back to Bot
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div data-orientation="horizontal" role="none" className="bg-border shrink-0 h-[1px] w-full"></div>
+
+                            <div className="flex-1">
+                                <h4 className="text-sm font-medium mb-2">Booking History</h4>
+                                <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                                    {/* Mock Data for Booking History - matching the HTML example */}
+                                    <div className="p-3 border rounded-lg space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <h5 className="text-sm font-medium">Court 2 - Padel</h5>
+                                            <Badge variant="secondary" className="font-semibold text-xs">pending</Badge>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <Calendar className="h-3 w-3" />
+                                            <span>Dec 9, 2025</span>
+                                            <span>•</span>
+                                            <span>20:00 - 21:00</span>
+                                        </div>
+                                        <div className="text-xs font-medium flex items-center gap-1">
+                                            <span>SAR</span>
+                                            <span>220.00</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </ScrollArea>
+                    </div>
                 </div>
             )}
         </div>

@@ -37,3 +37,12 @@ export const getConversation = async (conversationId: string, restaurantId: stri
     return Conversation.findOne({ _id: conversationId, restaurant: restaurantId })
         .populate('customer') as any;
 };
+
+export const assignConversation = async (conversationId: string, assignedTo: 'BOT' | 'AGENT') => {
+    // @ts-ignore
+    return Conversation.findByIdAndUpdate(
+        conversationId,
+        { assignedTo },
+        { new: true }
+    );
+};

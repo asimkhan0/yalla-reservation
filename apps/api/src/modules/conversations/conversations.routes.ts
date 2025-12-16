@@ -43,4 +43,36 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             return reply.send({ messages });
         }
     );
+
+    // Assign Conversation
+    fastify.patch(
+        '/:id/assign',
+        {
+            schema: {
+                tags: ['conversations'],
+                description: 'Assign conversation to BOT or AGENT',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' }
+                    }
+                },
+                body: {
+                    type: 'object',
+                    required: ['assignedTo'],
+                    properties: {
+                        assignedTo: { type: 'string', enum: ['BOT', 'AGENT'] }
+                    }
+                }
+            },
+            preHandler: fastify.authenticate,
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const { id } = request.params as { id: string };
+            const { assignedTo } = request.body as { assignedTo: 'BOT' | 'AGENT' };
+            const conversation = await service.assignConversation(id, assignedTo);
+            return reply.send({ conversation });
+        }
+    );
 }

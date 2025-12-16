@@ -92,6 +92,11 @@ export async function handleIncomingMessage(data: TwilioMessage) {
         conversation: conversation._id
     });
 
+    if (conversation.assignedTo === 'AGENT') {
+        console.log(`[WhatsApp] Conversation ${conversation._id} assigned to AGENT. Bot skipping.`);
+        return;
+    }
+
     // 4. Trigger AI Agent
     // Fetch conversation history (Get NEWEST 10, excluding the one we just saved)
     const rawHistory = await (Message as any).find({
