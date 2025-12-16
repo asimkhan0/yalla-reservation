@@ -46,6 +46,7 @@
         "@types/node": "^20.19.26",
         "@types/supertest": "^6.0.3",
         "eslint": "^8.57.0",
+        "mongodb-memory-server": "^11.0.0",
         "supertest": "^7.1.4",
         "tsx": "^4.7.0",
         "typescript": "^5.3.3",

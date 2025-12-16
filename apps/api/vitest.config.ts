@@ -6,6 +6,8 @@ export default defineConfig({
         globals: true,
         environment: 'node',
         dir: 'src',
+        hookTimeout: 60000, // 60 seconds for MongoDB Memory Server startup
+        testTimeout: 30000,  // 30 seconds for individual tests
     },
     resolve: {
         alias: {
