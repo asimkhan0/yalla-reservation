@@ -18,7 +18,6 @@ import { whatsappRoutes } from './modules/whatsapp/index.js';
 import { uploadRoutes } from './modules/uploads/uploads.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export async function buildApp() {
     // Initialize Fastify
