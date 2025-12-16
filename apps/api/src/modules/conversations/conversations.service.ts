@@ -1,4 +1,5 @@
 import { Conversation, Message } from '../../models/index.js';
+import { sendWhatsAppMessage } from '../whatsapp/whatsapp.service.js';
 
 export const listConversations = async (restaurantId: string) => {
     // Get conversations, most recent updated first
@@ -45,4 +46,30 @@ export const assignConversation = async (conversationId: string, assignedTo: 'BO
         { assignedTo },
         { new: true }
     );
+};
+
+export const sendAgentMessage = async (conversationId: string, content: string) => {
+    // 1. Get Conversation to find Customer phone
+    // @ts-ignore
+    const conversation = await Conversation.findById(conversationId).populate('customer');
+    if (!conversation) throw new Error('Conversation not found');
+
+    // 2. Save Message to DB
+    // @ts-ignore
+    const message = await Message.create({
+        content,
+        direction: 'OUTBOUND',
+        sender: 'AGENT',
+        status: 'SENT',
+        conversation: conversationId
+    });
+
+    // 3. Send via WhatsApp
+    // @ts-ignore
+    if (conversation.customer && conversation.customer.phone) {
+        // @ts-ignore
+        await sendWhatsAppMessage(conversation.customer.phone, content);
+    }
+
+    return message;
 };

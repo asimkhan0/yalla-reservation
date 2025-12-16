@@ -96,14 +96,31 @@ export default function ConversationsPage() {
     const handleSendMessage = async () => {
         if (!input.trim() || !selectedId) return;
 
-        // Optimistic update (optional, but good for UX)
-        // For now, we'll just wait for the API (which isn't implemented for sending yet)
-        console.log("Sending message:", input);
-        setInput("");
+        // Optimistic update
+        const tempId = Math.random().toString(36).substring(7);
+        const optimisticMessage: Message = {
+            _id: tempId,
+            sender: 'AGENT',
+            content: input.trim(),
+            createdAt: new Date().toISOString(),
+            status: 'SENDING'
+        };
 
-        // TODO: Implement send message API
-        // await api.post(`/conversations/${selectedId}/messages`, { content: input });
-        // fetchMessages();
+        setMessages(prev => [...prev, optimisticMessage]);
+        setInput("");
+        scrollToBottom();
+
+        try {
+            await api.post(`/conversations/${selectedId}/messages`, { content: optimisticMessage.content });
+            // Ideally we'd replace the optimistic message with the real one, but fetching works too
+            const { data } = await api.get(`/conversations/${selectedId}/messages`);
+            setMessages(data.messages);
+            scrollToBottom();
+        } catch (error) {
+            console.error("Failed to send message", error);
+            // Revert on failure (could improve this)
+            setMessages(prev => prev.filter(m => m._id !== tempId));
+        }
     };
 
     const handleAssignmentChange = async (newStatus: 'BOT' | 'AGENT') => {
@@ -258,13 +275,21 @@ export default function ConversationsPage() {
                     {/* Input Area */}
                     <div className="p-4 bg-background/95 backdrop-blur-sm border-t z-10">
                         <div className="max-w-3xl mx-auto flex items-end gap-2">
-                            <Button variant="ghost" size="icon" className="shrink-0">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="shrink-0"
+                                disabled={selectedConversation.assignedTo === 'BOT'}
+                            >
                                 <Paperclip className="h-5 w-5 text-muted-foreground" />
                             </Button>
-                            <div className="flex-1 bg-muted/20 rounded-lg border focus-within:ring-1 focus-within:ring-primary">
+                            <div className={cn(
+                                "flex-1 bg-muted/20 rounded-lg border focus-within:ring-1 focus-within:ring-primary",
+                                selectedConversation.assignedTo === 'BOT' && "opacity-50 cursor-not-allowed"
+                            )}>
                                 <textarea
-                                    className="w-full bg-transparent border-none p-3 text-sm focus:outline-none resize-none max-h-32 min-h-[44px]"
-                                    placeholder="Type a message..."
+                                    className="w-full bg-transparent border-none p-3 text-sm focus:outline-none resize-none max-h-32 min-h-[44px] disabled:cursor-not-allowed"
+                                    placeholder={selectedConversation.assignedTo === 'BOT' ? "Join conversation to send messages" : "Type a message..."}
                                     rows={1}
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
@@ -274,6 +299,7 @@ export default function ConversationsPage() {
                                             handleSendMessage();
                                         }
                                     }}
+                                    disabled={selectedConversation.assignedTo === 'BOT'}
                                 />
                             </div>
                             <Button
@@ -283,6 +309,7 @@ export default function ConversationsPage() {
                                     "shrink-0 transition-all",
                                     input.trim() ? "translate-x-0 opacity-100" : "translate-x-2 opacity-0 w-0 px-0 overflow-hidden"
                                 )}
+                                disabled={selectedConversation.assignedTo === 'BOT'}
                             >
                                 <Send className="h-5 w-5" />
                             </Button>

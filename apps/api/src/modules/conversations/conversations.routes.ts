@@ -75,4 +75,36 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             return reply.send({ conversation });
         }
     );
+
+    // Send Message (Agent)
+    fastify.post(
+        '/:id/messages',
+        {
+            schema: {
+                tags: ['conversations'],
+                description: 'Send a message as an agent',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' }
+                    }
+                },
+                body: {
+                    type: 'object',
+                    required: ['content'],
+                    properties: {
+                        content: { type: 'string' }
+                    }
+                }
+            },
+            preHandler: fastify.authenticate,
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const { id } = request.params as { id: string };
+            const { content } = request.body as { content: string };
+            const message = await service.sendAgentMessage(id, content);
+            return reply.send({ message });
+        }
+    );
 }
