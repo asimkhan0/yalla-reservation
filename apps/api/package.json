@@ -5,10 +5,12 @@
     "private": true,
     "scripts": {
         "dev": "tsx watch src/index.ts",
-        "build": "tsc",
+        "build": "pnpm run test && tsc",
         "start": "node dist/index.js",
         "lint": "eslint --max-warnings 0",
-        "check-types": "tsc --noEmit"
+        "check-types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@fastify/cors": "^9.0.1",
@@ -41,9 +43,12 @@
         "@repo/typescript-config": "workspace:*",
         "@types/bcryptjs": "^2.4.6",
         "@types/jsonwebtoken": "^9.0.10",
-        "@types/node": "^20.11.0",
+        "@types/node": "^20.19.26",
+        "@types/supertest": "^6.0.3",
         "eslint": "^8.57.0",
+        "supertest": "^7.1.4",
         "tsx": "^4.7.0",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "^4.0.15"
     }
 }
