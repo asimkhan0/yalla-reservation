@@ -4,6 +4,7 @@ import jwt from '@fastify/jwt';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { connectDatabase } from './config/database.js';
+import './config/redis.js'; // Initialize Redis connection
 import { env } from './config/env.js';
 import { authRoutes } from './modules/auth/index.js';
 
