@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { handleIncomingMessage } from './whatsapp.service';
+import { handleIncomingMessage } from './whatsapp.service.js';
 
 export async function whatsappRoutes(fastify: FastifyInstance) {
     // Webhook for Twilio
