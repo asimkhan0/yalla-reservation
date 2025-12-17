@@ -34,7 +34,14 @@ export async function buildApp() {
     });
 
     // Register plugins
-    await fastify.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
+    const corsOrigin = env.CORS_ORIGIN.includes(',')
+        ? env.CORS_ORIGIN.split(',')
+        : env.CORS_ORIGIN;
+
+    await fastify.register(cors, {
+        origin: corsOrigin,
+        credentials: env.CORS_ORIGIN !== '*', // Disable credentials for wildcard
+    });
     await fastify.register(formbody);
     await fastify.register(jwt, { secret: env.JWT_SECRET });
 
