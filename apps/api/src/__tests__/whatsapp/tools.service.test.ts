@@ -5,9 +5,10 @@ import {
     clearTestDb,
     createMockRestaurantData,
 } from '../utils/test-helpers.js';
-import { executeTool } from '../../modules/whatsapp/tools.service.js';
+import { executeTool, CACHE_KEY_RESTAURANT_DEFAULT } from '../../modules/whatsapp/tools.service.js';
 import { Restaurant, Table } from '../../models/index.js';
 import { Reservation } from '../../models/reservation.js';
+import { cacheService } from '../../utils/cache.js';
 
 describe('WhatsApp Tools Service', () => {
     let restaurantId: string;
@@ -22,6 +23,7 @@ describe('WhatsApp Tools Service', () => {
 
     beforeEach(async () => {
         await clearTestDb();
+        await cacheService.del(CACHE_KEY_RESTAURANT_DEFAULT);
         const restaurant = await Restaurant.create({
             ...createMockRestaurantData({
                 name: 'Test Restaurant',

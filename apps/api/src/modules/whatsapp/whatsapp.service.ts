@@ -1,7 +1,7 @@
 import { Message, Conversation, Customer } from '../../models/index.js';
 import { env } from '../../config/env.js';
 import { processUserMessage } from './agent.service.js';
-import { executeTool } from './tools.service.js';
+import { executeTool, getRestaurantInfoForAgent } from './tools.service.js';
 import twilio from 'twilio';
 
 interface TwilioMessage {
@@ -116,8 +116,15 @@ export async function handleIncomingMessage(data: TwilioMessage) {
         content: msg.content,
     }));
 
+    // Get restaurant info for agent context (cached)
+    const restaurantInfo = await getRestaurantInfoForAgent();
+    if (!restaurantInfo) {
+        console.error('[WhatsApp] No restaurant info available for agent');
+        return;
+    }
+
     // Initial call to AI
-    let aiResponse = await processUserMessage(Body, formattedHistory as any[]);
+    let aiResponse = await processUserMessage(Body, formattedHistory as any[], restaurantInfo);
     let iterations = 0;
     const MAX_ITERATIONS = 3; // Prevent infinite loops
 
@@ -152,7 +159,7 @@ export async function handleIncomingMessage(data: TwilioMessage) {
         }
 
         // Call AI again with tool results
-        aiResponse = await processUserMessage('', formattedHistory as any);
+        aiResponse = await processUserMessage('', formattedHistory as any, restaurantInfo);
     }
 
     // 5. Send Final Response
