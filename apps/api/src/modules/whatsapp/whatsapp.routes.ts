@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { handleIncomingMessage } from './whatsapp.service.js';
+import { handleIncomingMessage, handleTestChat } from './whatsapp.service.js';
 
 export async function whatsappRoutes(fastify: FastifyInstance) {
     // Webhook for Twilio
@@ -37,6 +37,31 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
         } catch (error) {
             request.log.error(error);
             return reply.status(200).send(''); // Always return 200 to Twilio to prevent retries
+        }
+    });
+
+    // Test endpoint for Agent (Direct API)
+    fastify.post('/chat-test', {
+        schema: {
+            tags: ['whatsapp'],
+            description: 'Directly test Agent response logic without Twilio',
+            body: {
+                type: 'object',
+                properties: {
+                    message: { type: 'string' },
+                    phoneNumber: { type: 'string' }
+                },
+                required: ['message']
+            }
+        }
+    }, async (request: FastifyRequest, reply: FastifyReply) => {
+        const { message, phoneNumber } = request.body as { message: string, phoneNumber?: string };
+        try {
+            const response = await handleTestChat(message, phoneNumber);
+            return { response };
+        } catch (error: any) {
+            request.log.error(error);
+            return reply.status(500).send({ error: error.message });
         }
     });
 }

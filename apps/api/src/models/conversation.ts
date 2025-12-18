@@ -4,7 +4,7 @@ export interface IConversation extends Document {
     customer: mongoose.Types.ObjectId;
     restaurant: mongoose.Types.ObjectId;
     status: 'ACTIVE' | 'RESOLVED' | 'ARCHIVED';
-    source: 'WHATSAPP' | 'WEB' | 'SMS';
+    source: 'WHATSAPP' | 'WEB' | 'SMS' | 'API_TEST';
     assignedTo: 'BOT' | 'AGENT';
     context: Record<string, any>;
     createdAt: Date;
@@ -16,7 +16,7 @@ const conversationSchema = new Schema<IConversation>(
         customer: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
         restaurant: { type: Schema.Types.ObjectId, ref: 'Restaurant', required: true },
         status: { type: String, enum: ['ACTIVE', 'RESOLVED', 'ARCHIVED'], default: 'ACTIVE' },
-        source: { type: String, enum: ['WHATSAPP', 'WEB', 'SMS'], default: 'WHATSAPP' },
+        source: { type: String, enum: ['WHATSAPP', 'WEB', 'SMS', 'API_TEST'], default: 'WHATSAPP' },
         assignedTo: { type: String, enum: ['BOT', 'AGENT'], default: 'BOT' },
         context: { type: Map, of: Schema.Types.Mixed, default: {} },
     },

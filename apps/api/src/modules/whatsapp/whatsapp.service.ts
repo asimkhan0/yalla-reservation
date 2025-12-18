@@ -208,3 +208,134 @@ export async function sendWhatsAppMessage(to: string, body: string) {
 
     console.log(`[WHATSAPP OUTBOUND SIMULATION] To: ${to}, Body: ${body}`);
 }
+
+export async function handleTestChat(message: string, phoneNumber: string = '1234567890') {
+    // 1. Mock Restaurant (First one)
+    const { Restaurant } = await import('../../models/index.js');
+    let restaurant = await Restaurant.findOne();
+    if (!restaurant) throw new Error('No restaurant found');
+
+    // 2. Find/Create Customer
+    let customer = await Customer.findOne({ phone: phoneNumber });
+    if (!customer) {
+        customer = await Customer.create({
+            phone: phoneNumber,
+            phoneCountry: 'US',
+            firstName: 'Test',
+            lastName: 'User',
+            restaurant: restaurant._id,
+            isVip: false,
+            preferences: {}
+        });
+    }
+
+    // 3. Find/Create Conversation
+    let conversation = await (Conversation as any).findOne({
+        customer: customer._id,
+        status: { $ne: 'resolved' }
+    }).sort({ updatedAt: -1 });
+
+    if (!conversation) {
+        conversation = await (Conversation as any).create({
+            customer: customer._id,
+            restaurant: restaurant._id,
+            status: 'ACTIVE',
+            source: 'API_TEST',
+            context: {}
+        });
+    }
+
+    // 4. Save User Message
+    const currentMessage = await (Message as any).create({
+        content: message,
+        direction: 'INBOUND',
+        sender: 'CUSTOMER',
+        whatsappMsgId: `test-${Date.now()}`,
+        status: 'DELIVERED',
+        conversation: conversation._id
+    });
+
+    if (conversation.assignedTo === 'AGENT') {
+        return "Conversation is assigned to a human agent. Bot is paused.";
+    }
+
+    // 5. Trigger AI Agent
+    // Fetch conversation history (Get NEWEST 10, excluding the one we just saved)
+    const rawHistory = await (Message as any).find({
+        conversation: conversation._id,
+        _id: { $ne: currentMessage._id }
+    })
+        .sort({ createdAt: -1 }) // Newest first
+        .limit(10) // Limit context window
+        .select('role content sender -_id')
+        .lean();
+
+    // Reverse to be chronological (Oldest -> Newest)
+    const history = rawHistory.reverse();
+
+    const formattedHistory = history.map((msg: any) => ({
+        role: msg.sender === 'BOT' ? 'assistant' : 'user',
+        content: msg.content,
+    }));
+
+    // Get restaurant info for agent context (cached)
+    const restaurantInfo = await getRestaurantInfoForAgent();
+    if (!restaurantInfo) {
+        return "Error: No restaurant info available.";
+    }
+
+    // Initial call to AI
+    let aiResponse = await processUserMessage(message, formattedHistory as any[], restaurantInfo);
+    let iterations = 0;
+    const MAX_ITERATIONS = 3; // Prevent infinite loops
+
+    // Loop to handle tool calls
+    while (aiResponse && aiResponse.tool_calls && iterations < MAX_ITERATIONS) {
+        iterations++;
+        const toolCalls = aiResponse.tool_calls;
+        console.log(`[AI Agent Test] Iteration ${iterations}: Executing ${toolCalls.length} tool(s)`);
+
+        // Add the assistant's request (with tool calls) to history for the next turn
+        formattedHistory.push(aiResponse as any);
+
+        for (const toolCall of toolCalls) {
+            try {
+                const args = JSON.parse(toolCall.function.arguments);
+                const result = await executeTool(toolCall.function.name, args);
+
+                // Add tool result to history
+                formattedHistory.push({
+                    role: 'tool',
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify(result)
+                } as any);
+            } catch (err: any) {
+                console.error(`[AI Agent Test] Tool execution failed: ${err.message}`);
+                formattedHistory.push({
+                    role: 'tool',
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify({ error: err.message })
+                } as any);
+            }
+        }
+
+        // Call AI again with tool results
+        aiResponse = await processUserMessage('', formattedHistory as any, restaurantInfo);
+    }
+
+    // 6. Return Response
+    if (aiResponse && aiResponse.content) {
+        await (Message as any).create({
+            content: aiResponse.content,
+            direction: 'OUTBOUND',
+            sender: 'BOT',
+            status: 'SENT',
+            conversation: conversation._id
+        });
+        return aiResponse.content;
+    }
+
+    return "No response from AI.";
+}
+
+
