@@ -170,19 +170,6 @@ export async function executeTool(name: string, args: any) {
             const totalCapacity = tables.reduce((sum: number, t: any) => sum + (t.capacity >= (partySize || 1) ? 1 : 0), 0) || 5; // Default to 5 "tables" if none defined
 
             // Simple loop to generate slots
-            while (current < closeTime) {
-                const timeString = current.toTimeString().slice(0, 5); // "HH:MM"
-
-                // Check capacity for this slot
-                const usage = dayReservations.filter((r: any) => r.time === timeString).length;
-
-                if (usage < totalCapacity) {
-                    slots.push(timeString);
-                }
-
-                current.setMinutes(current.getMinutes() + 30);
-            }
-
             // 4. Return result
             if (requestedTime) {
                 if (slots.includes(requestedTime)) {
@@ -192,13 +179,28 @@ export async function executeTool(name: string, args: any) {
                     return { available: false, message: `Sorry, ${requestedTime} is not available. We have openings at: ${suggestions}` };
                 }
             } else {
-                // Return list of slots
-                if (slots.length === 0) {
+                // Return FULL list of slots with status for grid formatting
+                const allSlots: { time: string; available: boolean }[] = [];
+                current = new Date(date);
+                current.setHours(openHour, openMin, 0, 0);
+
+                while (current < closeTime) {
+                    const timeString = current.toTimeString().slice(0, 5);
+                    const usage = dayReservations.filter((r: any) => r.time === timeString).length;
+                    const isAvailable = usage < totalCapacity;
+                    allSlots.push({ time: timeString, available: isAvailable });
+                    current.setMinutes(current.getMinutes() + 30);
+                }
+
+                if (allSlots.every(s => !s.available)) {
                     return { available: false, message: `Fully booked for this date.` };
                 }
-                // Determine appropriate logical "chunks" to show? for now, list first few and some evening ones?
-                // Or just first 10?
-                return { available: true, slots, message: `We have the following times available: ${slots.join(', ')}` };
+
+                return {
+                    available: true,
+                    slots: allSlots,
+                    message: `Please format the availabilities as a grid. Here is the data: ${JSON.stringify(allSlots)}`
+                };
             }
         }
 
