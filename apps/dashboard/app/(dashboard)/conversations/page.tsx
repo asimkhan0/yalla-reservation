@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatWhatsAppDate } from "@/lib/utils";
 
 // --- Types ---
 
@@ -175,7 +175,7 @@ export default function ConversationsPage() {
                                                 {conv.customer ? `${conv.customer.firstName} ${conv.customer.lastName || ''}` : 'Unknown Customer'}
                                             </span>
                                             <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                {conv.updatedAt ? format(new Date(conv.updatedAt), 'MMM d') : ''}
+                                                {conv.updatedAt ? formatWhatsAppDate(conv.updatedAt) : ''}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2 min-w-0">

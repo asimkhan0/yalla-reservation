@@ -18,6 +18,37 @@ export function formatDate(date: Date | string): string {
     });
 }
 
+// WhatsApp style date formatting
+export function formatWhatsAppDate(date: Date | string): string {
+    const d = new Date(date);
+    const now = new Date();
+    const isToday = d.getDate() === now.getDate() &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear();
+
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.getDate() === yesterday.getDate() &&
+        d.getMonth() === yesterday.getMonth() &&
+        d.getFullYear() === yesterday.getFullYear();
+
+    if (isToday) {
+        return d.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: false });
+    } else if (isYesterday) {
+        return "Yesterday";
+    } else {
+        return d.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+        }); // e.g. "Dec 23, 2025" (or adjust to desired format like 23/12/2025)
+        // User asked for "date could be like this as we have now" which is MMM d (implied by previous code) or similar.
+        // Let's stick to consistent locale date string or custom format.
+        // The previous code used `format(new Date(conv.updatedAt), 'MMM d')` in the file.
+        // Let's use `d.toLocaleDateString` which is standard.
+    }
+}
+
 export const statusColors: Record<string, string> = {
     pending: "status-pending",
     confirmed: "status-confirmed",

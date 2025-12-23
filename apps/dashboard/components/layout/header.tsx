@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Bell, Search } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -24,19 +24,29 @@ export function Header() {
     const [user, setUser] = useState<User | null>(null);
     const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
     const [unreadCount, setUnreadCount] = useState<number>(0);
+    const lastCountRef = useRef<number>(-1);
 
     const fetchUnreadCount = async () => {
-        const count = await ConversationService.getUnreadCount();
-        if (count > unreadCount) {
-            toast.info(`You have ${count} unread conversation${count > 1 ? 's' : ''}`, {
-                description: "New message received",
-                action: {
-                    label: "View",
-                    onClick: () => router.push('/conversations')
-                }
-            });
+        try {
+            const count = await ConversationService.getUnreadCount();
+            // Only show toast if:
+            // 1. It's not the first load (lastCountRef.current !== -1)
+            // 2. The count has increased
+            if (lastCountRef.current !== -1 && count > lastCountRef.current) {
+                toast.info(`You have ${count} unread conversation${count > 1 ? 's' : ''}`, {
+                    description: "New message received",
+                    action: {
+                        label: "View",
+                        onClick: () => router.push('/conversations')
+                    }
+                });
+            }
+
+            lastCountRef.current = count;
+            setUnreadCount(count);
+        } catch (error) {
+            console.error("Failed to fetch unread count", error);
         }
-        setUnreadCount(count);
     };
 
     useEffect(() => {
@@ -45,8 +55,11 @@ export function Header() {
         if (storedUser) setUser(JSON.parse(storedUser));
         if (storedRestaurant) setRestaurant(JSON.parse(storedRestaurant));
 
+        // Initial fetch
         fetchUnreadCount();
-        const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30s
+
+        // Poll every 30s
+        const interval = setInterval(fetchUnreadCount, 30000);
         return () => clearInterval(interval);
     }, []);
 
