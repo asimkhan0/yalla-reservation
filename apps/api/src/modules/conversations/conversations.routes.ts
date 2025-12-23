@@ -20,6 +20,24 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
     );
 
+    // Get Unread Count
+    fastify.get(
+        '/unread-count',
+        {
+            schema: {
+                tags: ['conversations'],
+                description: 'Get total unread conversations count',
+                security: [{ bearerAuth: [] }],
+            },
+            preHandler: fastify.authenticate,
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const user = request.user as { restaurantId: string };
+            const unreadCount = await service.getUnreadConversationCount(user.restaurantId);
+            return reply.send({ unreadCount });
+        }
+    );
+
     // Get Messages
     fastify.get(
         '/:id/messages',

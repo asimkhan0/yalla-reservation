@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Conversation, Message } from '../../models/index.js';
 import { sendWhatsAppMessage } from '../whatsapp/whatsapp.service.js';
 
@@ -28,9 +29,22 @@ export const listConversations = async (restaurantId: string) => {
 };
 
 export const getConversationMessages = async (conversationId: string) => {
+    // Reset unread count when messages are requested (opening conversation)
+    // @ts-ignore
+    await Conversation.findByIdAndUpdate(conversationId, { unreadCount: 0 });
+
     // @ts-ignore
     return Message.find({ conversation: conversationId })
         .sort({ createdAt: 1 }); // Oldest first for chat history
+};
+
+export const getUnreadConversationCount = async (restaurantId: string) => {
+    // @ts-ignore
+    const result = await Conversation.aggregate([
+        { $match: { restaurant: new mongoose.Types.ObjectId(restaurantId), unreadCount: { $gt: 0 } } },
+        { $count: "count" }
+    ]);
+    return result[0]?.count || 0;
 };
 
 export const getConversation = async (conversationId: string, restaurantId: string) => {

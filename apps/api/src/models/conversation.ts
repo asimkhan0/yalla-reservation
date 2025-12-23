@@ -6,6 +6,7 @@ export interface IConversation extends Document {
     status: 'ACTIVE' | 'RESOLVED' | 'ARCHIVED';
     source: 'WHATSAPP' | 'WEB' | 'SMS' | 'API_TEST';
     assignedTo: 'BOT' | 'AGENT';
+    unreadCount: number;
     context: Record<string, any>;
     createdAt: Date;
     updatedAt: Date;
@@ -18,6 +19,7 @@ const conversationSchema = new Schema<IConversation>(
         status: { type: String, enum: ['ACTIVE', 'RESOLVED', 'ARCHIVED'], default: 'ACTIVE' },
         source: { type: String, enum: ['WHATSAPP', 'WEB', 'SMS', 'API_TEST'], default: 'WHATSAPP' },
         assignedTo: { type: String, enum: ['BOT', 'AGENT'], default: 'BOT' },
+        unreadCount: { type: Number, default: 0 },
         context: { type: Map, of: Schema.Types.Mixed, default: {} },
     },
     { timestamps: true }

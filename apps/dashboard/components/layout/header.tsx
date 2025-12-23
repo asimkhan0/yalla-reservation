@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConversationService } from "@/lib/services/conversation.service";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useRouter } from "next/navigation";
 
 interface User {
     firstName: string;
@@ -17,14 +20,34 @@ interface Restaurant {
 }
 
 export function Header() {
+    const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+    const [unreadCount, setUnreadCount] = useState<number>(0);
+
+    const fetchUnreadCount = async () => {
+        const count = await ConversationService.getUnreadCount();
+        if (count > unreadCount) {
+            toast.info(`You have ${count} unread conversation${count > 1 ? 's' : ''}`, {
+                description: "New message received",
+                action: {
+                    label: "View",
+                    onClick: () => router.push('/conversations')
+                }
+            });
+        }
+        setUnreadCount(count);
+    };
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         const storedRestaurant = localStorage.getItem("restaurant");
         if (storedUser) setUser(JSON.parse(storedUser));
         if (storedRestaurant) setRestaurant(JSON.parse(storedRestaurant));
+
+        fetchUnreadCount();
+        const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30s
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -52,11 +75,18 @@ export function Header() {
                 <ModeToggle />
 
                 {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative"
+                    onClick={() => router.push('/conversations')}
+                >
                     <Bell className="h-5 w-5 text-muted-foreground" />
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground shadow-sm shadow-primary/50">
-                        3
-                    </span>
+                    {unreadCount > 0 && (
+                        <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground shadow-sm shadow-primary/50">
+                            {unreadCount}
+                        </span>
+                    )}
                 </Button>
 
                 {/* User avatar */}

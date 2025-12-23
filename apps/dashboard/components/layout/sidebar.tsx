@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
     LayoutDashboard,
     CalendarDays,
@@ -26,12 +26,14 @@ const navigation = [
 export function Sidebar() {
     const pathname = usePathname();
 
+    const router = useRouter();
+
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
         localStorage.removeItem("restaurant");
-        window.location.href = "/login";
+        router.push("/login");
     };
 
     return (

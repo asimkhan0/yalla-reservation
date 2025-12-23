@@ -77,7 +77,13 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
                 restaurant: restaurant._id,
                 status: 'ACTIVE',
                 source: 'WHATSAPP',
+                unreadCount: 1,
                 context: {}
+            });
+        } else {
+            // Increment unread count for existing conversation
+            await (Conversation as any).findByIdAndUpdate(conversation._id, {
+                $inc: { unreadCount: 1 }
             });
         }
 
@@ -228,7 +234,12 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
             restaurant: restaurant._id,
             status: 'ACTIVE',
             source: 'API_TEST',
+            unreadCount: 1,
             context: {}
+        });
+    } else {
+        await (Conversation as any).findByIdAndUpdate(conversation._id, {
+            $inc: { unreadCount: 1 }
         });
     }
 
