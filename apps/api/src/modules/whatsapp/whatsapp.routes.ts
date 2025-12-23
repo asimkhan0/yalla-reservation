@@ -1,47 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { handleIncomingWebhook, handleTestChat, handleIncomingMessage } from './whatsapp.service.js';
+import { handleIncomingWebhook, handleTestChat } from './whatsapp.service.js';
 import { Restaurant } from '../../models/index.js';
 
 export async function whatsappRoutes(fastify: FastifyInstance) {
-
-    // -------------------------------------------------------------------------
-    // LEGACY: Original Webhook (Uses ENV variables for Twilio)
-    // URL: /api/whatsapp/webhook
-    // This is kept for backward compatibility with existing Twilio setup
-    // -------------------------------------------------------------------------
-    fastify.post('/webhook', {
-        schema: {
-            tags: ['whatsapp'],
-            description: 'Legacy Twilio WhatsApp Webhook (uses ENV config)',
-            body: {
-                type: 'object',
-                properties: {
-                    Body: { type: 'string' },
-                    From: { type: 'string' },
-                    To: { type: 'string' },
-                    WaId: { type: 'string' },
-                    ProfileName: { type: 'string' }
-                },
-                additionalProperties: true
-            }
-        }
-    }, async (request: FastifyRequest, reply: FastifyReply) => {
-        const body = request.body as any;
-
-        console.log('Legacy Webhook received:', {
-            body: body.Body,
-            from: body.From,
-            profile: body.ProfileName
-        });
-
-        try {
-            await handleIncomingMessage(body);
-            return reply.status(200).send('');
-        } catch (error) {
-            request.log.error(error);
-            return reply.status(200).send(''); // Return 200 to prevent Twilio retries
-        }
-    });
 
     // -------------------------------------------------------------------------
     // Twilio Webhook
