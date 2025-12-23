@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from "@/components/ui/sonner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -59,10 +60,10 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
             };
 
             await RestaurantService.updateIntegration(restaurantId, config);
-            alert('Configuration saved successfully!');
+            toast.success('Configuration saved successfully!');
         } catch (error: any) {
             console.error(error);
-            alert('Failed to save configuration: ' + error.message);
+            toast.error('Failed to save configuration: ' + error.message);
         } finally {
             setIsLoading(false);
         }
@@ -72,10 +73,10 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
         setIsTesting(true);
         try {
             await RestaurantService.testConnection(restaurantId, 'Hello from Yalla Reservation!', testPhone);
-            alert('Test message sent!');
+            toast.success('Test message sent!');
         } catch (error: any) {
-            console.warn(error);
-            alert('Test failed. Check console for details.');
+            console.error(error);
+            toast.error('Test failed: ' + error.message);
         } finally {
             setIsTesting(false);
         }
@@ -83,7 +84,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        alert('Copied to clipboard');
+        toast.info('Copied to clipboard');
     };
 
     return (
@@ -109,8 +110,8 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div
                             className={`border rounded-xl p-4 cursor-pointer transition-all duration-200 ${provider === 'twilio'
-                                    ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                                    : 'border-border hover:bg-muted/50'
+                                ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                                : 'border-border hover:bg-muted/50'
                                 }`}
                             onClick={() => setProvider('twilio')}
                         >
@@ -119,8 +120,8 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                         </div>
                         <div
                             className={`border rounded-xl p-4 cursor-pointer transition-all duration-200 ${provider === 'meta'
-                                    ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                                    : 'border-border hover:bg-muted/50'
+                                ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                                : 'border-border hover:bg-muted/50'
                                 }`}
                             onClick={() => setProvider('meta')}
                         >

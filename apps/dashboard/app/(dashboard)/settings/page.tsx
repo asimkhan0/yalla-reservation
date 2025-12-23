@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Trash2, Plus, Clock, MapPin, Phone, Mail, MessageCircle, Briefcase, FileText, BadgeInfo, Image as ImageIcon, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import {
     Card,
     CardContent,
@@ -144,7 +145,7 @@ export default function SettingsPage() {
             form.setValue('logo', data.url, { shouldDirty: true });
         } catch (error) {
             console.error(error);
-            alert("Failed to upload image");
+            toast.error("Failed to upload image");
         } finally {
             setIsUploading(false);
         }
@@ -159,10 +160,10 @@ export default function SettingsPage() {
 
             await api.patch("/restaurants/me", values);
 
-            alert("Settings saved successfully");
+            toast.success("Settings saved successfully");
         } catch (error) {
             console.error(error);
-            alert("Failed to save settings");
+            toast.error("Failed to save settings");
         } finally {
             setIsSaving(false);
         }
