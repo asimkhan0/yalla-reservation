@@ -23,6 +23,7 @@
         "@fastify/websocket": "^10.0.1",
         "@langchain/core": "^0.1.32",
         "@langchain/openai": "^0.0.14",
+        "axios": "^1.13.2",
         "bcryptjs": "^2.4.3",
         "bullmq": "^5.4.0",
         "date-fns": "^3.3.1",

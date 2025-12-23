@@ -1,27 +1,222 @@
-import { Message, Conversation, Customer } from '../../models/index.js';
+import { Message, Conversation, Customer, Restaurant } from '../../models/index.js';
 import { env } from '../../config/env.js';
 import { processUserMessage } from './agent.service.js';
 import { executeTool, getRestaurantInfoForAgent } from './tools.service.js';
+import { IWhatsAppProvider, IncomingMessageData } from './providers/whatsapp.provider.interface.js';
+import { TwilioProvider } from './providers/twilio.provider.js';
+import { MetaProvider } from './providers/meta.provider.js';
 import twilio from 'twilio';
 
+// Legacy interface for direct Twilio webhook
 interface TwilioMessage {
     Body: string;
-    From: string; // "whatsapp:+1234567890"
-    To: string;   // "whatsapp:+1987654321" (Restaurant Number)
-    WaId: string; // "1234567890"
+    From: string;
+    To: string;
+    WaId: string;
     ProfileName?: string;
     MessageSid: string;
 }
 
+// Factory to get provider instance
+export function getProvider(restaurant: any): IWhatsAppProvider {
+    const config = restaurant.whatsappConfig;
+
+    if (!config || !config.enabled) {
+        throw new Error('WhatsApp integration not enabled for this restaurant');
+    }
+
+    switch (config.provider) {
+        case 'twilio':
+            return new TwilioProvider({
+                accountSid: config.accountSid,
+                authToken: config.authToken,
+                phoneNumber: config.phoneNumber
+            });
+        case 'meta':
+            return new MetaProvider({
+                phoneNumberId: config.phoneNumberId,
+                accessToken: config.accessToken
+            });
+        default:
+            throw new Error(`Unsupported provider: ${config.provider}`);
+    }
+}
+
+// Unified Handler for incoming webhooks
+export async function handleIncomingWebhook(restaurant: any, payload: any) {
+    try {
+        const provider = getProvider(restaurant);
+        const data: IncomingMessageData = provider.parseWebhookPayload(payload);
+
+        // Use normalized data
+        const { from, body, profileName } = data;
+        const phone = from;
+
+        // 1. Find Customer
+        let customer = await Customer.findOne({
+            restaurant: restaurant._id, // Scoped to restaurant
+            phone: phone
+        });
+
+        if (!customer) {
+            // Parse name
+            const fullName = profileName || 'Unknown User';
+            const nameParts = fullName.split(' ');
+            const firstName = nameParts[0] || 'Unknown';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            customer = await Customer.create({
+                phone,
+                phoneCountry: 'US', // TODO: Parse from phone number
+                firstName,
+                lastName,
+                restaurant: restaurant._id,
+                isVip: false,
+                preferences: {}
+            });
+        }
+
+        // 2. Find active conversation
+        let conversation = await (Conversation as any).findOne({
+            customer: customer._id,
+            restaurant: restaurant._id,
+            status: { $ne: 'resolved' }
+        }).sort({ updatedAt: -1 });
+
+        if (!conversation) {
+            conversation = await (Conversation as any).create({
+                customer: customer._id,
+                restaurant: restaurant._id,
+                status: 'ACTIVE',
+                source: 'WHATSAPP',
+                context: {}
+            });
+        }
+
+        // 3. Store User Message
+        const currentMessage = await (Message as any).create({
+            content: body,
+            direction: 'INBOUND',
+            sender: 'CUSTOMER',
+            whatsappMsgId: data.messageId,
+            status: 'DELIVERED',
+            conversation: conversation._id
+        });
+
+        if (conversation.assignedTo === 'AGENT') {
+            console.log(`[WhatsApp] Conversation ${conversation._id} assigned to AGENT. Bot skipping.`);
+            return;
+        }
+
+        // 4. Trigger AI Agent
+        await triggerAiAgent(conversation, currentMessage, body, provider);
+
+    } catch (error) {
+        console.error('[WhatsApp Service] Error processing webhook:', error);
+        throw error;
+    }
+}
+
+// AI Agent Trigger Logic
+async function triggerAiAgent(conversation: any, currentMessage: any, userMessage: string, provider: IWhatsAppProvider) {
+    // Fetch conversation history
+    const rawHistory = await (Message as any).find({
+        conversation: conversation._id,
+        _id: { $ne: currentMessage._id }
+    })
+        .sort({ createdAt: -1 }) // Newest first
+        .limit(10) // Limit context window
+        .select('role content sender -_id')
+        .lean();
+
+    const history = rawHistory.reverse();
+
+    const formattedHistory = history.map((msg: any) => ({
+        role: msg.sender === 'BOT' ? 'assistant' : 'user',
+        content: msg.content,
+    }));
+
+    // Get restaurant info
+    const restaurantInfo = await getRestaurantInfoForAgent(); // TODO: this needs to be scoped to restaurant._id if we support multiple
+    if (!restaurantInfo) {
+        console.error('[WhatsApp] No restaurant info available for agent');
+        return;
+    }
+
+    // Initial call to AI
+    let aiResponse = await processUserMessage(userMessage, formattedHistory as any[], restaurantInfo);
+    let iterations = 0;
+    const MAX_ITERATIONS = 3;
+
+    // Loop to handle tool calls
+    while (aiResponse && aiResponse.tool_calls && iterations < MAX_ITERATIONS) {
+        iterations++;
+        const toolCalls = aiResponse.tool_calls;
+        console.log(`[AI Agent] Iteration ${iterations}: Executing ${toolCalls.length} tool(s)`);
+
+        formattedHistory.push(aiResponse as any);
+
+        for (const toolCall of toolCalls) {
+            try {
+                const args = JSON.parse(toolCall.function.arguments);
+                const result = await executeTool(toolCall.function.name, args);
+
+                formattedHistory.push({
+                    role: 'tool',
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify(result)
+                } as any);
+            } catch (err: any) {
+                console.error(`[AI Agent] Tool execution failed: ${err.message}`);
+                formattedHistory.push({
+                    role: 'tool',
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify({ error: err.message })
+                } as any);
+            }
+        }
+
+        aiResponse = await processUserMessage('', formattedHistory as any, restaurantInfo);
+    }
+
+    // 5. Send Final Response
+    if (aiResponse && aiResponse.content) {
+        // Send via Provider
+        const customer = await Customer.findById(conversation.customer);
+        if (customer) {
+            await provider.sendText(customer.phone, aiResponse.content);
+        } else {
+            console.error('[WhatsApp Service] Customer not found for sending response');
+        }
+
+        await (Message as any).create({
+            content: aiResponse.content,
+            direction: 'OUTBOUND',
+            sender: 'BOT',
+            status: 'SENT',
+            conversation: conversation._id
+        });
+    }
+}
+
+// Keep generic send for other internal uses
+export async function sendWhatsAppMessage(restaurantId: string, to: string, body: string) {
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) throw new Error('Restaurant not found');
+
+    const provider = getProvider(restaurant);
+    await provider.sendText(to, body);
+}
+
+// =============================================================================
+// LEGACY: handleIncomingMessage - Uses ENV variables for Twilio (existing setup)
+// This is kept for backward compatibility with the original /webhook endpoint
+// =============================================================================
 export async function handleIncomingMessage(data: TwilioMessage) {
     const { WaId, Body, ProfileName, From, To } = data;
-    const phone = WaId; // Pure number user phone
+    const phone = WaId;
 
     // 1. Find the Restaurant this message is intended for
-    const { Restaurant } = await import('../../models/index.js');
-
-    // Try to find restaurant by matching the 'To' number (e.g. whatsapp:+1555...)
-    // If not found, fall back to the first one (legacy logic) or error out.
     let restaurant = await Restaurant.findOne({ whatsappNumber: To });
 
     if (!restaurant) {
@@ -34,16 +229,11 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     let customer = await Customer.findOne({ phone });
 
     if (!customer) {
-        // Parse name from profile or default
         const fullName = ProfileName || 'Unknown WhatsApp User';
         const nameParts = fullName.split(' ');
         const firstName = nameParts[0] || 'Unknown';
         const lastName = nameParts.slice(1).join(' ') || '';
-
-        // Extract country code from phone or default
-        // WhatsApp ID format is usually "1234567890" (no +), but commonly has country code.
-        // We'll set a default if we can't parse easily without libphonenumber
-        const phoneCountry = 'US'; // Default or parse from phone
+        const phoneCountry = 'US';
 
         customer = await Customer.create({
             phone,
@@ -51,28 +241,19 @@ export async function handleIncomingMessage(data: TwilioMessage) {
             firstName,
             lastName,
             email: undefined,
-            restaurant: restaurant._id, // REQUIRED
+            restaurant: restaurant._id,
             isVip: false,
             preferences: {}
         });
     }
-    // https://timberwolf-mastiff-9776.twil.io/demo-reply
-    // 2. Find active conversation (within 24h window roughly)
-    // For simplicity, we get the most recent active one or create new
+
+    // 2. Find active conversation
     let conversation = await (Conversation as any).findOne({
         customer: customer._id,
         status: { $ne: 'resolved' }
     }).sort({ updatedAt: -1 });
 
     if (!conversation) {
-        // Create new conversation
-        // TODO: We need a Restaurant ID. For now, we'll pick the first one or need a way to route.
-        // Assuming single restaurant for MVP context or getting it from env/config 
-        const { Restaurant } = await import('../../models/index.js');
-        const restaurant = await Restaurant.findOne();
-
-        if (!restaurant) throw new Error('No restaurant found');
-
         conversation = await (Conversation as any).create({
             customer: customer._id,
             restaurant: restaurant._id,
@@ -98,17 +279,15 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     }
 
     // 4. Trigger AI Agent
-    // Fetch conversation history (Get NEWEST 10, excluding the one we just saved)
     const rawHistory = await (Message as any).find({
         conversation: conversation._id,
         _id: { $ne: currentMessage._id }
     })
-        .sort({ createdAt: -1 }) // Newest first
-        .limit(10) // Limit context window
+        .sort({ createdAt: -1 })
+        .limit(10)
         .select('role content sender -_id')
         .lean();
 
-    // Reverse to be chronological (Oldest -> Newest)
     const history = rawHistory.reverse();
 
     const formattedHistory = history.map((msg: any) => ({
@@ -116,25 +295,21 @@ export async function handleIncomingMessage(data: TwilioMessage) {
         content: msg.content,
     }));
 
-    // Get restaurant info for agent context (cached)
     const restaurantInfo = await getRestaurantInfoForAgent();
     if (!restaurantInfo) {
         console.error('[WhatsApp] No restaurant info available for agent');
         return;
     }
 
-    // Initial call to AI
     let aiResponse = await processUserMessage(Body, formattedHistory as any[], restaurantInfo);
     let iterations = 0;
-    const MAX_ITERATIONS = 3; // Prevent infinite loops
+    const MAX_ITERATIONS = 3;
 
-    // Loop to handle tool calls
     while (aiResponse && aiResponse.tool_calls && iterations < MAX_ITERATIONS) {
         iterations++;
         const toolCalls = aiResponse.tool_calls;
         console.log(`[AI Agent] Iteration ${iterations}: Executing ${toolCalls.length} tool(s)`);
 
-        // Add the assistant's request (with tool calls) to history for the next turn
         formattedHistory.push(aiResponse as any);
 
         for (const toolCall of toolCalls) {
@@ -142,7 +317,6 @@ export async function handleIncomingMessage(data: TwilioMessage) {
                 const args = JSON.parse(toolCall.function.arguments);
                 const result = await executeTool(toolCall.function.name, args);
 
-                // Add tool result to history
                 formattedHistory.push({
                     role: 'tool',
                     tool_call_id: toolCall.id,
@@ -158,13 +332,12 @@ export async function handleIncomingMessage(data: TwilioMessage) {
             }
         }
 
-        // Call AI again with tool results
         aiResponse = await processUserMessage('', formattedHistory as any, restaurantInfo);
     }
 
     // 5. Send Final Response
     if (aiResponse && aiResponse.content) {
-        await sendWhatsAppMessage(From, aiResponse.content);
+        await sendWhatsAppMessageLegacy(From, aiResponse.content);
 
         await (Message as any).create({
             content: aiResponse.content,
@@ -176,15 +349,12 @@ export async function handleIncomingMessage(data: TwilioMessage) {
     }
 }
 
-// Helper to send message
-export async function sendWhatsAppMessage(to: string, body: string) {
+// Legacy send using ENV variables
+async function sendWhatsAppMessageLegacy(to: string, body: string) {
     if (env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_NUMBER) {
         try {
-            // Dynamic import to avoid top-level dependency issues if envs are missing
-            // const { default: twilio } = await import('twilio');
             const client = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
 
-            // Ensure numbers have whatsapp: prefix
             const fromNumber = env.TWILIO_WHATSAPP_NUMBER.startsWith('whatsapp:')
                 ? env.TWILIO_WHATSAPP_NUMBER
                 : `whatsapp:${env.TWILIO_WHATSAPP_NUMBER}`;
@@ -202,16 +372,15 @@ export async function sendWhatsAppMessage(to: string, body: string) {
             return;
         } catch (error) {
             console.error('[WHATSAPP ERROR] Failed to send message:', error);
-            // Fallback to log
         }
     }
 
     console.log(`[WHATSAPP OUTBOUND SIMULATION] To: ${to}, Body: ${body}`);
 }
 
+// Handle Test Chat (Simulated)
 export async function handleTestChat(message: string, phoneNumber: string = '1234567890') {
     // 1. Mock Restaurant (First one)
-    const { Restaurant } = await import('../../models/index.js');
     let restaurant = await Restaurant.findOne();
     if (!restaurant) throw new Error('No restaurant found');
 
@@ -259,18 +428,16 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
         return "Conversation is assigned to a human agent. Bot is paused.";
     }
 
-    // 5. Trigger AI Agent
-    // Fetch conversation history (Get NEWEST 10, excluding the one we just saved)
+    // 5. Trigger AI Agent (Reuse Logic mostly, but distinct for return value)
+    // Reuse logic from triggerAiAgent but return the response string
+    // For now, simpler:
+
+    // Fetch conversation history
     const rawHistory = await (Message as any).find({
         conversation: conversation._id,
         _id: { $ne: currentMessage._id }
-    })
-        .sort({ createdAt: -1 }) // Newest first
-        .limit(10) // Limit context window
-        .select('role content sender -_id')
-        .lean();
+    }).sort({ createdAt: -1 }).limit(10).select('role content sender -_id').lean();
 
-    // Reverse to be chronological (Oldest -> Newest)
     const history = rawHistory.reverse();
 
     const formattedHistory = history.map((msg: any) => ({
@@ -278,52 +445,28 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
         content: msg.content,
     }));
 
-    // Get restaurant info for agent context (cached)
     const restaurantInfo = await getRestaurantInfoForAgent();
-    if (!restaurantInfo) {
-        return "Error: No restaurant info available.";
-    }
+    if (!restaurantInfo) return "Error: No restaurant info available.";
 
-    // Initial call to AI
     let aiResponse = await processUserMessage(message, formattedHistory as any[], restaurantInfo);
     let iterations = 0;
-    const MAX_ITERATIONS = 3; // Prevent infinite loops
 
-    // Loop to handle tool calls
-    while (aiResponse && aiResponse.tool_calls && iterations < MAX_ITERATIONS) {
+    while (aiResponse && aiResponse.tool_calls && iterations < 3) {
         iterations++;
         const toolCalls = aiResponse.tool_calls;
-        console.log(`[AI Agent Test] Iteration ${iterations}: Executing ${toolCalls.length} tool(s)`);
-
-        // Add the assistant's request (with tool calls) to history for the next turn
         formattedHistory.push(aiResponse as any);
-
         for (const toolCall of toolCalls) {
-            try {
-                const args = JSON.parse(toolCall.function.arguments);
-                const result = await executeTool(toolCall.function.name, args);
-
-                // Add tool result to history
-                formattedHistory.push({
-                    role: 'tool',
-                    tool_call_id: toolCall.id,
-                    content: JSON.stringify(result)
-                } as any);
-            } catch (err: any) {
-                console.error(`[AI Agent Test] Tool execution failed: ${err.message}`);
-                formattedHistory.push({
-                    role: 'tool',
-                    tool_call_id: toolCall.id,
-                    content: JSON.stringify({ error: err.message })
-                } as any);
-            }
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = await executeTool(toolCall.function.name, args);
+            formattedHistory.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                content: JSON.stringify(result)
+            } as any);
         }
-
-        // Call AI again with tool results
         aiResponse = await processUserMessage('', formattedHistory as any, restaurantInfo);
     }
 
-    // 6. Return Response
     if (aiResponse && aiResponse.content) {
         await (Message as any).create({
             content: aiResponse.content,
@@ -337,5 +480,6 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
 
     return "No response from AI.";
 }
+
 
 

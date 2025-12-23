@@ -6,11 +6,35 @@ const operatingHoursSchema = z.object({
     closed: z.boolean().optional(),
 }).optional();
 
+const twilioConfig = z.object({
+    provider: z.literal('twilio'),
+    accountSid: z.string().min(1, 'Account SID is required'),
+    authToken: z.string().min(1, 'Auth Token is required'),
+    phoneNumber: z.string().min(1, 'Phone Number is required'),
+    webhookUrl: z.string().optional(),
+});
+
+const metaConfig = z.object({
+    provider: z.literal('meta'),
+    phoneNumberId: z.string().min(1, 'Phone Number ID is required'),
+    wabaId: z.string().min(1, 'WhatsApp Business Account ID is required'),
+    accessToken: z.string().min(1, 'Permanent Access Token is required'),
+    webhookVerifyToken: z.string().default(() => Math.random().toString(36).substring(7)),
+});
+
+export const whatsappIntegrationSchema = z.discriminatedUnion('provider', [
+    twilioConfig,
+    metaConfig
+]).and(z.object({
+    enabled: z.boolean().default(false),
+}));
+
 export const updateRestaurantSchema = z.object({
     name: z.string().min(1).optional(),
     description: z.string().optional(),
     whatsappNumber: z.string().optional(),
     whatsappEnabled: z.boolean().optional(),
+    whatsappConfig: whatsappIntegrationSchema.optional(), // New field
     address: z.string().optional(),
     phone: z.string().optional(),
     email: z.string().email().optional(),

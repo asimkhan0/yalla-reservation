@@ -74,6 +74,7 @@ export interface IRestaurant extends Document {
     accentColor: string;
     whatsappNumber?: string;
     whatsappEnabled: boolean;
+    whatsappConfig?: any; // Stores provider configuration (Twilio/Meta)
     botEnabled: boolean;
     botPersonality?: Record<string, unknown>;
 
@@ -100,62 +101,63 @@ export interface IRestaurant extends Document {
 }
 
 const restaurantSchema = new Schema<IRestaurant>(
-{
-    name: { type: String, required: true },
-    slug: { type: String, required: true, unique: true, lowercase: true },
-    description: String,
+    {
+        name: { type: String, required: true },
+        slug: { type: String, required: true, unique: true, lowercase: true },
+        description: String,
         cuisine: [String],
-            phone: { type: String, required: true },
-    email: { type: String, required: true },
-    website: String,
+        phone: { type: String, required: true },
+        email: { type: String, required: true },
+        website: String,
         address: { type: String, required: true },
-    location: {
-        address: String,
+        location: {
+            address: String,
             googleMapsUrl: String
-    },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    country: { type: String, required: true },
-    postalCode: { type: String, required: true },
-    latitude: Number,
+        },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        country: { type: String, required: true },
+        postalCode: { type: String, required: true },
+        latitude: Number,
         longitude: Number,
-            timezone: { type: String, default: 'UTC' },
-    logo: String,
+        timezone: { type: String, default: 'UTC' },
+        logo: String,
         coverImage: String,
-            primaryColor: { type: String, default: '#2563eb' },
-    accentColor: { type: String, default: '#3b82f6' },
-    whatsappNumber: { type: String, unique: true, sparse: true },
-    whatsappEnabled: { type: Boolean, default: false },
-    botEnabled: { type: Boolean, default: true },
-    botPersonality: Schema.Types.Mixed,
+        primaryColor: { type: String, default: '#2563eb' },
+        accentColor: { type: String, default: '#3b82f6' },
+        whatsappNumber: { type: String, unique: true, sparse: true },
+        whatsappEnabled: { type: Boolean, default: false },
+        whatsappConfig: { type: Schema.Types.Mixed }, // New field
+        botEnabled: { type: Boolean, default: true },
+        botPersonality: Schema.Types.Mixed,
 
         // AI & Context
         aiPrompt: String,
-            additionalContext: String,
+        additionalContext: String,
 
-                // Operating Hours
-                operatingHours: {
-        monday: { open: String, close: String, closed: Boolean },
-        tuesday: { open: String, close: String, closed: Boolean },
-        wednesday: { open: String, close: String, closed: Boolean },
-        thursday: { open: String, close: String, closed: Boolean },
-        friday: { open: String, close: String, closed: Boolean },
-        saturday: { open: String, close: String, closed: Boolean },
-        sunday: { open: String, close: String, closed: Boolean }
-    },
+        // Operating Hours
+        operatingHours: {
+            monday: { open: String, close: String, closed: Boolean },
+            tuesday: { open: String, close: String, closed: Boolean },
+            wednesday: { open: String, close: String, closed: Boolean },
+            thursday: { open: String, close: String, closed: Boolean },
+            friday: { open: String, close: String, closed: Boolean },
+            saturday: { open: String, close: String, closed: Boolean },
+            sunday: { open: String, close: String, closed: Boolean }
+        },
 
-    // Services
-    services: [{
-        name: { type: String, required: true },
-        description: String,
-        duration: [Number], // Array of durations in minutes
-        price: Number
-    }],
+        // Services
+        services: [{
+            name: { type: String, required: true },
+            description: String,
+            duration: [Number], // Array of durations in minutes
+            price: Number
+        }],
 
         plan: { type: String, enum: ['STARTER', 'GROWTH', 'ENTERPRISE'], default: 'STARTER' },
-    planExpiresAt: Date,
+        planExpiresAt: Date,
     },
-{ timestamps: true }
+    { timestamps: true }
 );
 
 

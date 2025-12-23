@@ -57,7 +57,11 @@ export async function restaurantRoutes(fastify: FastifyInstance) {
                                 price: { type: 'number' }
                             }
                         }
-                    }
+                    },
+                    whatsappConfig: {
+                        type: 'object',
+                        additionalProperties: true
+                    },
                 },
             },
         },

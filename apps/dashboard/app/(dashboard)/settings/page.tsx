@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/lib/api";
+import { WhatsAppIntegrationCard } from '@/components/settings/WhatsAppIntegrationCard';
 
 // Schema matching the API
 const operatingHoursSchema = z.object({
@@ -65,6 +66,8 @@ export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [restaurantId, setRestaurantId] = useState<string | null>(null);
+    const [whatsappConfig, setWhatsappConfig] = useState<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<FormValues>({
@@ -93,6 +96,8 @@ export default function SettingsPage() {
         const fetchRestaurant = async () => {
             try {
                 const { data } = await api.get("/restaurants/me");
+                setRestaurantId(data._id);
+                setWhatsappConfig(data.whatsappConfig);
 
                 form.reset({
                     name: data.name,
@@ -307,6 +312,11 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* WhatsApp Integration */}
+                {restaurantId && (
+                    <WhatsAppIntegrationCard restaurantId={restaurantId} initialConfig={whatsappConfig} />
+                )}
 
                 {/* Operating Hours & Services */}
                 <Card>

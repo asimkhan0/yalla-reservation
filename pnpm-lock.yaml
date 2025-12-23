@@ -50,6 +50,9 @@ importers:
       '@langchain/openai':
         specifier: ^0.0.14
         version: 0.0.14(ws@8.18.3)
+      axios:
+        specifier: ^1.13.2
+        version: 1.13.2
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -73,7 +76,7 @@ importers:
         version: 9.0.3
       langchain:
         specifier: ^0.1.25
-        version: 0.1.37(axios@1.13.2)(ignore@7.0.5)(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@6.20.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)
+        version: 0.1.37(axios@1.13.2)(ignore@7.0.5)(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@7.0.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)
       libphonenumber-js:
         specifier: ^1.10.54
         version: 1.12.31
@@ -4733,7 +4736,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@langchain/community@0.0.57(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@6.20.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)':
+  '@langchain/community@0.0.57(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@7.0.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)':
     dependencies:
       '@langchain/core': 0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       '@langchain/openai': 0.0.34(ws@8.18.3)
@@ -4746,7 +4749,7 @@ snapshots:
     optionalDependencies:
       ioredis: 5.8.2
       jsonwebtoken: 9.0.3
-      mongodb: 6.20.0
+      mongodb: 7.0.0
       ws: 8.18.3
     transitivePeerDependencies:
       - encoding
@@ -6892,10 +6895,10 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  langchain@0.1.37(axios@1.13.2)(ignore@7.0.5)(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@6.20.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3):
+  langchain@0.1.37(axios@1.13.2)(ignore@7.0.5)(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@7.0.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3):
     dependencies:
       '@anthropic-ai/sdk': 0.9.1
-      '@langchain/community': 0.0.57(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@6.20.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)
+      '@langchain/community': 0.0.57(ioredis@5.8.2)(jsonwebtoken@9.0.3)(mongodb@7.0.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(ws@8.18.3)
       '@langchain/core': 0.1.63(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       '@langchain/openai': 0.0.34(ws@8.18.3)
       '@langchain/textsplitters': 0.0.3(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
@@ -6916,7 +6919,7 @@ snapshots:
       axios: 1.13.2
       ignore: 7.0.5
       ioredis: 5.8.2
-      mongodb: 6.20.0
+      mongodb: 7.0.0
       ws: 8.18.3
     transitivePeerDependencies:
       - '@aws-crypto/sha256-js'
