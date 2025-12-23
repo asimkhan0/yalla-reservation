@@ -23,7 +23,7 @@ export function Header() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-    const [unreadCount, setUnreadCount] = useState<number>(0);
+    // const [unreadCount, setUnreadCount] = useState<number>(0);
     const lastCountRef = useRef<number>(-1);
 
     const fetchUnreadCount = async () => {
@@ -56,11 +56,11 @@ export function Header() {
         if (storedRestaurant) setRestaurant(JSON.parse(storedRestaurant));
 
         // Initial fetch
-        fetchUnreadCount();
+        // fetchUnreadCount();
 
         // Poll every 30s
-        const interval = setInterval(fetchUnreadCount, 30000);
-        return () => clearInterval(interval);
+        // const interval = setInterval(fetchUnreadCount, 30000);
+        // return () => clearInterval(interval);
     }, []);
 
     return (
@@ -88,7 +88,7 @@ export function Header() {
                 <ModeToggle />
 
                 {/* Notifications */}
-                <Button
+                {/* <Button
                     variant="ghost"
                     size="icon"
                     className="relative"
@@ -100,7 +100,7 @@ export function Header() {
                             {unreadCount}
                         </span>
                     )}
-                </Button>
+                </Button> */}
 
                 {/* User avatar */}
                 {user && (
