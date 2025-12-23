@@ -1,5 +1,4 @@
 import { Message, Conversation, Customer, Restaurant } from '../../models/index.js';
-import { env } from '../../config/env.js';
 import { processUserMessage } from './agent.service.js';
 import { executeTool, getRestaurantInfoForAgent } from './tools.service.js';
 import { IWhatsAppProvider, IncomingMessageData } from './providers/whatsapp.provider.interface.js';
@@ -299,6 +298,3 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
 
     return "No response from AI.";
 }
-
-
-

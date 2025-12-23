@@ -9,10 +9,7 @@ import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
 import { RestaurantService, WhatsAppConfig } from '../../lib/services/restaurant.service';
 import { API_URL } from '../../lib/utils';
-import { CheckCircle2, Copy, AlertCircle, Loader2 } from 'lucide-react'; // Assuming lucide-react is installed, if not we fall back to text
-
-// If lucide-react is not available, remove icons or use simple text.
-// Assuming it is available in modern Next.js/Shadcn setups.
+import { CheckCircle2, Copy, AlertCircle, Loader2 } from 'lucide-react';
 
 interface WhatsAppIntegrationCardProps {
     restaurantId: string;
@@ -94,8 +91,12 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     WhatsApp Integration
-                    {initialConfig?.enabled && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>}
-                    {/* Assuming badge variant support, if not just default */}
+                    {initialConfig?.enabled && (
+                        <Badge variant="success" className="font-normal">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Active
+                        </Badge>
+                    )}
                 </CardTitle>
                 <CardDescription>
                     Connect your WhatsApp Business account to enable AI agent responses.
@@ -107,18 +108,24 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                     <Label>Select Provider</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div
-                            className={`border rounded-lg p-4 cursor-pointer hover:bg-slate-50 transition-colors ${provider === 'twilio' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200'}`}
+                            className={`border rounded-xl p-4 cursor-pointer transition-all duration-200 ${provider === 'twilio'
+                                    ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                                    : 'border-border hover:bg-muted/50'
+                                }`}
                             onClick={() => setProvider('twilio')}
                         >
-                            <div className="font-semibold text-slate-900">Twilio</div>
-                            <div className="text-sm text-slate-500 mt-1">Easiest setup. Managed compliance.</div>
+                            <div className="font-semibold">Twilio</div>
+                            <div className="text-sm text-muted-foreground mt-1">Easiest setup. Managed compliance.</div>
                         </div>
                         <div
-                            className={`border rounded-lg p-4 cursor-pointer hover:bg-slate-50 transition-colors ${provider === 'meta' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200'}`}
+                            className={`border rounded-xl p-4 cursor-pointer transition-all duration-200 ${provider === 'meta'
+                                    ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                                    : 'border-border hover:bg-muted/50'
+                                }`}
                             onClick={() => setProvider('meta')}
                         >
-                            <div className="font-semibold text-slate-900">Meta Cloud API</div>
-                            <div className="text-sm text-slate-500 mt-1">Official API. Lower cost.</div>
+                            <div className="font-semibold">Meta Cloud API</div>
+                            <div className="text-sm text-muted-foreground mt-1">Official API. Lower cost.</div>
                         </div>
                     </div>
                 </div>
@@ -140,7 +147,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                             <div className="grid gap-2">
                                 <Label htmlFor="twilioPhone">WhatsApp Number</Label>
                                 <Input id="twilioPhone" value={twilioPhone} onChange={e => setTwilioPhone(e.target.value)} placeholder="+1234567890" />
-                                <p className="text-xs text-slate-500">Include country code. Ensure it matches your Twilio sender.</p>
+                                <p className="text-xs text-muted-foreground">Include country code. Ensure it matches your Twilio sender.</p>
                             </div>
                         </>
                     ) : (
@@ -156,22 +163,22 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                             <div className="grid gap-2">
                                 <Label htmlFor="accessToken">Permanent Access Token</Label>
                                 <Input id="accessToken" type="password" value={accessToken} onChange={e => setAccessToken(e.target.value)} placeholder="EAAG..." />
-                                <p className="text-xs text-slate-500">Use a System User access token with `whatsapp_business_messaging` permission.</p>
+                                <p className="text-xs text-muted-foreground">Use a System User access token with `whatsapp_business_messaging` permission.</p>
                             </div>
                         </>
                     )}
                 </div>
 
                 {/* Webhook Info */}
-                <div className="rounded-md bg-slate-100 p-4 space-y-2">
-                    <div className="text-sm font-medium text-slate-900">Webhook Configuration</div>
-                    <div className="text-sm text-slate-600">
+                <div className="rounded-xl bg-muted/50 border border-border/50 p-4 space-y-3">
+                    <div className="text-sm font-medium">Webhook Configuration</div>
+                    <div className="text-sm text-muted-foreground">
                         {provider === 'twilio'
                             ? "Paste this URL into 'A message comes in' section of your Twilio Phone Number settings."
                             : "Configure this Callback URL in your Meta App Dashboard under WhatsApp > Configuration."}
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                        <Input readOnly value={webhookUrl} className="bg-white font-mono text-xs" />
+                        <Input readOnly value={webhookUrl} className="font-mono text-xs" />
                         <Button variant="outline" size="icon" onClick={() => copyToClipboard(webhookUrl)}>
                             <span className="sr-only">Copy</span>
                             <Copy className="h-4 w-4" />
@@ -180,17 +187,17 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                     {provider === 'meta' && (
                         <div className="flex items-center gap-2 mt-2">
                             <div className="flex-1">
-                                <Label className="text-xs">Verify Token</Label>
-                                <Input readOnly value={metaVerifyToken} className="bg-white font-mono text-xs mt-1" />
+                                <Label className="text-xs text-muted-foreground">Verify Token</Label>
+                                <Input readOnly value={metaVerifyToken} className="font-mono text-xs mt-1" />
                             </div>
-                            <div className="self-end pb-1 text-xs text-slate-500">
+                            <div className="self-end pb-1 text-xs text-muted-foreground">
                                 (Generated after saving)
                             </div>
                         </div>
                     )}
                 </div>
             </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between border-t p-6">
+            <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between border-t border-border/50 p-6">
                 <div className="flex gap-2 w-full sm:w-auto">
                     <Input
                         placeholder="Test Phone (+1...)"

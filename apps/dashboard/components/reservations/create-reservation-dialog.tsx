@@ -92,38 +92,38 @@ export function CreateReservationDialog({ onSuccess }: Props) {
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4 py-4">
                         {error && (
-                            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>
+                            <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg">{error}</div>
                         )}
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="date">Date</Label>
                                 <Input id="date" type="date" {...register("date")} />
-                                {errors.date && <p className="text-sm text-red-500">{errors.date.message}</p>}
+                                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="time">Time</Label>
                                 <Input id="time" type="time" {...register("time")} />
-                                {errors.time && <p className="text-sm text-red-500">{errors.time.message}</p>}
+                                {errors.time && <p className="text-sm text-destructive">{errors.time.message}</p>}
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="partySize">Party Size</Label>
                             <Input id="partySize" type="number" min="1" {...register("partySize")} />
-                            {errors.partySize && <p className="text-sm text-red-500">{errors.partySize.message}</p>}
+                            {errors.partySize && <p className="text-sm text-destructive">{errors.partySize.message}</p>}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="guestName">Guest Name</Label>
                             <Input id="guestName" placeholder="John Smith" {...register("guestName")} />
-                            {errors.guestName && <p className="text-sm text-red-500">{errors.guestName.message}</p>}
+                            {errors.guestName && <p className="text-sm text-destructive">{errors.guestName.message}</p>}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="guestPhone">Phone</Label>
                             <Input id="guestPhone" placeholder="+1 234 567 8900" {...register("guestPhone")} />
-                            {errors.guestPhone && <p className="text-sm text-red-500">{errors.guestPhone.message}</p>}
+                            {errors.guestPhone && <p className="text-sm text-destructive">{errors.guestPhone.message}</p>}
                         </div>
 
                         <div className="space-y-2">

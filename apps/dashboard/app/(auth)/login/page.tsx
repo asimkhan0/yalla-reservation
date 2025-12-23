@@ -38,7 +38,7 @@ export default function LoginPage() {
 
         try {
             const response = await api.post("/auth/login", data);
-            const result = response.data; // Axios wraps the response in a 'data' property
+            const result = response.data;
 
             // Store tokens
             localStorage.setItem("accessToken", result.accessToken);
@@ -50,7 +50,6 @@ export default function LoginPage() {
             router.push("/");
         } catch (err: any) {
             console.error(err);
-            // Check if it's an Axios error with a response message
             if (err.response && err.response.data && err.response.data.message) {
                 setError(err.response.data.message);
             } else {
@@ -62,15 +61,21 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-            <Card className="w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            {/* Gradient background effects */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-primary/10 via-transparent to-transparent" />
+                <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-primary/5 via-transparent to-transparent" />
+            </div>
+
+            <Card className="w-full max-w-md relative shadow-2xl shadow-black/20">
                 <CardHeader className="space-y-1 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white">Y</span>
+                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30">
+                            <span className="text-2xl font-bold text-primary-foreground">Y</span>
                         </div>
                     </div>
-                    <CardTitle className="text-2xl">Welcome back</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
                     <CardDescription>
                         Sign in to your Yalla Reservation account
                     </CardDescription>
@@ -78,7 +83,7 @@ export default function LoginPage() {
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <CardContent className="space-y-4">
                         {error && (
-                            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+                            <div className="p-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg">
                                 {error}
                             </div>
                         )}
@@ -91,7 +96,7 @@ export default function LoginPage() {
                                 {...register("email")}
                             />
                             {errors.email && (
-                                <p className="text-sm text-red-500">{errors.email.message}</p>
+                                <p className="text-sm text-red-400">{errors.email.message}</p>
                             )}
                         </div>
                         <div className="space-y-2">
@@ -103,7 +108,7 @@ export default function LoginPage() {
                                 {...register("password")}
                             />
                             {errors.password && (
-                                <p className="text-sm text-red-500">{errors.password.message}</p>
+                                <p className="text-sm text-red-400">{errors.password.message}</p>
                             )}
                         </div>
                     </CardContent>
@@ -113,7 +118,7 @@ export default function LoginPage() {
                         </Button>
                         <p className="text-sm text-center text-muted-foreground">
                             Don't have an account?{" "}
-                            <Link href="/register" className="text-primary hover:underline">
+                            <Link href="/register" className="text-primary hover:underline font-medium">
                                 Sign up
                             </Link>
                         </p>

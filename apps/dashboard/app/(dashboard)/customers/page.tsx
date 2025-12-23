@@ -80,15 +80,15 @@ export default function CustomersPage() {
 
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <CardTitle>Customer Directory</CardTitle>
                             <CardDescription>
                                 A list of all customers who have made reservations.
                             </CardDescription>
                         </div>
-                        <div className="relative w-64">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <div className="relative w-full md:w-64">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search customers..."
                                 className="pl-9"
@@ -99,7 +99,7 @@ export default function CustomersPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
+                    <div className="rounded-lg border border-border/50 overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -116,14 +116,14 @@ export default function CustomersPage() {
                                     <TableRow>
                                         <TableCell colSpan={6} className="h-24 text-center">
                                             <div className="flex justify-center items-center gap-2">
-                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                                                 Loading...
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : customers.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center">
+                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                             No customers found.
                                         </TableCell>
                                     </TableRow>
@@ -132,13 +132,13 @@ export default function CustomersPage() {
                                         <TableRow key={customer._id}>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
-                                                    <Avatar className="h-9 w-9">
+                                                    <Avatar className="h-9 w-9 border border-border/50">
                                                         <AvatarFallback className="bg-primary/10 text-primary">
                                                             {customer.firstName?.[0] || customer.phone?.[0] || "?"}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium">
+                                                        <span className="font-medium text-foreground">
                                                             {customer.firstName || customer.lastName
                                                                 ? `${customer.firstName || ''} ${customer.lastName || ''}`
                                                                 : 'Unknown Name'}
@@ -163,14 +163,14 @@ export default function CustomersPage() {
                                             <TableCell>
                                                 <div className="flex gap-2">
                                                     {customer.vipStatus && (
-                                                        <Badge variant="default" className="bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 border-yellow-500/20">
-                                                            <Star className="h-3 w-3 mr-1 fill-yellow-600" />
+                                                        <Badge variant="warning" className="gap-1 pl-1.5">
+                                                            <Star className="h-3 w-3 fill-current" />
                                                             VIP
                                                         </Badge>
                                                     )}
                                                     {customer.noShows > 2 && (
-                                                        <Badge variant="destructive" className="bg-red-500/10 text-red-600 hover:bg-red-500/20 border-red-500/20">
-                                                            <Ban className="h-3 w-3 mr-1" />
+                                                        <Badge variant="error" className="gap-1 pl-1.5">
+                                                            <Ban className="h-3 w-3" />
                                                             Risk
                                                         </Badge>
                                                     )}

@@ -112,13 +112,11 @@ export default function ConversationsPage() {
 
         try {
             await api.post(`/conversations/${selectedId}/messages`, { content: optimisticMessage.content });
-            // Ideally we'd replace the optimistic message with the real one, but fetching works too
             const { data } = await api.get(`/conversations/${selectedId}/messages`);
             setMessages(data.messages);
             scrollToBottom();
         } catch (error) {
             console.error("Failed to send message", error);
-            // Revert on failure (could improve this)
             setMessages(prev => prev.filter(m => m._id !== tempId));
         }
     };
@@ -127,7 +125,6 @@ export default function ConversationsPage() {
         if (!selectedId) return;
         try {
             await api.patch(`/conversations/${selectedId}/assign`, { assignedTo: newStatus });
-            // Update local state
             setConversations(prev => prev.map(c =>
                 c._id === selectedId ? { ...c, assignedTo: newStatus } : c
             ));
@@ -140,12 +137,12 @@ export default function ConversationsPage() {
         <div className="flex h-[calc(100vh-theme(spacing.16))] -m-6 overflow-hidden bg-background">
 
             {/* --- Left Sidebar: Conversation List --- */}
-            <div className="w-80 flex flex-col border-r bg-muted/10">
-                <div className="p-4 border-b bg-background/50 backdrop-blur-sm">
+            <div className="w-80 flex flex-col border-r border-border/50 bg-card/50">
+                <div className="p-4 border-b border-border/50">
                     <h2 className="font-semibold mb-4 text-lg">Inbox</h2>
                     <div className="relative">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search messages..." className="pl-9 bg-background" />
+                        <Input placeholder="Search messages..." className="pl-9" />
                     </div>
                 </div>
 
@@ -161,8 +158,10 @@ export default function ConversationsPage() {
                                     key={conv._id}
                                     onClick={() => setSelectedId(conv._id)}
                                     className={cn(
-                                        "group flex items-start gap-3 p-4 text-left hover:bg-muted/50 transition-colors border-b last:border-0",
-                                        selectedId === conv._id && "bg-muted"
+                                        "group flex items-start gap-3 p-4 text-left transition-all duration-200 border-b border-border/30 last:border-0",
+                                        selectedId === conv._id
+                                            ? "bg-primary/10 border-l-2 border-l-primary"
+                                            : "hover:bg-muted/50"
                                     )}
                                 >
                                     <Avatar className="h-10 w-10">
@@ -197,14 +196,9 @@ export default function ConversationsPage() {
 
             {/* --- Middle: Chat Window --- */}
             {selectedConversation ? (
-                <div className="flex-1 flex flex-col bg-[#efeae2] relative">
-                    {/* Background Pattern Overlay */}
-                    <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
-                        style={{ backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')" }}
-                    />
-
+                <div className="flex-1 flex flex-col bg-muted/30 relative">
                     {/* Chat Header */}
-                    <div className="h-16 border-b flex items-center justify-between px-6 bg-background/95 backdrop-blur-sm z-10">
+                    <div className="h-16 border-b border-border/50 flex items-center justify-between px-6 bg-card/80 backdrop-blur-sm z-10">
                         <div className="flex items-center gap-3">
                             <Avatar>
                                 <AvatarFallback className="bg-primary/10 text-primary">
@@ -249,18 +243,23 @@ export default function ConversationsPage() {
                                     >
                                         <div
                                             className={cn(
-                                                "max-w-[70%] px-4 py-2 rounded-lg shadow-sm text-sm relative group",
-                                                isMe ? "bg-[#d9fdd3] text-gray-900 rounded-tr-none" : "bg-white text-gray-900 rounded-tl-none"
+                                                "max-w-[70%] px-4 py-2.5 rounded-2xl shadow-sm text-sm",
+                                                isMe
+                                                    ? "bg-primary text-primary-foreground rounded-br-md"
+                                                    : "bg-card border border-border/50 rounded-bl-md"
                                             )}
                                         >
                                             <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                                            <div className="flex items-center justify-end gap-1 mt-1">
+                                            <div className="flex items-center justify-end gap-1.5 mt-1.5">
                                                 {isBot && (
-                                                    <Badge variant="secondary" className="text-[10px] h-4 px-1 bg-black/5 hover:bg-black/10 text-gray-500">
+                                                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
                                                         BOT
                                                     </Badge>
                                                 )}
-                                                <span className="text-[10px] text-gray-500">
+                                                <span className={cn(
+                                                    "text-[10px]",
+                                                    isMe ? "text-primary-foreground/70" : "text-muted-foreground"
+                                                )}>
                                                     {format(new Date(msg.createdAt), 'HH:mm')}
                                                 </span>
                                             </div>
@@ -273,7 +272,7 @@ export default function ConversationsPage() {
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-4 bg-background/95 backdrop-blur-sm border-t z-10">
+                    <div className="p-4 bg-card/80 backdrop-blur-sm border-t border-border/50 z-10">
                         <div className="max-w-3xl mx-auto flex items-end gap-2">
                             <Button
                                 variant="ghost"
@@ -284,7 +283,7 @@ export default function ConversationsPage() {
                                 <Paperclip className="h-5 w-5 text-muted-foreground" />
                             </Button>
                             <div className={cn(
-                                "flex-1 bg-muted/20 rounded-lg border focus-within:ring-1 focus-within:ring-primary",
+                                "flex-1 rounded-xl border border-border/50 bg-muted/30 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-200",
                                 selectedConversation.assignedTo === 'BOT' && "opacity-50 cursor-not-allowed"
                             )}>
                                 <textarea
@@ -317,29 +316,27 @@ export default function ConversationsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center bg-[#f0f2f5] text-center p-8 border-b-8 border-primary/40">
-                    <div className="w-64 h-64 bg-muted rounded-full flex items-center justify-center mb-6 animate-pulse">
-                        <Phone className="h-32 w-32 text-muted-foreground/50" />
+                <div className="flex-1 flex flex-col items-center justify-center bg-muted/20 text-center p-8">
+                    <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center mb-6">
+                        <Phone className="h-16 w-16 text-muted-foreground/50" />
                     </div>
-                    <h2 className="text-3xl font-light text-gray-800 mb-4">WhatsApp Web</h2>
-                    <p className="text-gray-500 max-w-md">
-                        Send and receive messages without keeping your phone online.
-                        Use Yalla Reservation on up to 4 linked devices and 1 phone.
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">WhatsApp Conversations</h2>
+                    <p className="text-muted-foreground max-w-md">
+                        Select a conversation to view messages and manage customer interactions.
                     </p>
                 </div>
             )}
 
-            {/* --- Right Sidebar: Contact Info (Optional / Collapsible) --- */}
             {/* --- Right Sidebar: Contact Info --- */}
             {selectedConversation && (
-                <div className="w-80 border-l bg-background flex flex-col h-full hidden xl:flex">
+                <div className="w-80 border-l border-border/50 bg-card/50 flex flex-col h-full hidden xl:flex">
                     <div className="h-full flex flex-col">
-                        <div className="p-5 border-b">
+                        <div className="p-5 border-b border-border/50">
                             <h3 className="text-lg font-semibold">Contact Information</h3>
                         </div>
                         <div className="p-4 space-y-4">
                             <div>
-                                <h4 className="text-sm font-medium mb-2">Contact Details</h4>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Contact Details</h4>
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 text-sm">
                                         <User className="h-4 w-4 text-muted-foreground" />
@@ -352,10 +349,10 @@ export default function ConversationsPage() {
                                 </div>
                             </div>
 
-                            <div data-orientation="horizontal" role="none" className="bg-border shrink-0 h-[1px] w-full"></div>
+                            <div className="h-px bg-border/50" />
 
                             <div>
-                                <h4 className="text-sm font-medium mb-2">Conversation Owner</h4>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Conversation Owner</h4>
                                 <div className="flex items-center gap-2">
                                     {selectedConversation.assignedTo === 'BOT' ? (
                                         <>
@@ -373,7 +370,7 @@ export default function ConversationsPage() {
                                     <div className="mt-3">
                                         <Button
                                             onClick={() => handleAssignmentChange('AGENT')}
-                                            className="w-full h-8 text-xs"
+                                            className="w-full h-9 text-xs"
                                         >
                                             Join Conversation
                                         </Button>
@@ -383,7 +380,7 @@ export default function ConversationsPage() {
                                         <Button
                                             onClick={() => handleAssignmentChange('BOT')}
                                             variant="outline"
-                                            className="w-full h-8 text-xs"
+                                            className="w-full h-9 text-xs"
                                         >
                                             Assign back to Bot
                                         </Button>
@@ -391,16 +388,15 @@ export default function ConversationsPage() {
                                 )}
                             </div>
 
-                            <div data-orientation="horizontal" role="none" className="bg-border shrink-0 h-[1px] w-full"></div>
+                            <div className="h-px bg-border/50" />
 
                             <div className="flex-1">
-                                <h4 className="text-sm font-medium mb-2">Booking History</h4>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Booking History</h4>
                                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                                    {/* Mock Data for Booking History - matching the HTML example */}
-                                    <div className="p-3 border rounded-lg space-y-1">
+                                    <div className="p-3 border border-border/50 rounded-lg space-y-1 bg-muted/30">
                                         <div className="flex items-center justify-between">
                                             <h5 className="text-sm font-medium">Court 2 - Padel</h5>
-                                            <Badge variant="secondary" className="font-semibold text-xs">pending</Badge>
+                                            <Badge variant="warning" className="text-xs">pending</Badge>
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                             <Calendar className="h-3 w-3" />

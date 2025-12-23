@@ -13,10 +13,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { cn, statusColors } from "@/lib/utils";
 import { CreateReservationDialog } from "@/components/reservations/create-reservation-dialog";
 import { CalendarView } from "@/components/reservations/calendar-view";
 import api from "@/lib/api";
+
 interface Reservation {
     _id: string;
     time: string;
@@ -94,13 +103,27 @@ export default function ReservationsPage() {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Reservations</h1>
-                    <p className="text-muted-foreground">Manage your bookings and floor plan</p>
+                    <p className="text-muted-foreground mt-1">Manage your bookings and floor plan</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => setView("calendar")} className={cn(view === "calendar" && "bg-muted")}>
+                    <Button
+                        variant="outline"
+                        onClick={() => setView("calendar")}
+                        className={cn(
+                            "transition-all duration-200",
+                            view === "calendar" && "bg-primary/10 border-primary/30 text-primary"
+                        )}
+                    >
                         Calendar
                     </Button>
-                    <Button variant="outline" onClick={() => setView("list")} className={cn(view === "list" && "bg-muted")}>
+                    <Button
+                        variant="outline"
+                        onClick={() => setView("list")}
+                        className={cn(
+                            "transition-all duration-200",
+                            view === "list" && "bg-primary/10 border-primary/30 text-primary"
+                        )}
+                    >
                         List
                     </Button>
                     <CreateReservationDialog onSuccess={fetchReservations} />
@@ -125,8 +148,8 @@ export default function ReservationsPage() {
                             <Button variant="ghost" size="icon" onClick={handlePrevious}>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
-                            <div className="flex items-center gap-2 min-w-[150px] justify-center font-medium">
-                                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex items-center gap-2 min-w-[180px] justify-center font-medium">
+                                <CalendarIcon className="h-4 w-4 text-primary" />
                                 {view === "list"
                                     ? format(date, "EEE, MMM d, yyyy")
                                     : `Week of ${format(startOfWeek(date, { weekStartsOn: 1 }), "MMM d")}`
@@ -144,56 +167,58 @@ export default function ReservationsPage() {
             <Card>
                 <CardContent className="p-0">
                     {view === "list" ? (
-                        <div className="relative w-full overflow-auto">
-                            {/* List View Table */}
-                            <table className="w-full caption-bottom text-sm text-left">
-                                <thead className="[&_tr]:border-b">
-                                    <tr className="border-b transition-colors hover:bg-muted/50">
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Time</th>
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Guest</th>
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Size</th>
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Table</th>
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Status</th>
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="[&_tr:last-child]:border-0">
-                                    {isLoading ? (
-                                        <tr>
-                                            <td colSpan={6} className="p-8 text-center text-muted-foreground">Loading...</td>
-                                        </tr>
-                                    ) : reservations.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                                                No reservations for this date. Click "New Reservation" to add one.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        reservations.map((res) => (
-                                            <tr key={res._id} className="border-b transition-colors hover:bg-muted/50">
-                                                <td className="p-4 align-middle font-medium">{res.time}</td>
-                                                <td className="p-4 align-middle">
-                                                    <div className="font-medium">{res.guestName}</div>
-                                                    <div className="text-xs text-muted-foreground">{res.guestPhone}</div>
-                                                </td>
-                                                <td className="p-4 align-middle">{res.partySize} ppl</td>
-                                                <td className="p-4 align-middle">{res.table?.name || "-"}</td>
-                                                <td className="p-4 align-middle">
-                                                    <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-medium", statusColors[res.status])}>
-                                                        {res.status}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 align-middle text-right">
-                                                    <Button variant="ghost" size="icon">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Time</TableHead>
+                                    <TableHead>Guest</TableHead>
+                                    <TableHead>Size</TableHead>
+                                    <TableHead>Table</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-24 text-center">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                                Loading...
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : reservations.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                            No reservations for this date. Click "New Reservation" to add one.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    reservations.map((res) => (
+                                        <TableRow key={res._id}>
+                                            <TableCell className="font-medium">{res.time}</TableCell>
+                                            <TableCell>
+                                                <div className="font-medium">{res.guestName}</div>
+                                                <div className="text-xs text-muted-foreground">{res.guestPhone}</div>
+                                            </TableCell>
+                                            <TableCell>{res.partySize} ppl</TableCell>
+                                            <TableCell>{res.table?.name || "-"}</TableCell>
+                                            <TableCell>
+                                                <span className={cn("px-2.5 py-1 rounded-md text-xs font-medium", statusColors[res.status])}>
+                                                    {res.status}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon">
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
                     ) : (
                         <CalendarView
                             reservations={reservations}

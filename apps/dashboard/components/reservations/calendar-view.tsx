@@ -56,21 +56,21 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
         <div className="overflow-auto">
             <div className="min-w-[800px]">
                 {/* Header row with days */}
-                <div className="grid grid-cols-8 border-b">
-                    <div className="p-3 text-sm font-medium text-muted-foreground border-r">Time</div>
+                <div className="grid grid-cols-8 border-b border-border/50">
+                    <div className="p-3 text-sm font-medium text-muted-foreground border-r border-border/50">Time</div>
                     {weekDays.map((day, i) => (
                         <div
                             key={i}
                             onClick={() => onDateSelect(day)}
                             className={cn(
-                                "p-3 text-center cursor-pointer hover:bg-muted/50 transition-colors",
+                                "p-3 text-center cursor-pointer hover:bg-muted/50 transition-all duration-200",
                                 isSameDay(day, currentDate) && "bg-primary/10",
                                 isSameDay(day, new Date()) && "font-bold"
                             )}
                         >
                             <div className="text-xs text-muted-foreground">{format(day, "EEE")}</div>
                             <div className={cn(
-                                "text-lg",
+                                "text-lg font-medium",
                                 isSameDay(day, new Date()) && "text-primary"
                             )}>
                                 {format(day, "d")}
@@ -81,8 +81,8 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
 
                 {/* Time slots */}
                 {TIME_SLOTS.map((time) => (
-                    <div key={time} className="grid grid-cols-8 border-b min-h-[60px]">
-                        <div className="p-2 text-xs text-muted-foreground border-r flex items-start">
+                    <div key={time} className="grid grid-cols-8 border-b border-border/50 min-h-[60px]">
+                        <div className="p-2 text-xs text-muted-foreground border-r border-border/50 flex items-start">
                             {time}
                         </div>
                         {weekDays.map((day, i) => {
@@ -91,7 +91,7 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
                                 <div
                                     key={i}
                                     className={cn(
-                                        "p-1 border-r min-h-[60px] hover:bg-muted/30 transition-colors",
+                                        "p-1 border-r border-border/50 min-h-[60px] hover:bg-muted/30 transition-colors",
                                         isSameDay(day, currentDate) && "bg-primary/5"
                                     )}
                                 >
@@ -99,8 +99,8 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
                                         <div
                                             key={res._id}
                                             className={cn(
-                                                "text-xs p-1.5 rounded mb-1 cursor-pointer hover:opacity-80 transition-opacity",
-                                                statusColors[res.status] || "bg-gray-100 text-gray-800"
+                                                "text-xs p-2 rounded-lg mb-1 cursor-pointer hover:opacity-90 transition-all duration-200",
+                                                statusColors[res.status] || "bg-muted text-muted-foreground"
                                             )}
                                         >
                                             <div className="font-medium truncate">{res.guestName}</div>

@@ -58,7 +58,7 @@ export default function RegisterPage() {
 
     async function onSubmit(values: z.infer<typeof registerSchema>) {
         setIsLoading(true);
-        setError(null); // Reset error state
+        setError(null);
         try {
             const { data } = await api.post("/auth/register", values);
 
@@ -71,22 +71,27 @@ export default function RegisterPage() {
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.error || "Registration failed");
-            // toast({ variant: "destructive", title: "Registration failed" });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-            <Card className="w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            {/* Gradient background effects */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-primary/10 via-transparent to-transparent" />
+                <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-primary/5 via-transparent to-transparent" />
+            </div>
+
+            <Card className="w-full max-w-md relative shadow-2xl shadow-black/20">
                 <CardHeader className="space-y-1 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white">Y</span>
+                        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30">
+                            <span className="text-2xl font-bold text-primary-foreground">Y</span>
                         </div>
                     </div>
-                    <CardTitle className="text-2xl">Create your account</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
                     <CardDescription>
                         Get started with Yalla Reservation
                     </CardDescription>
@@ -94,7 +99,7 @@ export default function RegisterPage() {
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <CardContent className="space-y-4">
                         {error && (
-                            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+                            <div className="p-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg">
                                 {error}
                             </div>
                         )}
@@ -104,14 +109,14 @@ export default function RegisterPage() {
                                 <Label htmlFor="firstName">First name</Label>
                                 <Input id="firstName" {...register("firstName")} />
                                 {errors.firstName && (
-                                    <p className="text-sm text-red-500">{errors.firstName.message}</p>
+                                    <p className="text-sm text-red-400">{errors.firstName.message}</p>
                                 )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName">Last name</Label>
                                 <Input id="lastName" {...register("lastName")} />
                                 {errors.lastName && (
-                                    <p className="text-sm text-red-500">{errors.lastName.message}</p>
+                                    <p className="text-sm text-red-400">{errors.lastName.message}</p>
                                 )}
                             </div>
                         </div>
@@ -125,7 +130,7 @@ export default function RegisterPage() {
                                 {...register("email")}
                             />
                             {errors.email && (
-                                <p className="text-sm text-red-500">{errors.email.message}</p>
+                                <p className="text-sm text-red-400">{errors.email.message}</p>
                             )}
                         </div>
 
@@ -138,7 +143,7 @@ export default function RegisterPage() {
                                 {...register("phone")}
                             />
                             {errors.phone && (
-                                <p className="text-sm text-red-500">{errors.phone.message}</p>
+                                <p className="text-sm text-red-400">{errors.phone.message}</p>
                             )}
                         </div>
 
@@ -151,11 +156,11 @@ export default function RegisterPage() {
                                 {...register("password")}
                             />
                             {errors.password && (
-                                <p className="text-sm text-red-500">{errors.password.message}</p>
+                                <p className="text-sm text-red-400">{errors.password.message}</p>
                             )}
                         </div>
 
-                        <div className="border-t pt-4 mt-4">
+                        <div className="border-t border-border/50 pt-4 mt-4">
                             <p className="text-sm font-medium text-muted-foreground mb-3">
                                 Restaurant Details
                             </p>
@@ -170,7 +175,7 @@ export default function RegisterPage() {
                                 onChange={handleRestaurantNameChange}
                             />
                             {errors.restaurantName && (
-                                <p className="text-sm text-red-500">{errors.restaurantName.message}</p>
+                                <p className="text-sm text-red-400">{errors.restaurantName.message}</p>
                             )}
                         </div>
 
@@ -185,7 +190,7 @@ export default function RegisterPage() {
                                 />
                             </div>
                             {errors.restaurantSlug && (
-                                <p className="text-sm text-red-500">{errors.restaurantSlug.message}</p>
+                                <p className="text-sm text-red-400">{errors.restaurantSlug.message}</p>
                             )}
                         </div>
                     </CardContent>
@@ -195,7 +200,7 @@ export default function RegisterPage() {
                         </Button>
                         <p className="text-sm text-center text-muted-foreground">
                             Already have an account?{" "}
-                            <Link href="/login" className="text-primary hover:underline">
+                            <Link href="/login" className="text-primary hover:underline font-medium">
                                 Sign in
                             </Link>
                         </p>
