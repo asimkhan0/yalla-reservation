@@ -21,6 +21,11 @@ Focus: Improving reliability and the booking experience.
   - **Tech**: `ics` library or simple link generation.
   - **Benefit**: Reduces no-shows.
 
+- **🔔 Automated Reminders & Re-confirmations**
+  - **Feature**: Send a WhatsApp message 2-4 hours before the reservation asking for confirmation.
+  - **Tech**: Cron jobs + WhatsApp Interactive Buttons (Yes/No).
+  - **Benefit**: Significantly reduces no-shows and allows better table turnover planning.
+
 ## 💳 Phase 2: Monetization & Business Value
 
 Focus: Helping restaurants secure revenue and manage operations.
@@ -39,6 +44,11 @@ Focus: Helping restaurants secure revenue and manage operations.
   - **Feature**: Drag-and-drop view of tables and reservations for the specific night.
   - **Tech**: Canvas/Interactive UI in Dashboard.
   - **Benefit**: Replaces physical reservation books.
+
+- **⏳ Smart Waitlist Management**
+  - **Feature**: When fully booked, let users join a digital waitlist and get an automated "Table Ready" message.
+  - **Tech**: Custom waitlist logic in `reservations` module + real-time notifications.
+  - **Benefit**: Keeps customers engaged even when the restaurant is full.
 
 ## 🌐 Phase 3: Expansion & Scale
 
@@ -59,8 +69,29 @@ Focus: Growing the platform's reach.
   - **Tech**: Detailed segmentation in `Customers` module + WhatsApp Templates.
   - **Benefit**: Drives recurring revenue.
 
+- **🎁 Loyalty & Rewards Integration**
+  - **Feature**: Track customer visits and offer automated rewards/gifts via WhatsApp.
+  - **Tech**: Points system in `Customers` module + automated messaging triggers.
+  - **Benefit**: Increases customer retention and life-time value.
+
+## 🧠 Phase 4: Intelligence & Personalization
+
+Focus: Providing a premium, tailored experience.
+
+- **🥗 Dietary & Preference Tracking**
+  - **Feature**: AI bot asks and remembers allergies or special dates (birthdays).
+  - **Tech**: Vector memory or structured CRM fields.
+  - **Benefit**: Provides a personalized, "VIP" experience for regular customers.
+
+- **⭐ Automated Post-Visit Feedback**
+  - **Feature**: Automatically request a rating/review 2 hours after the meal.
+  - **Tech**: Integration with Google Maps Review links or internal NPS tool.
+  - **Benefit**: Improves online reputation and identifies service gaps.
+
 ## 🛠️ Technical Debt & Infrastructure
 
 - **Testing**: End-to-end testing for the WhatsApp flow.
 - **Caching**: Redis caching for Restaurant and Menu data to reduce DB hits.
 - **Rate Limiting**: Protect the API from abuse.
+- **📖 API Documentation**: OpenAPI/Swagger documentation for easier developer integrations.
+- **🚨 Proactive Monitoring**: Sentry/BetterStack integration for real-time error tracking.

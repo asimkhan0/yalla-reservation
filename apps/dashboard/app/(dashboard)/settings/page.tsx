@@ -347,7 +347,7 @@ export default function SettingsPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                {/* <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
@@ -412,7 +412,7 @@ export default function SettingsPage() {
                             </div>
                         )}
                     </CardContent>
-                </Card>
+                </Card> */}
 
                 {/* AI Configuration */}
                 <Card>
