@@ -77,14 +77,14 @@ export default function PrivacyPage() {
                     We use administrative, technical, and physical security measures to help protect your personal information. However, please be aware that no electronic transmission over the internet or information storage technology can be guaranteed to be 100% secure.
                 </p>
 
-                <h2>8. Contact Us</h2>
+                {/* <h2>8. Contact Us</h2>
                 <p>
                     If you have questions or comments about this Privacy Policy, please contact us at:
                     <br />
                     <strong>Email:</strong> legal@yallareservation.com [Replace with valid email]
                     <br />
                     <strong>Address:</strong> [Insert Legal Business Address]
-                </p>
+                </p> */}
             </div>
         </div>
     );

@@ -56,12 +56,12 @@ export default function TermsPage() {
                     We may reserve the right to change, modify, or remove the contents of the Service at any time or for any reason at our sole discretion without notice.
                 </p>
 
-                <h2>8. Contact Information</h2>
+                {/* <h2>8. Contact Information</h2>
                 <p>
                     Questions about the Terms of Service should be sent to us at:
                     <br />
                     <strong>Email:</strong> legal@yallareservation.com [Replace with valid email]
-                </p>
+                </p> */}
             </div>
         </div>
     );
