@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { getStats } from './analytics.controller';
+import { getStats } from './analytics.controller.js';
 
 export async function analyticsRoutes(fastify: FastifyInstance) {
     fastify.get('/stats', {

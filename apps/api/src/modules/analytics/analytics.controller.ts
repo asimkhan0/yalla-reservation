@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { getDashboardStats } from './analytics.service';
+import { getDashboardStats } from './analytics.service.js';
 
 interface AuthUser {
     userId: string;
