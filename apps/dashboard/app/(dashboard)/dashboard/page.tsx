@@ -8,8 +8,10 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 
 import api from "@/lib/api";
 
+import { useUserStore } from "@/stores/use-user-store";
+
 export default function DashboardPage() {
-    const [user, setUser] = useState<{ firstName: string } | null>(null);
+    const { user, fetchUser } = useUserStore();
     const [reservations, setReservations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
@@ -21,9 +23,10 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1. Fetch User (auto-adds token via interceptor)
-                const { data: userData } = await api.get("/auth/me");
-                setUser(userData);
+                // 1. Fetch User if not present
+                if (!user) {
+                    await fetchUser();
+                }
 
                 // 2. Fetch Reservations for Today
                 const todayStr = new Date().toISOString().split('T')[0];
@@ -44,7 +47,7 @@ export default function DashboardPage() {
         };
 
         fetchData();
-    }, []);
+    }, [user, fetchUser]);
 
 
     return (

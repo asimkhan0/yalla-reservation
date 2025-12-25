@@ -38,7 +38,7 @@ export function QuickActions() {
                         </Button>
                     </Link>
 
-                    <Link href="/settings">
+                    <Link href="/settings?tab=hours">
                         <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200">
                             <div className="rounded-lg bg-primary/10 p-2">
                                 <Clock className="h-5 w-5 text-primary" />
