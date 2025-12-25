@@ -43,7 +43,7 @@ export function Header() {
             }
 
             lastCountRef.current = count;
-            setUnreadCount(count);
+            // setUnreadCount(count);
         } catch (error) {
             console.error("Failed to fetch unread count", error);
         }

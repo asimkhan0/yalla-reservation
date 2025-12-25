@@ -1,5 +1,4 @@
-import { Reservation } from '../../models/reservation';
-import { Conversation } from '../../models/conversation';
+import { Reservation } from '../../models/reservation.js';
 import mongoose from 'mongoose';
 import { startOfDay, subDays, startOfHour, endOfDay } from 'date-fns';
 

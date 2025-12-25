@@ -1,3 +1,3 @@
-export * from './analytics.routes';
-export * from './analytics.controller';
-export * from './analytics.service';
+export * from './analytics.routes.js';
+export * from './analytics.controller.js';
+export * from './analytics.service.js';
