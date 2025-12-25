@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/lib/api";
 import { WhatsAppIntegrationCard } from '@/components/settings/WhatsAppIntegrationCard';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // Schema matching the API
 const operatingHoursSchema = z.object({
@@ -64,6 +66,9 @@ type FormValues = z.infer<typeof formSchema>;
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 
 export default function SettingsPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const activeTab = searchParams.get("tab") || "general";
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -169,6 +174,12 @@ export default function SettingsPage() {
         }
     };
 
+    const handleTabChange = (value: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", value);
+        router.push(url.pathname + url.search);
+    };
+
     if (isLoading) {
         return (
             <div className="flex h-full items-center justify-center">
@@ -191,261 +202,214 @@ export default function SettingsPage() {
                 </Button>
             </div>
 
-            <div className="grid gap-6">
-                {/* Team Logo & Name Section */}
-                <div className="grid gap-6 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Team Logo</CardTitle>
-                            <CardDescription>Update your team's logo to make it easier to identify</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <div
-                                    className="relative flex h-24 w-24 shrink-0 cursor-pointer flex-col items-center justify-center rounded-full border border-dashed hover:bg-muted/50 transition-colors overflow-hidden group"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    {isUploading ? (
-                                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                    ) : form.watch('logo') ? (
-                                        <>
-                                            <img
-                                                src={form.watch('logo') || ''}
-                                                alt="Logo"
-                                                className="h-full w-full object-cover"
-                                                onError={(e) => {
-                                                    // Fallback if image fails to load (e.g. relative path on different host)
-                                                    // Try prepending API URL if it looks like a relative path
-                                                    const target = e.target as HTMLImageElement;
-                                                    if (target.src.includes('localhost:3000/uploads')) {
-                                                        target.src = target.src.replace('3000', '3001');
-                                                    }
-                                                }}
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 -mx-6 px-6 border-b mb-6">
+                    <TabsList className="w-full justify-start h-auto p-0 bg-transparent border-b rounded-none space-x-6">
+                        <TabsTrigger value="general" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">General</TabsTrigger>
+                        <TabsTrigger value="contact" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Contact & Location</TabsTrigger>
+                        <TabsTrigger value="hours" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Operating Hours</TabsTrigger>
+                        <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">WhatsApp Integration</TabsTrigger>
+                        <TabsTrigger value="ai" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">AI Assistant</TabsTrigger>
+                    </TabsList>
+                </div>
+
+                <div className="grid gap-6">
+                    <TabsContent value="general" className="space-y-6 mt-0">
+                        {/* Team Logo & Name Section */}
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Team Logo</CardTitle>
+                                    <CardDescription>Update your team's logo to make it easier to identify</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <div
+                                            className="relative flex h-24 w-24 shrink-0 cursor-pointer flex-col items-center justify-center rounded-full border border-dashed hover:bg-muted/50 transition-colors overflow-hidden group"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            {isUploading ? (
+                                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                            ) : form.watch('logo') ? (
+                                                <>
+                                                    <img
+                                                        src={form.watch('logo') || ''}
+                                                        alt="Logo"
+                                                        className="h-full w-full object-cover"
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            if (target.src.includes('localhost:3000/uploads')) {
+                                                                target.src = target.src.replace('3000', '3001');
+                                                            }
+                                                        }}
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Upload className="h-6 w-6 text-white" />
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                                                    <ImageIcon className="h-8 w-8" />
+                                                </div>
+                                            )}
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleFileUpload}
                                             />
-                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Upload className="h-6 w-6 text-white" />
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                                            <ImageIcon className="h-8 w-8" />
                                         </div>
-                                    )}
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={handleFileUpload}
+                                        <div className="space-y-1">
+                                            <h4 className="text-sm font-medium leading-none">Profile Picture</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                Click the image to upload. JPG, PNG or GIF up to 5MB.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Business Details</CardTitle>
+                                    <CardDescription>Update your public business information</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Business Name *</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Input id="name" {...form.register("name")} placeholder="Padel Club" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Description</Label>
+                                        <Textarea
+                                            {...form.register("description")}
+                                            placeholder="Premium padel courts..."
+                                            className="min-h-[80px]"
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="contact" className="space-y-6 mt-0">
+                        {/* Contact & Location */}
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Contact Information</CardTitle>
+                                    <CardDescription>How customers can reach you</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Phone Number *</Label>
+                                        <Input {...form.register("phone")} placeholder="+966 55 555 5555" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Email</Label>
+                                        <Input {...form.register("email")} placeholder="info@example.com" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>WhatsApp</Label>
+                                        <Input {...form.register("whatsappNumber")} placeholder="whatsapp:+966555..." />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Location</CardTitle>
+                                    <CardDescription>Your physical location</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Address *</Label>
+                                        <Input {...form.register("location.address")} placeholder="Full address" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Google Maps URL</Label>
+                                        <Input {...form.register("location.googleMapsUrl")} placeholder="https://maps.google.com/..." />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="integrations" className="space-y-6 mt-0">
+                        {/* WhatsApp Integration */}
+                        {restaurantId && (
+                            <WhatsAppIntegrationCard restaurantId={restaurantId} initialConfig={whatsappConfig} />
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="hours" className="space-y-6 mt-0">
+                        {/* Operating Hours & Services */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Operating Hours</CardTitle>
+                                <CardDescription>Default opening hours</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {DAYS.map((day) => (
+                                    <div key={day} className="flex items-center gap-4">
+                                        <div className="w-24 font-medium capitalize text-sm">{day}</div>
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                type="time"
+                                                className="w-32"
+                                                {...form.register(`operatingHours.${day}.open`)}
+                                            />
+                                            <span className="text-muted-foreground text-sm">to</span>
+                                            <Input
+                                                type="time"
+                                                className="w-32"
+                                                {...form.register(`operatingHours.${day}.close`)}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="ai" className="space-y-6 mt-0">
+                        {/* AI Configuration */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <MessageCircle className="h-5 w-5" />
+                                    AI Assistant
+                                </CardTitle>
+                                <CardDescription>Configure how your WhatsApp bot behaves</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>System Prompt (Personality)</Label>
+                                    <Textarea
+                                        {...form.register("aiPrompt")}
+                                        placeholder="You are a helpful assistant for..."
+                                        className="min-h-[100px]"
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <h4 className="text-sm font-medium leading-none">Profile Picture</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        Click the image to upload. JPG, PNG or GIF up to 5MB.
+                                <div className="space-y-2">
+                                    <Label>Additional Context</Label>
+                                    <Textarea
+                                        {...form.register("additionalContext")}
+                                        placeholder="Policies, amenities, wifi password..."
+                                        className="min-h-[100px]"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        This context is injected into the AI to help it answer specific questions.
                                     </p>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Business Details</CardTitle>
-                            <CardDescription>Update your public business information</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Business Name *</Label>
-                                <div className="flex items-center gap-2">
-                                    <Input id="name" {...form.register("name")} placeholder="Padel Club" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Description</Label>
-                                <Textarea
-                                    {...form.register("description")}
-                                    placeholder="Premium padel courts..."
-                                    className="min-h-[80px]"
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
                 </div>
-
-                {/* Contact & Location */}
-                <div className="grid gap-6 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Contact Information</CardTitle>
-                            <CardDescription>How customers can reach you</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Phone Number *</Label>
-                                <Input {...form.register("phone")} placeholder="+966 55 555 5555" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Email</Label>
-                                <Input {...form.register("email")} placeholder="info@example.com" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>WhatsApp</Label>
-                                <Input {...form.register("whatsappNumber")} placeholder="whatsapp:+966555..." />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Location</CardTitle>
-                            <CardDescription>Your physical location</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Address *</Label>
-                                <Input {...form.register("location.address")} placeholder="Full address" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Google Maps URL</Label>
-                                <Input {...form.register("location.googleMapsUrl")} placeholder="https://maps.google.com/..." />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* WhatsApp Integration */}
-                {restaurantId && (
-                    <WhatsAppIntegrationCard restaurantId={restaurantId} initialConfig={whatsappConfig} />
-                )}
-
-                {/* Operating Hours & Services */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Operating Hours</CardTitle>
-                        <CardDescription>Default opening hours</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {DAYS.map((day) => (
-                            <div key={day} className="flex items-center gap-4">
-                                <div className="w-24 font-medium capitalize text-sm">{day}</div>
-                                <div className="flex items-center gap-2">
-                                    <Input
-                                        type="time"
-                                        className="w-32"
-                                        {...form.register(`operatingHours.${day}.open`)}
-                                    />
-                                    <span className="text-muted-foreground text-sm">to</span>
-                                    <Input
-                                        type="time"
-                                        className="w-32"
-                                        {...form.register(`operatingHours.${day}.close`)}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-
-                {/* <Card>
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle>Services</CardTitle>
-                                <CardDescription>Services offered to customers</CardDescription>
-                            </div>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => appendService({ name: "", duration: [60], price: 0 })}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Service
-                            </Button>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {serviceFields.map((field, index) => (
-                            <div key={field.id} className="p-4 border rounded-lg bg-muted/10 relative">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-                                    onClick={() => removeService(index)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-
-                                <div className="grid gap-4 md:grid-cols-2 pr-8">
-                                    <div className="space-y-2">
-                                        <Label>Name</Label>
-                                        <Input {...form.register(`services.${index}.name`)} placeholder="e.g. Court Rental" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Price</Label>
-                                        <Input
-                                            type="number"
-                                            {...form.register(`services.${index}.price`, { valueAsNumber: true })}
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                    <div className="space-y-2 md:col-span-2">
-                                        <Label>Duration (min)</Label>
-                                        <Input
-                                            type="number"
-                                            className="max-w-[200px]"
-                                            onChange={(e) => {
-                                                const val = parseInt(e.target.value);
-                                                if (!isNaN(val)) form.setValue(`services.${index}.duration`, [val]);
-                                            }}
-                                            defaultValue={form.getValues(`services.${index}.duration`)?.[0]}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {serviceFields.length === 0 && (
-                            <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
-                                No services added. Add one to get started.
-                            </div>
-                        )}
-                    </CardContent>
-                </Card> */}
-
-                {/* AI Configuration */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <MessageCircle className="h-5 w-5" />
-                            AI Assistant
-                        </CardTitle>
-                        <CardDescription>Configure how your WhatsApp bot behaves</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>System Prompt (Personality)</Label>
-                            <Textarea
-                                {...form.register("aiPrompt")}
-                                placeholder="You are a helpful assistant for..."
-                                className="min-h-[100px]"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Additional Context</Label>
-                            <Textarea
-                                {...form.register("additionalContext")}
-                                placeholder="Policies, amenities, wifi password..."
-                                className="min-h-[100px]"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                This context is injected into the AI to help it answer specific questions.
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            </Tabs>
         </div>
     );
 }

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 
+import { OnboardingBanner } from "@/components/dashboard/onboarding-banner";
+
 export default function DashboardLayout({
     children,
 }: {
@@ -35,6 +37,7 @@ export default function DashboardLayout({
             <Sidebar />
             <div className="pl-64">
                 <Header />
+                <OnboardingBanner />
                 <main className="p-6">{children}</main>
             </div>
         </div>
