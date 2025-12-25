@@ -74,12 +74,15 @@ export function Hero() {
                     >
                         <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-indigo-500/10 rounded-xl" />
                         <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-950 border border-white/5 flex items-center justify-center">
-                            <span className="text-slate-600">Dashboard Preview / Animation Placeholder</span>
-                            {/* Note: I would typically place a real screenshot here using the `generate_image` tool or asset */}
+                            <img
+                                src="/dashboard-hero.png"
+                                alt="Yalla Reservation Dashboard Mockup"
+                                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                            />
                         </div>
                     </motion.div>
                 </div>
-            </div>
-        </section>
+            </div >
+        </section >
     );
 }
