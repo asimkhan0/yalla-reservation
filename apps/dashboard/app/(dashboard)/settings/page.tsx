@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import api from "@/lib/api";
 import { WhatsAppIntegrationCard } from '@/components/settings/WhatsAppIntegrationCard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useRestaurantStore } from "@/stores/use-restaurant-store";
 
 // Schema matching the API
 const operatingHoursSchema = z.object({
@@ -69,12 +70,13 @@ export default function SettingsPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const activeTab = searchParams.get("tab") || "general";
-    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [restaurantId, setRestaurantId] = useState<string | null>(null);
-    const [whatsappConfig, setWhatsappConfig] = useState<any>(null);
+    const [formInitialized, setFormInitialized] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Use Zustand store for restaurant data (cached)
+    const { restaurant, isLoading, fetchRestaurant, updateRestaurant } = useRestaurantStore();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -98,40 +100,37 @@ export default function SettingsPage() {
         name: "services",
     });
 
+    // Fetch restaurant data if not already cached
     useEffect(() => {
-        const fetchRestaurant = async () => {
-            try {
-                const { data } = await api.get("/restaurants/me");
-                setRestaurantId(data._id);
-                setWhatsappConfig(data.whatsappConfig);
+        if (!restaurant) {
+            fetchRestaurant();
+        }
+    }, [restaurant, fetchRestaurant]);
 
-                form.reset({
-                    name: data.name,
-                    description: data.description || "",
-                    whatsappNumber: data.whatsappNumber || "",
-                    address: data.address || "",
-                    phone: data.phone || "",
-                    email: data.email || "",
-                    website: data.website || "",
-                    logo: data.logo || "",
-                    aiPrompt: data.aiPrompt || "",
-                    additionalContext: data.additionalContext || "",
-                    location: {
-                        address: data.location?.address || data.address || "",
-                        googleMapsUrl: data.location?.googleMapsUrl || "",
-                    },
-                    operatingHours: data.operatingHours || form.getValues().operatingHours,
-                    services: data.services || [],
-                });
-            } catch (error) {
-                console.error("Failed to fetch restaurant", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchRestaurant();
-    }, [form]);
+    // Initialize form when restaurant data is available
+    useEffect(() => {
+        if (restaurant && !formInitialized) {
+            form.reset({
+                name: restaurant.name,
+                description: restaurant.description || "",
+                whatsappNumber: restaurant.whatsappNumber || "",
+                address: restaurant.address || "",
+                phone: restaurant.phone || "",
+                email: restaurant.email || "",
+                website: restaurant.website || "",
+                logo: restaurant.logo || "",
+                aiPrompt: restaurant.aiPrompt || "",
+                additionalContext: restaurant.additionalContext || "",
+                location: {
+                    address: restaurant.location?.address || restaurant.address || "",
+                    googleMapsUrl: restaurant.location?.googleMapsUrl || "",
+                },
+                operatingHours: restaurant.operatingHours || form.getValues().operatingHours,
+                services: restaurant.services || [],
+            });
+            setFormInitialized(true);
+        }
+    }, [restaurant, form, formInitialized]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -340,8 +339,11 @@ export default function SettingsPage() {
 
                     <TabsContent value="integrations" className="space-y-6 mt-0">
                         {/* WhatsApp Integration */}
-                        {restaurantId && (
-                            <WhatsAppIntegrationCard restaurantId={restaurantId} initialConfig={whatsappConfig} />
+                        {restaurant?._id && (
+                            <WhatsAppIntegrationCard
+                                restaurantId={restaurant._id}
+                                initialConfig={restaurant.whatsappConfig as any}
+                            />
                         )}
                     </TabsContent>
 
