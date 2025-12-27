@@ -43,8 +43,45 @@ export interface RestaurantInfo {
     additionalContext?: string;
 }
 
+// Extract reservation details mentioned in conversation history
+function extractCollectedInfo(history: { role: string; content: string }[]): Record<string, string> {
+    const collected: Record<string, string> = {};
+    // Only look at user messages for extraction
+    const userMessages = history.filter(m => m.role === 'user').map(m => m.content).join(' ');
+    
+    // Look for party size patterns
+    const sizeMatch = userMessages.match(/(\d+)\s*(?:people|persons|guests|of us|pax)/i) 
+        || userMessages.match(/(?:party of|table for|for)\s*(\d+)/i);
+    if (sizeMatch?.[1]) collected.partySize = sizeMatch[1];
+    
+    // Look for time patterns - be more specific to avoid matching assistant messages
+    const timeMatch = userMessages.match(/(?:at|around|@)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i)
+        || userMessages.match(/,\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i)
+        || userMessages.match(/(\d{1,2}:\d{2}\s*(?:am|pm))/i)
+        || userMessages.match(/(\d{1,2}\s*(?:am|pm))/i);
+    if (timeMatch?.[1]) collected.time = timeMatch[1];
+    
+    // Look for date patterns
+    const dateMatch = userMessages.match(/\b(today|tomorrow)\b/i)
+        || userMessages.match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i)
+        || userMessages.match(/(\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*)/i)
+        || userMessages.match(/(\d{4}-\d{2}-\d{2})/);
+    if (dateMatch?.[1]) collected.date = dateMatch[1];
+    
+    // Look for name patterns - stop at common words
+    const nameMatch = userMessages.match(/(?:my name is|i'm|i am|name is|call me)\s+([A-Z][a-z]+)/i);
+    if (nameMatch?.[1]) collected.guestName = nameMatch[1];
+    
+    // Look for phone patterns
+    const phoneMatch = userMessages.match(/(?:phone|number|contact).*?(\+?\d[\d\s\-]{8,})/i)
+        || userMessages.match(/(\+\d{10,15})/);
+    if (phoneMatch?.[1]) collected.guestPhone = phoneMatch[1].replace(/\s/g, '');
+    
+    return collected;
+}
+
 // Generate dynamic system prompt based on restaurant info
-function generateSystemPrompt(restaurant: RestaurantInfo): string {
+function generateSystemPrompt(restaurant: RestaurantInfo, collectedInfo?: Record<string, string>): string {
     // Format operating hours
     const formatHours = () => {
         if (!restaurant.operatingHours) return 'Hours not configured';
@@ -90,22 +127,29 @@ ${formatHours()}
 
 ${customPrompt ? `Custom Instructions:\n${customPrompt}\n` : ''}
 ${additionalContext ? `Additional Context:\n${additionalContext}\n` : ''}
-
+${collectedInfo && Object.keys(collectedInfo).length > 0 ? `
+## ALREADY COLLECTED (DO NOT ASK AGAIN):
+${collectedInfo.guestName ? `- Guest Name: ${collectedInfo.guestName}` : ''}
+${collectedInfo.date ? `- Date: ${collectedInfo.date}` : ''}
+${collectedInfo.time ? `- Time: ${collectedInfo.time}` : ''}
+${collectedInfo.partySize ? `- Party Size: ${collectedInfo.partySize}` : ''}
+` : ''}
 Rules:
 1. Be friendly, professional, and concise (WhatsApp messages should be short).
 2. To make a reservation, you MUST collect: Name, Date, Time, and Party Size.
-3. **Availability Check**:
+3. **NEVER ask for information listed in "ALREADY COLLECTED" above. The customer already provided it.**
+4. **Availability Check**:
    - If the user specifies a time, use 'checkAvailability' to verify it.
    - If the user asks "what times do you have?", use 'checkAvailability' with just the date (and party size) to get a list of slots.
    - ALWAYS offer available slots if their requested time is taken.
-4. **Finalizing**:
+5. **Finalizing**:
    - ONCE availability is confirmed and you have all details (Name, Date, Time, Size), you **MUST** call the 'createReservation' tool immediately.
    - Do not ask for "confirmation" endlessly. If they said "yes book it" or provided the final missing piece, just book it.
    - After successfully booking, tell them the confirmation code.
-5. **Restaurant Info**:
+6. **Restaurant Info**:
    - When asked about hours, location, contact info, or other restaurant details, use the information provided above.
    - If you need more specific information not in your context, use the 'getRestaurantInfo' tool.
-6. If the user wants to speak to a human or you are stuck, use 'requestHumanTakeover'.
+7. If the user wants to speak to a human or you are stuck, use 'requestHumanTakeover'.
 
 Style:
 - Use emojis sparingly.
@@ -176,7 +220,9 @@ export async function processUserMessage(
     restaurant: RestaurantInfo
 ): Promise<any> {
     try {
-        const systemPrompt = generateSystemPrompt(restaurant);
+        // Extract what's already been collected from conversation
+        const collectedInfo = extractCollectedInfo(history as any[]);
+        const systemPrompt = generateSystemPrompt(restaurant, collectedInfo);
 
         const messages: any[] = [
             { role: 'system', content: systemPrompt },

@@ -13,6 +13,8 @@ import {
     ChefHat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { clearAuthCookies } from "@/lib/cookies";
+import { useRestaurantStore } from "@/stores/use-restaurant-store";
 
 const navigation = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -25,14 +27,16 @@ const navigation = [
 
 export function Sidebar() {
     const pathname = usePathname();
-
     const router = useRouter();
+    const resetRestaurantStore = useRestaurantStore((state) => state.reset);
 
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
         localStorage.removeItem("restaurant");
+        clearAuthCookies();
+        resetRestaurantStore();
         router.push("/login");
     };
 

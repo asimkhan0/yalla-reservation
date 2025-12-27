@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { API_URL } from './utils';
+import { clearAuthCookies, setAuthCookies } from './cookies';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -44,8 +45,11 @@ api.interceptors.response.use(
                     refreshToken,
                 });
 
-                // Update tokens
+                // Update tokens in localStorage
                 localStorage.setItem('accessToken', data.accessToken);
+
+                // Update cookies for SSR middleware
+                setAuthCookies(data.accessToken, refreshToken);
 
                 // Update header and retry original request
                 originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
@@ -57,6 +61,9 @@ api.interceptors.response.use(
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('user');
                 localStorage.removeItem('restaurant');
+
+                // Clear cookies for SSR middleware
+                clearAuthCookies();
 
                 // Redirect to login
                 if (typeof window !== 'undefined') {

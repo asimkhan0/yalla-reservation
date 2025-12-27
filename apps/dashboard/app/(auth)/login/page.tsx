@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import api from "@/lib/api";
+import { setAuthCookies } from "@/lib/cookies";
 
 const loginSchema = z.object({
     email: z.string().email("Please enter a valid email"),
@@ -40,14 +41,17 @@ export default function LoginPage() {
             const response = await api.post("/auth/login", data);
             const result = response.data;
 
-            // Store tokens
+            // Store tokens in localStorage (for API calls)
             localStorage.setItem("accessToken", result.accessToken);
             localStorage.setItem("refreshToken", result.refreshToken);
             localStorage.setItem("user", JSON.stringify(result.user));
             localStorage.setItem("restaurant", JSON.stringify(result.restaurant));
 
+            // Set cookies for SSR middleware detection
+            setAuthCookies(result.accessToken, result.refreshToken);
+
             // Redirect to dashboard
-            router.push("/");
+            router.push("/dashboard");
         } catch (err: any) {
             console.error(err);
             if (err.response && err.response.data && err.response.data.message) {

@@ -119,13 +119,13 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                             <div className="text-sm text-muted-foreground mt-1">Easiest setup. Managed compliance.</div>
                         </div>
                         <div
-                            className={`border rounded-xl p-4 cursor-pointer transition-all duration-200 ${provider === 'meta'
-                                ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                                : 'border-border hover:bg-muted/50'
-                                }`}
-                            onClick={() => setProvider('meta')}
+                            className="border rounded-xl p-4 cursor-not-allowed opacity-50 border-border bg-muted/20"
+                            onClick={() => toast.info("Coming soon! Integration with Meta Cloud API is under development.")}
                         >
-                            <div className="font-semibold">Meta Cloud API</div>
+                            <div className="flex items-center gap-2">
+                                <div className="font-semibold">Meta Cloud API</div>
+                                <Badge variant="secondary" className="text-xs h-5">Coming Soon</Badge>
+                            </div>
                             <div className="text-sm text-muted-foreground mt-1">Official API. Lower cost.</div>
                         </div>
                     </div>
