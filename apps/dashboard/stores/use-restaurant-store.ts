@@ -32,8 +32,16 @@ interface Restaurant {
     whatsappConfig?: {
         enabled: boolean;
         provider?: 'twilio' | 'meta';
+        // Twilio specific fields
+        accountSid?: string;
+        authToken?: string;
+        phoneNumber?: string;
+        webhookUrl?: string;
+        // Meta specific fields
         phoneNumberId?: string;
         wabaId?: string;
+        accessToken?: string;
+        webhookVerifyToken?: string;
     };
     aiPrompt?: string;
     additionalContext?: string;
@@ -48,12 +56,15 @@ interface RestaurantState {
     error: string | null;
     fetchRestaurant: () => Promise<void>;
     updateRestaurant: (data: Partial<Restaurant>) => Promise<void>;
+    reset: () => void;
 }
 
 export const useRestaurantStore = create<RestaurantState>((set) => ({
     restaurant: null,
     isLoading: false,
     error: null,
+
+    reset: () => set({ restaurant: null, isLoading: false, error: null }),
 
     fetchRestaurant: async () => {
         set({ isLoading: true, error: null });

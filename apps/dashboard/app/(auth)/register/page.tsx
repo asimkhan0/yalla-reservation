@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import api from "@/lib/api";
+import { setAuthCookies } from "@/lib/cookies";
 
 const registerSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
@@ -62,12 +63,16 @@ export default function RegisterPage() {
         try {
             const { data } = await api.post("/auth/register", values);
 
+            // Store tokens in localStorage (for API calls)
             localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("refreshToken", data.refreshToken);
             localStorage.setItem("user", JSON.stringify(data.user));
             localStorage.setItem("restaurant", JSON.stringify(data.restaurant));
 
-            router.push("/");
+            // Set cookies for SSR middleware detection
+            setAuthCookies(data.accessToken, data.refreshToken);
+
+            router.push("/dashboard");
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.error || "Registration failed");

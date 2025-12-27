@@ -18,11 +18,16 @@ export function OnboardingBanner() {
     // Don't show if loading, not loaded yet, or strictly valid
     if (isLoading || !restaurant) return null;
 
-    // Check if WhatsApp is configured
-    const isWhatsAppConfigured = restaurant.whatsappConfig?.enabled;
-    const isWhatsAppNumberSet = !!restaurant.whatsappNumber;
+    // Check if WhatsApp is properly configured based on provider
+    const config = restaurant.whatsappConfig;
+    const isWhatsAppConfigured = config?.enabled === true && !!config?.provider;
 
-    if (isWhatsAppConfigured && isWhatsAppNumberSet) return null;
+    // Check if the provider has the required phone number configured
+    const hasPhoneNumber = config?.provider === 'twilio'
+        ? !!config?.phoneNumber
+        : !!config?.phoneNumberId; // Meta uses phoneNumberId
+
+    if (isWhatsAppConfigured && hasPhoneNumber) return null;
 
     return (
         <div className="bg-amber-500/10 border-b border-amber-500/20 py-3 px-4">
