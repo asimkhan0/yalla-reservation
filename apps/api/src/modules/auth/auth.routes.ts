@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { registerSchema, loginSchema, refreshTokenSchema } from './auth.schema.js';
 import * as authService from './auth.service.js';
+import { ApiError, ApiErrors } from '../../utils/api-errors.js';
 
 export async function authRoutes(fastify: FastifyInstance) {
     // Register
@@ -85,11 +86,23 @@ export async function authRoutes(fastify: FastifyInstance) {
                 const result = await authService.loginUser(data);
                 return reply.send(result);
             } catch (error: any) {
-                if (error.message === 'Invalid email or password') {
-                    return reply.status(401).send({ error: error.message });
+                // Handle ApiError instances
+                if (error instanceof ApiError) {
+                    return reply.status(error.statusCode).send(error.toJSON());
                 }
+                // Convert known error messages to ApiError
+                if (error.message === 'Invalid email or password') {
+                    const apiError = ApiErrors.invalidCredentials();
+                    return reply.status(apiError.statusCode).send(apiError.toJSON());
+                }
+                if (error.message === 'Restaurant not found') {
+                    const apiError = ApiErrors.restaurantNotFound();
+                    return reply.status(apiError.statusCode).send(apiError.toJSON());
+                }
+                // Fallback for unexpected errors
                 fastify.log.error(error);
-                return reply.status(400).send({ error: error.message || 'Login failed' });
+                const apiError = ApiErrors.badRequest(error.message || 'Login failed');
+                return reply.status(apiError.statusCode).send(apiError.toJSON());
             }
         }
     );

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
+import api, { extractErrorMessage } from "@/lib/api";
 import { setAuthCookies } from "@/lib/cookies";
 
 const loginSchema = z.object({
@@ -53,12 +53,7 @@ export default function LoginPage() {
             // Redirect to dashboard
             router.push("/dashboard");
         } catch (err: any) {
-            console.error(err);
-            if (err.response && err.response.data && err.response.data.message) {
-                setError(err.response.data.message);
-            } else {
-                setError(err.message || "Login failed");
-            }
+            setError(extractErrorMessage(err, "Login failed"));
         } finally {
             setIsLoading(false);
         }
