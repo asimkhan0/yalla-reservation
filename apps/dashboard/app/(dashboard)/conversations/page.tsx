@@ -78,7 +78,10 @@ export default function ConversationsPage() {
             try {
                 const { data } = await api.get(`/conversations/${selectedId}/messages`);
                 setMessages(data.messages);
-                scrollToBottom();
+                // Use requestAnimationFrame to ensure DOM has updated before scrolling
+                requestAnimationFrame(() => {
+                    scrollToBottom(true); // instant scroll on initial load
+                });
             } catch (error) {
                 console.error("Failed to fetch messages", error);
             }
@@ -87,10 +90,16 @@ export default function ConversationsPage() {
         fetchMessages();
     }, [selectedId]);
 
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
+    const scrollToBottom = (instant = false) => {
+        if (instant) {
+            // Instant scroll for initial message load - no visible animation
+            messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+        } else {
+            // Smooth scroll for new messages during conversation
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        }
     };
 
     const handleSendMessage = async () => {
