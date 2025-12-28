@@ -191,9 +191,14 @@ export default function ConversationsPage() {
                                             <p className="text-sm text-muted-foreground truncate flex-1 min-w-0">
                                                 {conv.lastMessage?.content || "No messages"}
                                             </p>
-                                            <Button variant="ghost" size="icon" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                            <div 
+                                                role="button"
+                                                tabIndex={0}
+                                                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 flex items-center justify-center hover:bg-muted rounded cursor-pointer"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
                                                 <MoreVertical className="h-3 w-3" />
-                                            </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </button>
