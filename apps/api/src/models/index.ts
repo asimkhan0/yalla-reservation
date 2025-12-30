@@ -45,7 +45,7 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = (mongoose.models.User as mongoose.Model<IUser>) || mongoose.model<IUser>('User', userSchema);
 
 // ==================== RESTAURANT ====================
 export interface IRestaurant extends Document {
@@ -161,7 +161,7 @@ const restaurantSchema = new Schema<IRestaurant>(
 );
 
 
-export const Restaurant = mongoose.model<IRestaurant>('Restaurant', restaurantSchema);
+export const Restaurant = (mongoose.models.Restaurant as mongoose.Model<IRestaurant>) || mongoose.model<IRestaurant>('Restaurant', restaurantSchema);
 
 // ==================== TABLE ====================
 export interface ITable extends Document {
@@ -193,7 +193,7 @@ const tableSchema = new Schema<ITable>(
 
 tableSchema.index({ restaurant: 1 });
 
-export const Table = mongoose.model<ITable>('Table', tableSchema);
+export const Table = (mongoose.models.Table as mongoose.Model<ITable>) || mongoose.model<ITable>('Table', tableSchema);
 
 // ==================== CUSTOMER ====================
 export interface ICustomer extends Document {
@@ -239,7 +239,7 @@ customerSchema.index({ phone: 1, restaurant: 1 }, { unique: true });
 customerSchema.index({ restaurant: 1 });
 
 
-export const Customer = mongoose.model<ICustomer>('Customer', customerSchema);
+export const Customer = (mongoose.models.Customer as mongoose.Model<ICustomer>) || mongoose.model<ICustomer>('Customer', customerSchema);
 
 export * from './conversation.js';
 export * from './message.js';

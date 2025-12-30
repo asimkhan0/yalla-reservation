@@ -36,10 +36,10 @@ describe('Conversations Service', () => {
         await clearTestDb();
         // Create test restaurant and customer
         const restaurant = await Restaurant.create(createMockRestaurantData());
-        restaurantId = restaurant._id.toString();
+        restaurantId = (restaurant._id as any).toString();
 
         const customer = await Customer.create(createMockCustomerData(restaurantId));
-        customerId = customer._id.toString();
+        customerId = (customer._id as any).toString();
     });
 
     describe('listConversations', () => {
@@ -49,14 +49,14 @@ describe('Conversations Service', () => {
         });
 
         it('should return conversations with last message', async () => {
-            const conversation = await (Conversation as any).create({
+            const conversation = await Conversation.create({
                 customer: customerId,
                 restaurant: restaurantId,
                 status: 'ACTIVE',
                 source: 'WHATSAPP',
             });
 
-            await (Message as any).create({
+            await Message.create({
                 conversation: conversation._id,
                 sender: 'CUSTOMER',
                 content: 'Hello!',
@@ -64,7 +64,7 @@ describe('Conversations Service', () => {
                 status: 'DELIVERED',
             });
 
-            await (Message as any).create({
+            await Message.create({
                 conversation: conversation._id,
                 sender: 'BOT',
                 content: 'Hi! How can I help?',
@@ -75,7 +75,7 @@ describe('Conversations Service', () => {
             const result = await listConversations(restaurantId);
             expect(result).toHaveLength(1);
             expect(result[0].lastMessage).toBeDefined();
-            expect(result[0].lastMessage.content).toBe('Hi! How can I help?');
+            expect(result[0].lastMessage!.content).toBe('Hi! How can I help?');
         });
 
         it('should exclude archived conversations', async () => {
@@ -100,7 +100,7 @@ describe('Conversations Service', () => {
 
     describe('getConversationMessages', () => {
         it('should return messages in chronological order', async () => {
-            const conversation = await (Conversation as any).create({
+            const conversation = await Conversation.create({
                 customer: customerId,
                 restaurant: restaurantId,
                 status: 'ACTIVE',
@@ -108,7 +108,7 @@ describe('Conversations Service', () => {
             });
 
             // Create messages with slight delay to ensure different timestamps
-            await (Message as any).create({
+            await Message.create({
                 conversation: conversation._id,
                 sender: 'CUSTOMER',
                 content: 'First message',
@@ -126,14 +126,14 @@ describe('Conversations Service', () => {
 
             const result = await getConversationMessages(conversation._id.toString());
             expect(result).toHaveLength(2);
-            expect(result[0].content).toBe('First message');
-            expect(result[1].content).toBe('Second message');
+            expect(result[0]!.content).toBe('First message');
+            expect(result[1]!.content).toBe('Second message');
         });
     });
 
     describe('assignConversation', () => {
         it('should update assignedTo field to AGENT', async () => {
-            const conversation = await (Conversation as any).create({
+            const conversation = await Conversation.create({
                 customer: customerId,
                 restaurant: restaurantId,
                 status: 'ACTIVE',
@@ -146,7 +146,7 @@ describe('Conversations Service', () => {
         });
 
         it('should update assignedTo field to BOT', async () => {
-            const conversation = await (Conversation as any).create({
+            const conversation = await Conversation.create({
                 customer: customerId,
                 restaurant: restaurantId,
                 status: 'ACTIVE',
@@ -161,7 +161,7 @@ describe('Conversations Service', () => {
 
     describe('sendAgentMessage', () => {
         it('should create an outbound agent message', async () => {
-            const conversation = await (Conversation as any).create({
+            const conversation = await Conversation.create({
                 customer: customerId,
                 restaurant: restaurantId,
                 status: 'ACTIVE',

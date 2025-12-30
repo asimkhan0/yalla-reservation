@@ -65,14 +65,14 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
         }
 
         // 2. Find active conversation
-        let conversation = await (Conversation as any).findOne({
+        let conversation = await Conversation.findOne({
             customer: customer._id,
             restaurant: restaurant._id,
             status: { $ne: 'resolved' }
         }).sort({ updatedAt: -1 });
 
         if (!conversation) {
-            conversation = await (Conversation as any).create({
+            conversation = await Conversation.create({
                 customer: customer._id,
                 restaurant: restaurant._id,
                 status: 'ACTIVE',
@@ -82,13 +82,13 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
             });
         } else {
             // Increment unread count for existing conversation
-            await (Conversation as any).findByIdAndUpdate(conversation._id, {
+            await Conversation.findByIdAndUpdate(conversation._id, {
                 $inc: { unreadCount: 1 }
             });
         }
 
         // 3. Store User Message
-        const currentMessage = await (Message as any).create({
+        const currentMessage = await Message.create({
             content: body,
             direction: 'INBOUND',
             sender: 'CUSTOMER',
@@ -114,7 +114,7 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
 // AI Agent Trigger Logic
 async function triggerAiAgent(conversation: any, currentMessage: any, userMessage: string, provider: IWhatsAppProvider) {
     // Fetch conversation history
-    const rawHistory = await (Message as any).find({
+    const rawHistory = await Message.find({
         conversation: conversation._id,
         _id: { $ne: currentMessage._id }
     })
@@ -183,7 +183,7 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
             console.error('[WhatsApp Service] Customer not found for sending response');
         }
 
-        await (Message as any).create({
+        await Message.create({
             content: aiResponse.content,
             direction: 'OUTBOUND',
             sender: 'BOT',
@@ -192,7 +192,7 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
         });
 
         // Update conversation timestamp
-        await (Conversation as any).findByIdAndUpdate(conversation._id, { updatedAt: new Date() });
+        await Conversation.findByIdAndUpdate(conversation._id, { updatedAt: new Date() });
     }
 }
 
@@ -226,13 +226,13 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
     }
 
     // 3. Find/Create Conversation
-    let conversation = await (Conversation as any).findOne({
+    let conversation = await Conversation.findOne({
         customer: customer._id,
         status: { $ne: 'resolved' }
     }).sort({ updatedAt: -1 });
 
     if (!conversation) {
-        conversation = await (Conversation as any).create({
+        conversation = await Conversation.create({
             customer: customer._id,
             restaurant: restaurant._id,
             status: 'ACTIVE',
@@ -241,13 +241,13 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
             context: {}
         });
     } else {
-        await (Conversation as any).findByIdAndUpdate(conversation._id, {
+        await Conversation.findByIdAndUpdate(conversation._id, {
             $inc: { unreadCount: 1 }
         });
     }
 
     // 4. Save User Message
-    const currentMessage = await (Message as any).create({
+    const currentMessage = await Message.create({
         content: message,
         direction: 'INBOUND',
         sender: 'CUSTOMER',
@@ -265,7 +265,7 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
     // For now, simpler:
 
     // Fetch conversation history
-    const rawHistory = await (Message as any).find({
+    const rawHistory = await Message.find({
         conversation: conversation._id,
         _id: { $ne: currentMessage._id }
     }).sort({ createdAt: -1 }).limit(10).select('role content sender -_id').lean();
@@ -300,7 +300,7 @@ export async function handleTestChat(message: string, phoneNumber: string = '123
     }
 
     if (aiResponse && aiResponse.content) {
-        await (Message as any).create({
+        await Message.create({
             content: aiResponse.content,
             direction: 'OUTBOUND',
             sender: 'BOT',

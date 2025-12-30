@@ -28,4 +28,4 @@ const conversationSchema = new Schema<IConversation>(
 conversationSchema.index({ customer: 1, status: 1 });
 conversationSchema.index({ restaurant: 1 });
 
-export const Conversation = mongoose.models.Conversation || mongoose.model<IConversation>('Conversation', conversationSchema);
+export const Conversation = (mongoose.models.Conversation as mongoose.Model<IConversation>) || mongoose.model<IConversation>('Conversation', conversationSchema);
