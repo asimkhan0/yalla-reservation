@@ -190,6 +190,9 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
             status: 'SENT',
             conversation: conversation._id
         });
+
+        // Update conversation timestamp
+        await (Conversation as any).findByIdAndUpdate(conversation._id, { updatedAt: new Date() });
     }
 }
 

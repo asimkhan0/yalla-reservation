@@ -184,14 +184,14 @@ export default function ConversationsPage() {
                                                 {conv.customer ? `${conv.customer.firstName} ${conv.customer.lastName || ''}` : 'Unknown Customer'}
                                             </span>
                                             <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                {conv.updatedAt ? formatWhatsAppDate(conv.updatedAt) : ''}
+                                                {formatWhatsAppDate(conv.lastMessage?.createdAt || conv.updatedAt)}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2 min-w-0">
                                             <p className="text-sm text-muted-foreground truncate flex-1 min-w-0">
                                                 {conv.lastMessage?.content || "No messages"}
                                             </p>
-                                            <div 
+                                            <div
                                                 role="button"
                                                 tabIndex={0}
                                                 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 flex items-center justify-center hover:bg-muted rounded cursor-pointer"

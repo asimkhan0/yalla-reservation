@@ -11,7 +11,8 @@ export const listConversations = async (restaurantId: string) => {
     })
         .sort({ updatedAt: -1 })
         .populate('customer')
-        .limit(50) as any[]; // Limit for now
+        .limit(50)
+        .lean();
 
     // For each conversation, get the last message
     const populated = await Promise.all(conversations.map(async (conv: any) => {
@@ -20,7 +21,7 @@ export const listConversations = async (restaurantId: string) => {
             .sort({ createdAt: -1 });
 
         return {
-            ...(conv.toObject ? conv.toObject() : conv),
+            ...conv,
             lastMessage
         };
     }));
@@ -77,6 +78,10 @@ export const sendAgentMessage = async (conversationId: string, content: string) 
         status: 'SENT',
         conversation: conversationId
     });
+
+    // Update conversation timestamp
+    // @ts-ignore
+    await Conversation.findByIdAndUpdate(conversationId, { updatedAt: new Date() });
 
     // 3. Send via WhatsApp
     // @ts-ignore

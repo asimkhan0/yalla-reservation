@@ -19,8 +19,11 @@ export function formatDate(date: Date | string): string {
 }
 
 // WhatsApp style date formatting
-export function formatWhatsAppDate(date: Date | string): string {
+export function formatWhatsAppDate(date: Date | string | undefined | null): string {
+    if (!date) return "";
     const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+
     const now = new Date();
     const isToday = d.getDate() === now.getDate() &&
         d.getMonth() === now.getMonth() &&
@@ -40,7 +43,6 @@ export function formatWhatsAppDate(date: Date | string): string {
         return d.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
-            year: "numeric"
         }); // e.g. "Dec 23, 2025" (or adjust to desired format like 23/12/2025)
         // User asked for "date could be like this as we have now" which is MMM d (implied by previous code) or similar.
         // Let's stick to consistent locale date string or custom format.
