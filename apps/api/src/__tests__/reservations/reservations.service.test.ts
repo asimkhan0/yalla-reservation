@@ -145,6 +145,35 @@ describe('Reservations Service', () => {
             expect(result).toHaveLength(1);
             expect(result[0]?.guestName).toBe('Confirmed Guest');
         });
+
+        it('should filter by customerId', async () => {
+            const customerId1 = new mongoose.Types.ObjectId().toString();
+            const customerId2 = new mongoose.Types.ObjectId().toString();
+
+            await Reservation.create({
+                restaurant: restaurantId,
+                date: new Date('2025-01-15'),
+                time: '19:00',
+                partySize: 4,
+                guestName: 'Customer 1',
+                guestPhone: '+111',
+                customer: customerId1,
+            });
+
+            await Reservation.create({
+                restaurant: restaurantId,
+                date: new Date('2025-01-15'),
+                time: '20:00',
+                partySize: 2,
+                guestName: 'Customer 2',
+                guestPhone: '+222',
+                customer: customerId2,
+            });
+
+            const result = await listReservations(restaurantId, { customerId: customerId1 });
+            expect(result).toHaveLength(1);
+            expect(result[0]?.guestName).toBe('Customer 1');
+        });
     });
 
     describe('getReservationById', () => {

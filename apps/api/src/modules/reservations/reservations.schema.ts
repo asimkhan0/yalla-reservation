@@ -27,6 +27,7 @@ export const listReservationsQuerySchema = z.object({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     status: z.string().optional(),
+    customerId: z.string().optional(),
 });
 
 export type CreateReservationInput = z.infer<typeof createReservationSchema>;

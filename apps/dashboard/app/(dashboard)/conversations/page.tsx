@@ -38,12 +38,25 @@ interface Conversation {
     lastMessage?: Message;
 }
 
+interface Reservation {
+    _id: string;
+    date: string;
+    time: string;
+    duration: number;
+    status: string;
+    table?: {
+        name: string;
+    };
+    partySize: number;
+}
+
 // --- Page Component ---
 
 export default function ConversationsPage() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [reservations, setReservations] = useState<Reservation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [input, setInput] = useState("");
 
@@ -89,6 +102,30 @@ export default function ConversationsPage() {
 
         fetchMessages();
     }, [selectedId]);
+
+    // 3. Fetch Reservations when conversation/customer changes
+    useEffect(() => {
+        if (!selectedConversation?.customer?._id) {
+            setReservations([]);
+            return;
+        }
+
+        const fetchReservations = async () => {
+            try {
+                const { data } = await api.get('/reservations', {
+                    params: {
+                        customerId: selectedConversation.customer._id,
+                        status: 'CONFIRMED,PENDING,SEATED,COMPLETED' // Optional: filter if needed, or get all
+                    }
+                });
+                setReservations(data.reservations || []);
+            } catch (error) {
+                console.error("Failed to fetch reservations", error);
+            }
+        };
+
+        fetchReservations();
+    }, [selectedConversation?.customer?._id]);
 
     const scrollToBottom = (instant = false) => {
         if (instant) {
@@ -407,22 +444,51 @@ export default function ConversationsPage() {
                             <div className="flex-1">
                                 <h4 className="text-sm font-medium mb-2 text-muted-foreground">Booking History</h4>
                                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                                    <div className="p-3 border border-border/50 rounded-lg space-y-1 bg-muted/30">
-                                        <div className="flex items-center justify-between">
-                                            <h5 className="text-sm font-medium">Court 2 - Padel</h5>
-                                            <Badge variant="warning" className="text-xs">pending</Badge>
+                                    {reservations.length === 0 ? (
+                                        <div className="text-sm text-muted-foreground p-2 text-center bg-muted/30 rounded-lg">
+                                            No booking history
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <Calendar className="h-3 w-3" />
-                                            <span>Dec 9, 2025</span>
-                                            <span>•</span>
-                                            <span>20:00 - 21:00</span>
-                                        </div>
-                                        <div className="text-xs font-medium flex items-center gap-1">
-                                            <span>SAR</span>
-                                            <span>220.00</span>
-                                        </div>
-                                    </div>
+                                    ) : (
+                                        reservations.map(reservation => {
+                                            // Calculate end time
+                                            const [hours = 0, minutes = 0] = reservation.time.split(':').map(Number);
+                                            const startDate = new Date();
+                                            startDate.setHours(hours, minutes, 0, 0);
+                                            const endDate = new Date(startDate.getTime() + reservation.duration * 60000);
+                                            const endTime = format(endDate, 'HH:mm');
+
+                                            let badgeVariant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "error" | "info" = "secondary";
+                                            switch (reservation.status) {
+                                                case 'CONFIRMED': badgeVariant = 'success'; break;
+                                                case 'PENDING': badgeVariant = 'warning'; break;
+                                                case 'CANCELLED': badgeVariant = 'destructive'; break;
+                                                case 'SEATED': badgeVariant = 'info'; break;
+                                                case 'COMPLETED': badgeVariant = 'default'; break;
+                                                default: badgeVariant = 'secondary';
+                                            }
+
+                                            return (
+                                                <div key={reservation._id} className="p-3 border border-border/50 rounded-lg space-y-1 bg-muted/30">
+                                                    <div className="flex items-center justify-between">
+                                                        <h5 className="text-sm font-medium">{reservation.table?.name || 'Unknown Table'}</h5>
+                                                        <Badge variant={badgeVariant} className="text-xs">
+                                                            {reservation.status.toLowerCase()}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                        <Calendar className="h-3 w-3" />
+                                                        <span>{format(new Date(reservation.date), 'MMM d, yyyy')}</span>
+                                                        <span>•</span>
+                                                        <span>{reservation.time} - {endTime}</span>
+                                                    </div>
+                                                    <div className="text-xs font-medium flex items-center gap-1">
+                                                        <span>SAR</span>
+                                                        <span>-</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                 </div>
                             </div>
                         </div>

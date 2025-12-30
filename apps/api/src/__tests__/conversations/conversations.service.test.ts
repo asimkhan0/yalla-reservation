@@ -96,6 +96,28 @@ describe('Conversations Service', () => {
             const result = await listConversations(restaurantId);
             expect(result).toHaveLength(1);
         });
+
+        it('should sort conversations by updatedAt desc ensuring valid order', async () => {
+            // Create two conversations with distinct timestamps
+            const c1 = await Conversation.create({
+                customer: customerId,
+                restaurant: restaurantId,
+                status: 'ACTIVE',
+                updatedAt: new Date('2025-01-01T10:00:00Z'),
+            });
+            const c2 = await Conversation.create({
+                customer: customerId,
+                restaurant: restaurantId,
+                status: 'ACTIVE',
+                updatedAt: new Date('2025-01-01T12:00:00Z'), // Later
+            });
+
+            const result = await listConversations(restaurantId);
+            expect(result).toHaveLength(2);
+            // c2 (newer) should be first
+            expect(result[0]._id.toString()).toBe(c2._id.toString());
+            expect(result[1]._id.toString()).toBe(c1._id.toString());
+        });
     });
 
     describe('getConversationMessages', () => {
@@ -128,6 +150,26 @@ describe('Conversations Service', () => {
             expect(result).toHaveLength(2);
             expect(result[0]!.content).toBe('First message');
             expect(result[1]!.content).toBe('Second message');
+        });
+
+        it('should NOT update conversation updatedAt timestamp', async () => {
+            const conversation = await Conversation.create({
+                customer: customerId,
+                restaurant: restaurantId,
+                status: 'ACTIVE',
+                source: 'WHATSAPP',
+                unreadCount: 5,
+            });
+            const originalUpdatedAt = conversation.updatedAt;
+
+            // Wait a bit to ensure potential update would be noticeable
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            await getConversationMessages(conversation._id.toString());
+
+            const updatedConversation = await Conversation.findById(conversation._id);
+            expect(updatedConversation?.updatedAt.getTime()).toBe(originalUpdatedAt.getTime());
+            expect(updatedConversation?.unreadCount).toBe(0);
         });
     });
 

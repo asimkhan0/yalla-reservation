@@ -29,7 +29,7 @@ export const listConversations = async (restaurantId: string) => {
 
 export const getConversationMessages = async (conversationId: string) => {
     // Reset unread count when messages are requested (opening conversation)
-    await Conversation.findByIdAndUpdate(conversationId, { unreadCount: 0 });
+    await Conversation.findByIdAndUpdate(conversationId, { unreadCount: 0 }, { timestamps: false });
 
     return Message.find({ conversation: conversationId })
         .sort({ createdAt: 1 }); // Oldest first for chat history

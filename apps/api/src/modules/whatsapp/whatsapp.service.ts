@@ -83,7 +83,8 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
         } else {
             // Increment unread count for existing conversation
             await Conversation.findByIdAndUpdate(conversation._id, {
-                $inc: { unreadCount: 1 }
+                $inc: { unreadCount: 1 },
+                updatedAt: new Date()
             });
         }
 
