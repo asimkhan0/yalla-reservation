@@ -1,5 +1,5 @@
 {
-  "name": "yalla-reservation",
+  "name": "dineline",
   "private": true,
   "scripts": {
     "build": "turbo run build",

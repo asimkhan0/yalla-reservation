@@ -6,7 +6,7 @@ import { Pricing } from "@/components/landing/pricing";
 import { CTA } from "@/components/landing/cta";
 
 export const metadata: Metadata = {
-    title: "Yalla Reservation | AI-Powered Restaurant Management",
+    title: "DineLine | AI-Powered Restaurant Management",
     description: "Automate your restaurant reservations with our AI WhatsApp Agent. Stop no-shows, save time, and increase bookings.",
 };
 

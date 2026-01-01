@@ -76,7 +76,7 @@ export function Hero() {
                         <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-950 border border-white/5 flex items-center justify-center">
                             <img
                                 src="/dashboard-hero.png"
-                                alt="Yalla Reservation Dashboard Mockup"
+                                alt="DineLine Dashboard"
                                 className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
                             />
                         </div>

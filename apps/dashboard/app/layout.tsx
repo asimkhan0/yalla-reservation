@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Yalla Reservation - Restaurant Dashboard",
+  title: "DineLine - Restaurant Dashboard",
   description: "Manage your restaurant reservations with AI-powered WhatsApp integration",
 };
 

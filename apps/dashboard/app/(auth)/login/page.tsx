@@ -71,12 +71,12 @@ export default function LoginPage() {
                 <CardHeader className="space-y-1 text-center">
                     <div className="flex justify-center mb-4">
                         <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30">
-                            <span className="text-2xl font-bold text-primary-foreground">Y</span>
+                            <span className="text-2xl font-bold text-primary-foreground">D</span>
                         </div>
                     </div>
                     <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
                     <CardDescription>
-                        Sign in to your Yalla Reservation account
+                        Sign in to your DineLine account
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit(onSubmit)}>

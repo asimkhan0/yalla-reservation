@@ -14,7 +14,7 @@ const envSchema = z.object({
     HOST: z.string().default('0.0.0.0'),
 
     // Database (MongoDB)
-    MONGODB_URI: z.string().default('mongodb://localhost:27017/yalla_reservation'),
+    MONGODB_URI: z.string().default('mongodb://localhost:27017/dineline'),
 
     // Redis
     REDIS_URL: z.string().optional(),

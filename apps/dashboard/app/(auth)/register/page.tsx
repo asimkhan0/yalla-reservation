@@ -93,12 +93,12 @@ export default function RegisterPage() {
                 <CardHeader className="space-y-1 text-center">
                     <div className="flex justify-center mb-4">
                         <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30">
-                            <span className="text-2xl font-bold text-primary-foreground">Y</span>
+                            <span className="text-2xl font-bold text-primary-foreground">D</span>
                         </div>
                     </div>
                     <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
                     <CardDescription>
-                        Get started with Yalla Reservation
+                        Get started with DineLine
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit(onSubmit)}>
@@ -187,7 +187,7 @@ export default function RegisterPage() {
                         <div className="space-y-2">
                             <Label htmlFor="restaurantSlug">URL Slug</Label>
                             <div className="flex items-center">
-                                <span className="text-sm text-muted-foreground mr-1">yalla.app/</span>
+                                <span className="text-sm text-muted-foreground mr-1">getdineline.com/</span>
                                 <Input
                                     id="restaurantSlug"
                                     placeholder="my-restaurant"

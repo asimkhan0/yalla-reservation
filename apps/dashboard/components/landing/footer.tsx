@@ -10,7 +10,7 @@ export function LandingFooter() {
                         <Link href="/" className="flex items-center gap-2">
                             <Bot className="h-6 w-6 text-purple-400" />
                             <span className="text-xl font-bold text-white">
-                                Yalla Reservation
+                                DineLine
                             </span>
                         </Link>
                         <p className="text-slate-400 text-sm leading-relaxed">
@@ -49,7 +49,7 @@ export function LandingFooter() {
 
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-slate-500">
-                        © {new Date().getFullYear()} Yalla Reservation. All rights reserved.
+                        © {new Date().getFullYear()} DineLine. All rights reserved.
                     </p>
                     <div className="flex gap-6">
                         <Link href="#" className="text-slate-500 hover:text-white transition-colors">

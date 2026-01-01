@@ -72,7 +72,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
     const handleTest = async () => {
         setIsTesting(true);
         try {
-            await RestaurantService.testConnection(restaurantId, 'Hello from Yalla Reservation!', testPhone);
+            await RestaurantService.testConnection(restaurantId, 'Hello from DineLine!', testPhone);
             toast.success('Test message sent!');
         } catch (error: any) {
             console.error(error);

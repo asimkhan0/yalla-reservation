@@ -91,14 +91,14 @@ To support multiple providers cleanly, we will use distinct webhook endpoints.
 2.  **Auth Token**: [Input Password]
 3.  **WhatsApp Number**: [Input Text] (e.g., +14155238886)
 4.  **Instructions**: "Copy the Webhook URL below and paste it into your Twilio Sandbox or Phone Number settings."
-5.  **Webhook URL**: [Read-only Input] `https://api.yalla.com/api/whatsapp/webhooks/twilio/{restaurant_id}` (Copy Button)
+5.  **Webhook URL**: [Read-only Input] `https://api.getdineline.com/api/whatsapp/webhooks/twilio/{restaurant_id}` (Copy Button)
 
 #### When Meta is selected:
 1.  **Phone Number ID**: [Input Text]
 2.  **WABA ID**: [Input Text]
 3.  **Access Token**: [Input Password] (Note: "Use a System User Permanent Token")
 4.  **Webhook Verify Token**: [Read-only Input] (Auto-generated unique token)
-5.  **Webhook URL**: [Read-only Input] `https://api.yalla.com/api/whatsapp/webhooks/meta/{restaurant_id}`
+5.  **Webhook URL**: [Read-only Input] `https://api.getdineline.com/api/whatsapp/webhooks/meta/{restaurant_id}`
 6.  **Instructions**: "Configure this Webhook URL and Verify Token in your Meta App Dashboard."
 
 ### Section 3: Action Bar

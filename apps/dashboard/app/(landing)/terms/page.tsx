@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Terms and Conditions | Yalla Reservation",
-    description: "Terms and Conditions for Yalla Reservation services.",
+    title: "Terms and Conditions | DineLine",
+    description: "Terms and Conditions for DineLine services.",
 };
 
 export default function TermsPage() {
@@ -14,12 +14,12 @@ export default function TermsPage() {
 
                 <h2>1. Agreement to Terms</h2>
                 <p>
-                    These Terms and Conditions constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you") and Yalla Reservation ("we," "us," or "our"), concerning your access to and use of the Yalla Reservation website and WhatsApp AI Agent services (the "Service").
+                    These Terms and Conditions constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you") and DineLine ("we," "us," or "our"), concerning your access to and use of the DineLine website and WhatsApp AI Agent services (the "Service").
                 </p>
 
                 <h2>2. Description of Service</h2>
                 <p>
-                    Yalla Reservation provides an automated reservation management tool that integrates with the WhatsApp Business API. The Service utilizes AI to respond to customer inquiries and manage bookings on your behalf.
+                    DineLine provides an automated reservation management tool that integrates with the WhatsApp Business API. The Service utilizes AI to respond to customer inquiries and manage bookings on your behalf.
                 </p>
 
                 <h2>3. Acceptable Use Policy</h2>
@@ -38,7 +38,7 @@ export default function TermsPage() {
 
                 <h2>4. WhatsApp Business API Compliance</h2>
                 <p>
-                    You are responsible for maintaining your own WhatsApp Business account in good standing. Yalla Reservation is not responsible for any bans or blocks imposed by WhatsApp due to your violation of their policies (e.g., low quality rating, spam reports).
+                    You are responsible for maintaining your own WhatsApp Business account in good standing. DineLine is not responsible for any bans or blocks imposed by WhatsApp due to your violation of their policies (e.g., low quality rating, spam reports).
                 </p>
 
                 <h2>5. Account & Subscription</h2>
@@ -60,7 +60,7 @@ export default function TermsPage() {
                 <p>
                     Questions about the Terms of Service should be sent to us at:
                     <br />
-                    <strong>Email:</strong> legal@yallareservation.com [Replace with valid email]
+                    <strong>Email:</strong> legal@getdineline.com [Replace with valid email]
                 </p> */}
             </div>
         </div>

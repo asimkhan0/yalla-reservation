@@ -23,7 +23,7 @@ export function CTA() {
                         Ready to transform your <br /> restaurant?
                     </h2>
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10">
-                        Join 500+ restaurants using Yalla Reservation to save time and increase bookings.
+                        Join 500+ restaurants using DineLine to save time and increase bookings.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">

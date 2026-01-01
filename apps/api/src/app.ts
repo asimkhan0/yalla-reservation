@@ -58,7 +58,7 @@ export async function buildApp() {
     await fastify.register(swagger, {
         openapi: {
             info: {
-                title: 'Yalla Reservation API',
+                title: 'DineLine API',
                 description: 'REST API for restaurant reservation system with WhatsApp bot integration',
                 version: '0.1.0',
             },
@@ -106,7 +106,7 @@ export async function buildApp() {
     // API info
     fastify.get('/', async () => {
         return {
-            name: 'Yalla Reservation API',
+            name: 'DineLine API',
             version: '0.1.0',
             docs: '/docs',
             health: '/health',

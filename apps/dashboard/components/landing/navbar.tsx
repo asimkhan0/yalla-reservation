@@ -9,7 +9,7 @@ export function LandingNavbar() {
                 <Link href="/" className="flex items-center gap-2">
                     <Bot className="h-6 w-6 text-purple-400" />
                     <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                        Yalla Reservation
+                        DineLine
                     </span>
                 </Link>
 

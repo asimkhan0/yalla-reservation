@@ -1,6 +1,6 @@
 # Feature Roadmap & Release Plan
 
-This document outlines the proposed new features and improvements for the Yalla Reservation platform.
+This document outlines the proposed new features and improvements for the DineLine platform.
 
 ## 🚀 Phase 1: Core Experience Enhancements (Next Release)
 

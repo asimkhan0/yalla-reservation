@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Privacy Policy | Yalla Reservation",
-    description: "Privacy Policy for Yalla Reservation services, including WhatsApp data processing.",
+    title: "Privacy Policy | DineLine",
+    description: "Privacy Policy for DineLine services, including WhatsApp data processing.",
 };
 
 export default function PrivacyPage() {
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
 
                 <h2>1. Introduction</h2>
                 <p>
-                    Yalla Reservation ("we," "our," or "us") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and our AI-powered reservation management services via WhatsApp (the "Service").
+                    DineLine ("we," "our," or "us") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and our AI-powered reservation management services via WhatsApp (the "Service").
                 </p>
 
                 <h2>2. Data We Collect</h2>
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
                     <strong>For End Users (Restaurant Customers):</strong> By messaging your restaurant's WhatsApp number, customers initiate a conversation and consent to receive automated responses regarding their inquiry.
                 </p>
                 <p>
-                    <strong>For Businesses:</strong> By connecting your WhatsApp Business account to Yalla Reservation, you explicitly consent to our processing of your business messages for the purpose of reservation management.
+                    <strong>For Businesses:</strong> By connecting your WhatsApp Business account to DineLine, you explicitly consent to our processing of your business messages for the purpose of reservation management.
                 </p>
 
                 <h2>6. Data Retention</h2>
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
                 <p>
                     If you have questions or comments about this Privacy Policy, please contact us at:
                     <br />
-                    <strong>Email:</strong> legal@yallareservation.com [Replace with valid email]
+                    <strong>Email:</strong> legal@getdineline.com [Replace with valid email]
                     <br />
                     <strong>Address:</strong> [Insert Legal Business Address]
                 </p> */}
