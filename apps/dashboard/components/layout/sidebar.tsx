@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
     LayoutDashboard,
@@ -10,11 +11,11 @@ import {
     BarChart3,
     Settings,
     LogOut,
-    ChefHat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearAuthCookies } from "@/lib/cookies";
 import { useRestaurantStore } from "@/stores/use-restaurant-store";
+import { Logo } from "@/components/logo";
 
 const navigation = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -44,11 +45,8 @@ export function Sidebar() {
         <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border/50 bg-gradient-to-b from-card to-background">
             <div className="flex h-full flex-col">
                 {/* Logo */}
-                <div className="flex h-16 items-center gap-3 border-b border-border/50 px-6">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
-                        <ChefHat className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    <span className="text-lg font-semibold tracking-tight">DineLine</span>
+                <div className="flex h-16 items-center justify-center border-b border-border/50 px-4">
+                    <Logo className="max-h-full w-auto" />
                 </div>
 
                 {/* Navigation */}

@@ -1,16 +1,14 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Bot } from "lucide-react";
+import { Logo } from "@/components/logo";
 
 export function LandingNavbar() {
     return (
         <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-slate-950/50 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/50">
             <div className="container flex h-16 items-center justify-between">
-                <Link href="/" className="flex items-center gap-2">
-                    <Bot className="h-6 w-6 text-purple-400" />
-                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                        DineLine
-                    </span>
+                <Link href="/" className="flex items-center gap-3">
+                    <Logo className="h-18 w-auto" />
                 </Link>
 
                 {/* Desktop Nav */}
