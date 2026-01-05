@@ -34,9 +34,9 @@ export function Logo({ className }: LogoProps) {
             >
                 <defs>
                     <linearGradient id="dineGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#1A6B7C" />
-                        <stop offset="80%" stop-color="#1A6B7C" />
-                        <stop offset="100%" stop-color="#2A9D8F" />
+                        <stop offset="0%" stop-color="#818CF8" />
+                        <stop offset="80%" stop-color="#818CF8" />
+                        <stop offset="100%" stop-color="#C084FC" />
                     </linearGradient>
                     <filter id="aiGlowDark" x="-50%" y="-50%" width="200%" height="200%">
                         <feGaussianBlur stdDeviation="4" result="blur" />
@@ -51,8 +51,8 @@ export function Logo({ className }: LogoProps) {
                     stroke-linecap="round"
                     stroke-linejoin="round"
                 />
-                <circle cx="280" cy="55" r="6" fill="#E9C46A" />
-                <circle cx="40" cy="100" r="4" fill="#E9C46A" filter="url(#aiGlowDark)">
+                <circle cx="280" cy="55" r="6" fill="#C084FC" />
+                <circle cx="40" cy="100" r="4" fill="#C084FC" filter="url(#aiGlowDark)">
                     <animate attributeName="r" values="3;7;3" dur="2s" repeatCount="indefinite" />
                     <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite" />
                 </circle>
@@ -65,7 +65,7 @@ export function Logo({ className }: LogoProps) {
                     fill="#F8F9FA"
                     letter-spacing="20"
                 >
-                    DINE<tspan fill="#E9C46A">LINE</tspan>
+                    DINE<tspan fill="#C084FC">LINE</tspan>
                 </text>
             </svg>
         );
@@ -81,9 +81,9 @@ export function Logo({ className }: LogoProps) {
         >
             <defs>
                 <linearGradient id="dineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#0F4C5C" />
-                    <stop offset="80%" stop-color="#0F4C5C" />
-                    <stop offset="100%" stop-color="#2A9D8F" />
+                    <stop offset="0%" stop-color="#4F46E5" />
+                    <stop offset="80%" stop-color="#4F46E5" />
+                    <stop offset="100%" stop-color="#9333EA" />
                 </linearGradient>
                 <filter id="aiGlow" x="-50%" y="-50%" width="200%" height="200%">
                     <feGaussianBlur stdDeviation="3" result="blur" />
@@ -98,8 +98,8 @@ export function Logo({ className }: LogoProps) {
                 stroke-linecap="round"
                 stroke-linejoin="round"
             />
-            <circle cx="280" cy="55" r="6" fill="#E9C46A" />
-            <circle cx="40" cy="100" r="4" fill="#2A9D8F" filter="url(#aiGlow)">
+            <circle cx="280" cy="55" r="6" fill="#9333EA" />
+            <circle cx="40" cy="100" r="4" fill="#9333EA" filter="url(#aiGlow)">
                 <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite" />
             </circle>
@@ -109,10 +109,10 @@ export function Logo({ className }: LogoProps) {
                 font-family="Arial, sans-serif"
                 font-weight="900"
                 font-size="32"
-                fill="#0F4C5C"
+                fill="#0F172A"
                 letter-spacing="20"
             >
-                DINE<tspan fill="#E9C46A">LINE</tspan>
+                DINE<tspan fill="#9333EA">LINE</tspan>
             </text>
         </svg>
     );
