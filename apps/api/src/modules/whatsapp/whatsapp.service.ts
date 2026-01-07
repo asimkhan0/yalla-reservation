@@ -89,14 +89,21 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
         }
 
         // 3. Store User Message
-        const currentMessage = await Message.create({
-            content: body,
-            direction: 'INBOUND',
-            sender: 'CUSTOMER',
-            whatsappMsgId: data.messageId,
-            status: 'DELIVERED',
-            conversation: conversation._id
-        });
+        // First check if message already exists (to handle retries from Meta)
+        let currentMessage = await Message.findOne({ whatsappMsgId: data.messageId });
+
+        if (currentMessage) {
+            console.log(`[WhatsApp Service] Message ${data.messageId} already exists, skipping creation.`);
+        } else {
+            currentMessage = await Message.create({
+                content: body,
+                direction: 'INBOUND',
+                sender: 'CUSTOMER',
+                whatsappMsgId: data.messageId,
+                status: 'DELIVERED',
+                conversation: conversation._id
+            });
+        }
 
         if (conversation.assignedTo === 'AGENT') {
             console.log(`[WhatsApp] Conversation ${conversation._id} assigned to AGENT. Bot skipping.`);
@@ -207,10 +214,10 @@ export async function sendWhatsAppMessage(restaurantId: string, to: string, body
 }
 
 // Handle Test Chat (Simulated)
-export async function handleTestChat(message: string, phoneNumber: string = '1234567890') {
-    // 1. Mock Restaurant (First one)
-    let restaurant = await Restaurant.findOne();
-    if (!restaurant) throw new Error('No restaurant found');
+export async function handleTestChat(restaurantId: string, message: string, phoneNumber: string = '1234567890') {
+    // 1. Find Restaurant
+    let restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) throw new Error('Restaurant not found');
 
     // 2. Find/Create Customer
     let customer = await Customer.findOne({ phone: phoneNumber });

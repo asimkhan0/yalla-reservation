@@ -11,6 +11,10 @@ export interface WhatsAppConfig {
     phoneNumberId?: string;
     wabaId?: string;
     accessToken?: string;
+    webhookVerifyToken?: string;
+    // Display info (populated after connection)
+    businessName?: string;
+    displayPhoneNumber?: string;
 }
 
 export const RestaurantService = {
@@ -36,7 +40,9 @@ export const RestaurantService = {
                 ...payload,
                 phoneNumberId: config.phoneNumberId,
                 wabaId: config.wabaId,
-                accessToken: config.accessToken
+                accessToken: config.accessToken,
+                businessName: config.businessName,
+                displayPhoneNumber: config.displayPhoneNumber
             };
         }
 
@@ -46,11 +52,35 @@ export const RestaurantService = {
         return response.data;
     },
 
+    disconnect: async (restaurantId: string) => {
+        const response = await api.patch(`/restaurants/me`, {
+            whatsappConfig: null,
+            whatsappEnabled: false
+        });
+        return response.data;
+    },
+
     testConnection: async (restaurantId: string, message: string, phoneNumber: string) => {
         const response = await api.post(`/whatsapp/chat-test`, {
+            restaurantId,
             message,
             phoneNumber // The user's phone number to send to
         });
         return response.data;
+    },
+
+    verifyMetaConnection: async (phoneNumberId: string, accessToken: string) => {
+        const response = await api.post(`/whatsapp/verify-meta-connection`, {
+            phoneNumberId,
+            accessToken
+        });
+        return response.data as {
+            valid: boolean;
+            displayPhoneNumber?: string;
+            verifiedName?: string;
+            qualityRating?: string;
+            error?: string;
+        };
     }
 };
+

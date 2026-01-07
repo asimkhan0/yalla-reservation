@@ -20,6 +20,9 @@ const metaConfig = z.object({
     wabaId: z.string().min(1, 'WhatsApp Business Account ID is required'),
     accessToken: z.string().min(1, 'Permanent Access Token is required'),
     webhookVerifyToken: z.string().default(() => Math.random().toString(36).substring(7)),
+    // Optional display fields (populated after verification)
+    businessName: z.string().optional(),
+    displayPhoneNumber: z.string().optional(),
 });
 
 export const whatsappIntegrationSchema = z.discriminatedUnion('provider', [

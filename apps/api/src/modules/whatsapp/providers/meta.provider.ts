@@ -19,7 +19,7 @@ export class MetaProvider implements IWhatsAppProvider {
     async sendText(to: string, body: string): Promise<void> {
         try {
             await axios.post(
-                `${this.baseUrl}/${this.phoneNumberId}/messages`,
+                `${this.baseUrl}/${this.phoneNumberId}/messages?access_token=${this.accessToken}`,
                 {
                     messaging_product: 'whatsapp',
                     recipient_type: 'individual',
@@ -29,7 +29,6 @@ export class MetaProvider implements IWhatsAppProvider {
                 },
                 {
                     headers: {
-                        'Authorization': `Bearer ${this.accessToken}`,
                         'Content-Type': 'application/json'
                     }
                 }
@@ -44,7 +43,7 @@ export class MetaProvider implements IWhatsAppProvider {
     async sendTemplate(to: string, template: string, components: any[]): Promise<void> {
         try {
             await axios.post(
-                `${this.baseUrl}/${this.phoneNumberId}/messages`,
+                `${this.baseUrl}/${this.phoneNumberId}/messages?access_token=${this.accessToken}`,
                 {
                     messaging_product: 'whatsapp',
                     to: to,
@@ -57,7 +56,6 @@ export class MetaProvider implements IWhatsAppProvider {
                 },
                 {
                     headers: {
-                        'Authorization': `Bearer ${this.accessToken}`,
                         'Content-Type': 'application/json'
                     }
                 }
