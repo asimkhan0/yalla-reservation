@@ -81,6 +81,22 @@ export const RestaurantService = {
             qualityRating?: string;
             error?: string;
         };
+    },
+
+    exchangeEmbeddedSignupToken: async (code: string, wabaId: string, phoneNumberId: string) => {
+        const response = await api.post(`/whatsapp/embedded-signup/exchange`, {
+            code,
+            wabaId,
+            phoneNumberId
+        });
+        return response.data as {
+            success: boolean;
+            businessName?: string;
+            displayPhoneNumber?: string;
+            qualityRating?: string;
+            webhookVerifyToken?: string;
+            error?: string;
+        };
     }
 };
 

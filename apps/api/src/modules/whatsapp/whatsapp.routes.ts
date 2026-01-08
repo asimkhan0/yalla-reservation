@@ -214,5 +214,170 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
             });
         }
     });
+
+    // -------------------------------------------------------------------------
+    // Embedded Signup Token Exchange
+    // URL: /api/whatsapp/embedded-signup/exchange
+    // -------------------------------------------------------------------------
+    fastify.post('/embedded-signup/exchange', {
+        preHandler: [fastify.authenticate],
+        schema: {
+            tags: ['whatsapp'],
+            description: 'Exchange OAuth code for access token during Meta Embedded Signup',
+            body: {
+                type: 'object',
+                required: ['code', 'wabaId', 'phoneNumberId'],
+                properties: {
+                    code: { type: 'string' },
+                    wabaId: { type: 'string' },
+                    phoneNumberId: { type: 'string' }
+                }
+            }
+        }
+    }, async (request: FastifyRequest, reply: FastifyReply) => {
+        const { code, wabaId, phoneNumberId } = request.body as {
+            code: string;
+            wabaId: string;
+            phoneNumberId: string;
+        };
+        const user = request.user as { restaurantId: string };
+
+        try {
+            const appId = process.env.META_APP_ID;
+            const appSecret = process.env.META_APP_SECRET;
+
+            if (!appId || !appSecret) {
+                return reply.status(500).send({
+                    success: false,
+                    error: 'META_APP_ID or META_APP_SECRET not configured on server'
+                });
+            }
+
+            // 1. Exchange code for access token
+            console.log('[Embedded Signup] Exchanging code for access token...');
+            const tokenResponse = await fetch(
+                `https://graph.facebook.com/v21.0/oauth/access_token?` +
+                `client_id=${appId}&` +
+                `client_secret=${appSecret}&` +
+                `code=${code}`
+            );
+
+            if (!tokenResponse.ok) {
+                const errorData = await tokenResponse.json();
+                console.error('[Embedded Signup] Token exchange failed:', errorData);
+                return reply.status(400).send({
+                    success: false,
+                    error: errorData.error?.message || 'Failed to exchange code for token'
+                });
+            }
+
+            const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.access_token;
+            console.log('[Embedded Signup] Access token obtained successfully');
+
+            // 2. Get phone number details
+            console.log('[Embedded Signup] Fetching phone number details...');
+            const phoneInfoResponse = await fetch(
+                `https://graph.facebook.com/v21.0/${phoneNumberId}?fields=display_phone_number,verified_name,quality_rating&access_token=${accessToken}`
+            );
+
+            if (!phoneInfoResponse.ok) {
+                const errorData = await phoneInfoResponse.json();
+                console.error('[Embedded Signup] Failed to fetch phone info:', errorData);
+                return reply.status(400).send({
+                    success: false,
+                    error: errorData.error?.message || 'Failed to fetch phone number details'
+                });
+            }
+
+            const phoneInfo = await phoneInfoResponse.json();
+            console.log('[Embedded Signup] Phone info:', phoneInfo);
+
+            // 3. Register phone number for Cloud API messaging
+            console.log('[Embedded Signup] Registering phone for Cloud API...');
+            const registerResponse = await fetch(
+                `https://graph.facebook.com/v21.0/${phoneNumberId}/register?access_token=${accessToken}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messaging_product: 'whatsapp',
+                        pin: '123456' // Default 6-digit PIN for 2FA
+                    })
+                }
+            );
+
+            if (!registerResponse.ok) {
+                const errorData = await registerResponse.json();
+                // Error code 100 means already registered, which is fine
+                if (errorData.error?.code !== 100) {
+                    console.warn('[Embedded Signup] Phone registration warning:', errorData);
+                    // Don't fail - phone might already be registered
+                }
+            } else {
+                console.log('[Embedded Signup] Phone registered for Cloud API');
+            }
+
+            // 4. Subscribe app to WABA webhooks
+            console.log('[Embedded Signup] Subscribing to WABA webhooks...');
+            const subscribeResponse = await fetch(
+                `https://graph.facebook.com/v21.0/${wabaId}/subscribed_apps?access_token=${accessToken}`,
+                { method: 'POST' }
+            );
+
+            if (!subscribeResponse.ok) {
+                const errorData = await subscribeResponse.json();
+                console.warn('[Embedded Signup] Webhook subscription warning:', errorData);
+                // Don't fail - we can configure webhooks manually later
+            } else {
+                console.log('[Embedded Signup] Subscribed to WABA webhooks');
+            }
+
+            // 5. Generate verify token for webhook configuration
+            const webhookVerifyToken = Math.random().toString(36).substring(2, 15);
+
+            // 6. Update restaurant configuration
+            const restaurant = await Restaurant.findByIdAndUpdate(
+                user.restaurantId,
+                {
+                    whatsappConfig: {
+                        enabled: true,
+                        provider: 'meta',
+                        phoneNumberId,
+                        wabaId,
+                        accessToken,
+                        webhookVerifyToken,
+                        businessName: phoneInfo.verified_name || 'Your Business',
+                        displayPhoneNumber: phoneInfo.display_phone_number
+                    }
+                },
+                { new: true }
+            );
+
+            if (!restaurant) {
+                return reply.status(404).send({
+                    success: false,
+                    error: 'Restaurant not found'
+                });
+            }
+
+            console.log(`[Embedded Signup] Configuration saved for ${restaurant.name}`);
+
+            return {
+                success: true,
+                businessName: phoneInfo.verified_name || 'Your Business',
+                displayPhoneNumber: phoneInfo.display_phone_number,
+                qualityRating: phoneInfo.quality_rating,
+                webhookVerifyToken
+            };
+        } catch (error: any) {
+            console.error('[Embedded Signup] Error:', error);
+            request.log.error(error);
+            return reply.status(500).send({
+                success: false,
+                error: error.message || 'Internal server error during embedded signup'
+            });
+        }
+    });
 }
 

@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Loader2, CheckCircle2, AlertCircle, Send, MessageSquare } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Copy, Loader2, CheckCircle2, Send, MessageSquare, Zap, Settings } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { MetaEmbeddedSignup } from './MetaEmbeddedSignup';
 
 interface MetaConfig {
     phoneNumberId?: string;
@@ -25,6 +27,7 @@ interface MetaSetupFormProps {
     onSave: (config: MetaConfig) => Promise<void>;
     onDisconnect: () => Promise<void>;
     onTest: (testPhone: string) => Promise<void>;
+    onEmbeddedSignup?: (data: { code: string; wabaId: string; phoneNumberId: string }) => Promise<void>;
 }
 
 export function MetaSetupForm({
@@ -33,7 +36,8 @@ export function MetaSetupForm({
     webhookUrl,
     onSave,
     onDisconnect,
-    onTest
+    onTest,
+    onEmbeddedSignup
 }: MetaSetupFormProps) {
     const [phoneNumberId, setPhoneNumberId] = useState(config?.phoneNumberId || '');
     const [wabaId, setWabaId] = useState(config?.wabaId || '');
@@ -43,6 +47,7 @@ export function MetaSetupForm({
     const [isTesting, setIsTesting] = useState(false);
     const [isDisconnecting, setIsDisconnecting] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [isEmbeddedSignupLoading, setIsEmbeddedSignupLoading] = useState(false);
 
     const isConnected = config?.enabled && config?.phoneNumberId;
     const verifyToken = config?.webhookVerifyToken || 'Generated on save';
@@ -214,6 +219,23 @@ export function MetaSetupForm({
     }
 
     // Setup Flow View (Not Connected or Editing)
+
+    const handleEmbeddedSignup = async (data: { code: string; wabaId: string; phoneNumberId: string }) => {
+        if (!onEmbeddedSignup) {
+            toast.error('Embedded signup not configured');
+            return;
+        }
+        setIsEmbeddedSignupLoading(true);
+        try {
+            await onEmbeddedSignup(data);
+            toast.success('WhatsApp Business connected successfully!');
+        } catch (error) {
+            toast.error('Failed to complete connection');
+        } finally {
+            setIsEmbeddedSignupLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Description */}
@@ -224,7 +246,7 @@ export function MetaSetupForm({
                 </p>
             </div>
 
-            {/* Setup Card */}
+            {/* Setup Card with Tabs */}
             <div className="rounded-xl border bg-card">
                 {/* Header with WhatsApp Icon */}
                 <div className="flex flex-col items-center justify-center py-8 border-b bg-muted/30">
@@ -237,85 +259,123 @@ export function MetaSetupForm({
                     </p>
                 </div>
 
-                {/* Requirements */}
-                <div className="p-6 space-y-6">
-                    <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 p-4">
-                        <h5 className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">
-                            What you'll need:
-                        </h5>
-                        <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                            <li className="flex items-center gap-2">
-                                <span className="text-amber-500">•</span>
-                                A Facebook Business account
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="text-amber-500">•</span>
-                                A WhatsApp Business account
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="text-amber-500">•</span>
-                                Admin access to your business account
-                            </li>
-                        </ul>
-                    </div>
+                {/* Tabbed Setup Options */}
+                <div className="p-6">
+                    <Tabs defaultValue="quick" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-6">
+                            <TabsTrigger value="quick" className="flex items-center gap-2">
+                                <Zap className="h-4 w-4" />
+                                Quick Connect
+                            </TabsTrigger>
+                            <TabsTrigger value="manual" className="flex items-center gap-2">
+                                <Settings className="h-4 w-4" />
+                                Manual Setup
+                            </TabsTrigger>
+                        </TabsList>
 
-                    {/* Credential Fields */}
-                    <div className="space-y-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="phoneNumberId">Phone Number ID *</Label>
-                            <Input
-                                id="phoneNumberId"
-                                value={phoneNumberId}
-                                onChange={e => setPhoneNumberId(e.target.value)}
-                                placeholder="100..."
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Find this in Meta Business Suite → WhatsApp → Phone Numbers
-                            </p>
-                        </div>
+                        {/* Quick Connect Tab - Embedded Signup */}
+                        <TabsContent value="quick" className="space-y-4">
+                            <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 p-4 mb-4">
+                                <p className="text-sm text-blue-700 dark:text-blue-300">
+                                    <strong>Recommended:</strong> Connect instantly with one click. We'll handle all the technical setup for you.
+                                </p>
+                            </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="wabaId">WhatsApp Business Account ID *</Label>
-                            <Input
-                                id="wabaId"
-                                value={wabaId}
-                                onChange={e => setWabaId(e.target.value)}
-                                placeholder="200..."
-                            />
-                        </div>
+                            {isEmbeddedSignupLoading ? (
+                                <div className="flex flex-col items-center py-8">
+                                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+                                    <p className="text-sm text-muted-foreground">Setting up your WhatsApp Business...</p>
+                                </div>
+                            ) : (
+                                <MetaEmbeddedSignup
+                                    onSuccess={handleEmbeddedSignup}
+                                    onError={(error) => toast.error(error)}
+                                />
+                            )}
+                        </TabsContent>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="accessToken">Permanent Access Token *</Label>
-                            <Input
-                                id="accessToken"
-                                type="password"
-                                value={accessToken}
-                                onChange={e => setAccessToken(e.target.value)}
-                                placeholder="EAAG..."
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Use a System User access token with <code className="px-1 py-0.5 bg-muted rounded text-xs">whatsapp_business_messaging</code> permission.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                        {/* Manual Setup Tab - Credential Form */}
+                        <TabsContent value="manual" className="space-y-6">
+                            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 p-4">
+                                <h5 className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">
+                                    What you'll need:
+                                </h5>
+                                <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                                    <li className="flex items-center gap-2">
+                                        <span className="text-amber-500">•</span>
+                                        A Facebook Business account
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="text-amber-500">•</span>
+                                        A WhatsApp Business account
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="text-amber-500">•</span>
+                                        Admin access to your business account
+                                    </li>
+                                </ul>
+                            </div>
 
-                {/* Actions */}
-                <div className="flex justify-end gap-3 p-6 pt-0">
-                    {(isConnected || showForm) && (
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowForm(false)}
-                        >
-                            Cancel
-                        </Button>
-                    )}
-                    <Button onClick={handleSave} disabled={isLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Connect WhatsApp
-                    </Button>
+                            {/* Credential Fields */}
+                            <div className="space-y-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="phoneNumberId">Phone Number ID *</Label>
+                                    <Input
+                                        id="phoneNumberId"
+                                        value={phoneNumberId}
+                                        onChange={e => setPhoneNumberId(e.target.value)}
+                                        placeholder="100..."
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Find this in Meta Business Suite → WhatsApp → Phone Numbers
+                                    </p>
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="wabaId">WhatsApp Business Account ID *</Label>
+                                    <Input
+                                        id="wabaId"
+                                        value={wabaId}
+                                        onChange={e => setWabaId(e.target.value)}
+                                        placeholder="200..."
+                                    />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="accessToken">Permanent Access Token *</Label>
+                                    <Input
+                                        id="accessToken"
+                                        type="password"
+                                        value={accessToken}
+                                        onChange={e => setAccessToken(e.target.value)}
+                                        placeholder="EAAG..."
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Use a System User access token with <code className="px-1 py-0.5 bg-muted rounded text-xs">whatsapp_business_messaging</code> permission.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex justify-end gap-3 pt-4">
+                                {(isConnected || showForm) && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowForm(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                )}
+                                <Button onClick={handleSave} disabled={isLoading}>
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Connect WhatsApp
+                                </Button>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
         </div>
     );
 }
+

@@ -119,6 +119,38 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
         }
     };
 
+    // Handle Embedded Signup (One-Click Connection)
+    const handleEmbeddedSignup = async (data: { code: string; wabaId: string; phoneNumberId: string }) => {
+        try {
+            const result = await RestaurantService.exchangeEmbeddedSignupToken(
+                data.code,
+                data.wabaId,
+                data.phoneNumberId
+            );
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to complete signup');
+            }
+
+            // Update local state with connected config
+            setConfig({
+                enabled: true,
+                provider: 'meta',
+                phoneNumberId: data.phoneNumberId,
+                wabaId: data.wabaId,
+                businessName: result.businessName,
+                displayPhoneNumber: result.displayPhoneNumber,
+                webhookVerifyToken: result.webhookVerifyToken
+            });
+
+            toast.success(`Connected to ${result.businessName || 'WhatsApp Business'}!`);
+        } catch (error: any) {
+            console.error('[Embedded Signup Error]', error);
+            toast.error('Connection failed: ' + (error.message || 'Unknown error'));
+            throw error;
+        }
+    };
+
     // Handle Test Message
     const handleTest = async (testPhone: string) => {
         console.log('[WhatsAppIntegrationCard] Testing with restaurantId:', restaurantId);
@@ -206,6 +238,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                             onSave={handleMetaSave}
                             onDisconnect={handleDisconnect}
                             onTest={handleTest}
+                            onEmbeddedSignup={handleEmbeddedSignup}
                         />
                     </TabsContent>
                 </Tabs>
