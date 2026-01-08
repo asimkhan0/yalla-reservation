@@ -155,40 +155,46 @@ export function useMetaSDK(): UseMetaSDKReturn {
                     console.info(`[Meta SDK Diagnostic] ${msg}`, data || '');
                 };
 
-                addDiagnosticLog('Received message event', { origin: event.origin });
+                // Parse data early to see what we're ignoring
+                let data: any = null;
+                try {
+                    data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                } catch (e) {
+                    // Ignore parse errors for noise
+                }
 
-                // Meta documented origins
+                addDiagnosticLog('Received message event', {
+                    origin: event.origin,
+                    type: data?.type || 'unknown'
+                });
+
+                // Meta documented origins + current origin (for SDK proxies)
                 const allowedOrigins = [
                     'https://www.facebook.com',
                     'https://web.facebook.com',
-                    'https://business.facebook.com'
+                    'https://business.facebook.com',
+                    'https://facebook.com', // Added
+                    window.location.origin // Added: allow SDK to proxy via same-origin iframes
                 ];
 
-                if (!allowedOrigins.includes(event.origin)) {
-                    addDiagnosticLog('Origin not allowed, ignoring', { origin: event.origin });
+                if (!allowedOrigins.includes(event.origin) && !data?.type?.startsWith('WA_')) {
+                    // Still ignore clear noise, but allow anything WA_ related from any origin for now
                     return;
                 }
 
-                try {
-                    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                    addDiagnosticLog('Message data parsed', data);
+                if (data && data.type === 'WA_EMBEDDED_SIGNUP') {
+                    addDiagnosticLog('Captured WA_EMBEDDED_SIGNUP data', data.data);
 
-                    if (data && data.type === 'WA_EMBEDDED_SIGNUP') {
-                        addDiagnosticLog('Captured WA_EMBEDDED_SIGNUP data', data.data);
-
-                        // Extract WABA and Phone Number IDs from session info
-                        if (data.data?.phone_number_id && data.data?.waba_id) {
-                            (window as any).__embeddedSignupData = {
-                                waba_id: data.data.waba_id,
-                                phone_number_id: data.data.phone_number_id
-                            };
-                            addDiagnosticLog('Stored IDs for final callback');
-                        } else {
-                            console.warn('[Meta SDK Diagnostic] WA_EMBEDDED_SIGNUP missing IDs', data.data);
-                        }
+                    // Extract WABA and Phone Number IDs from session info
+                    if (data.data?.phone_number_id && data.data?.waba_id) {
+                        (window as any).__embeddedSignupData = {
+                            waba_id: data.data.waba_id,
+                            phone_number_id: data.data.phone_number_id
+                        };
+                        addDiagnosticLog('Stored IDs for final callback');
+                    } else {
+                        console.warn('[Meta SDK Diagnostic] WA_EMBEDDED_SIGNUP missing IDs', data.data);
                     }
-                } catch (err) {
-                    addDiagnosticLog('Failed to parse message data', err);
                 }
             };
 
