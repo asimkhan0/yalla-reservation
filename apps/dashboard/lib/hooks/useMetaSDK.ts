@@ -66,8 +66,22 @@ export function useMetaSDK(): UseMetaSDKReturn {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Redundant production logging setup
+        const addDiagnosticLog = (msg: string, data?: any) => {
+            (window as any).__metaLogs = (window as any).__metaLogs || [];
+            (window as any).__metaLogs.push({ time: new Date().toISOString(), msg, data });
+            console.info(`[Meta SDK Diagnostic] ${msg}`, data || '');
+        };
+
+        addDiagnosticLog('Hook initialized', {
+            hasAppId: !!META_APP_ID,
+            hasConfigId: !!META_CONFIG_ID,
+            sdkLoaded: !!window.FB
+        });
+
         // Skip if SDK is already loaded
         if (window.FB) {
+            addDiagnosticLog('SDK already present on window');
             setIsReady(true);
             setIsLoading(false);
             return;
@@ -75,6 +89,7 @@ export function useMetaSDK(): UseMetaSDKReturn {
 
         // Skip if no App ID configured
         if (!META_APP_ID) {
+            addDiagnosticLog('ERROR: META_APP_ID is missing');
             setError('META_APP_ID not configured');
             setIsLoading(false);
             return;
@@ -132,39 +147,77 @@ export function useMetaSDK(): UseMetaSDKReturn {
                 return;
             }
 
-            // Session info listener for Embedded Signup data
+            // Persistent listener for diagnostics
             const sessionInfoListener = (event: MessageEvent) => {
-                if (event.origin !== 'https://www.facebook.com' &&
-                    event.origin !== 'https://web.facebook.com') {
+                const addDiagnosticLog = (msg: string, data?: any) => {
+                    (window as any).__metaLogs = (window as any).__metaLogs || [];
+                    (window as any).__metaLogs.push({ time: new Date().toISOString(), msg, data });
+                    console.info(`[Meta SDK Diagnostic] ${msg}`, data || '');
+                };
+
+                addDiagnosticLog('Received message event', { origin: event.origin });
+
+                // Meta documented origins
+                const allowedOrigins = [
+                    'https://www.facebook.com',
+                    'https://web.facebook.com',
+                    'https://business.facebook.com'
+                ];
+
+                if (!allowedOrigins.includes(event.origin)) {
+                    addDiagnosticLog('Origin not allowed, ignoring', { origin: event.origin });
                     return;
                 }
 
                 try {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'WA_EMBEDDED_SIGNUP') {
+                    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                    addDiagnosticLog('Message data parsed', data);
+
+                    if (data && data.type === 'WA_EMBEDDED_SIGNUP') {
+                        addDiagnosticLog('Captured WA_EMBEDDED_SIGNUP data', data.data);
+
                         // Extract WABA and Phone Number IDs from session info
-                        if (data.data.phone_number_id && data.data.waba_id) {
-                            window.removeEventListener('message', sessionInfoListener);
-                            // Store for later use in the login callback
+                        if (data.data?.phone_number_id && data.data?.waba_id) {
                             (window as any).__embeddedSignupData = {
                                 waba_id: data.data.waba_id,
                                 phone_number_id: data.data.phone_number_id
                             };
+                            addDiagnosticLog('Stored IDs for final callback');
+                        } else {
+                            console.warn('[Meta SDK Diagnostic] WA_EMBEDDED_SIGNUP missing IDs', data.data);
                         }
                     }
-                } catch {
-                    // Not a JSON message, ignore
+                } catch (err) {
+                    addDiagnosticLog('Failed to parse message data', err);
                 }
             };
 
             window.addEventListener('message', sessionInfoListener);
 
             window.FB.login(
-                (response: FacebookLoginResponse) => {
-                    window.removeEventListener('message', sessionInfoListener);
+                async (response: FacebookLoginResponse) => {
+                    const addDiagnosticLog = (msg: string, data?: any) => {
+                        (window as any).__metaLogs = (window as any).__metaLogs || [];
+                        (window as any).__metaLogs.push({ time: new Date().toISOString(), msg, data });
+                        console.info(`[Meta SDK Diagnostic] ${msg}`, data || '');
+                    };
+
+                    addDiagnosticLog('FB.login callback triggered', { status: response.status });
 
                     if (response.authResponse?.code) {
+                        // Sometimes the postMessage arrives slightly after the popup closes
+                        if (!(window as any).__embeddedSignupData) {
+                            addDiagnosticLog('Auth code received but signup data missing, waiting 1.5s...');
+                            await new Promise(r => setTimeout(r, 1500));
+                        }
+
                         const embeddedData = (window as any).__embeddedSignupData || {};
+                        addDiagnosticLog('Finalizing signup', {
+                            hasWabaId: !!embeddedData.waba_id,
+                            hasPhoneId: !!embeddedData.phone_number_id
+                        });
+
+                        window.removeEventListener('message', sessionInfoListener);
                         resolve({
                             code: response.authResponse.code,
                             waba_id: embeddedData.waba_id,
@@ -172,6 +225,8 @@ export function useMetaSDK(): UseMetaSDKReturn {
                         });
                         delete (window as any).__embeddedSignupData;
                     } else {
+                        window.removeEventListener('message', sessionInfoListener);
+                        addDiagnosticLog('Login failed or cancelled', response);
                         reject(new Error('User cancelled or authorization failed'));
                     }
                 },
