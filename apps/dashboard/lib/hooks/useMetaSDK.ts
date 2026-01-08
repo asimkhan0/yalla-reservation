@@ -29,6 +29,7 @@ interface FacebookLoginOptions {
     extras?: {
         setup?: Record<string, unknown>;
         featureType?: string;
+        feature?: string;
         sessionInfoVersion?: number;
     };
 }
@@ -161,12 +162,24 @@ export function useMetaSDK(): UseMetaSDKReturn {
                     data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
                 } catch (e) { }
 
-                addDiagnosticLog('Incoming message raw check', {
+                const isFromFacebook = event.origin.includes('facebook.com');
+
+                // EXTRA AGGRESSIVE: Log raw string if it's from FB
+                if (isFromFacebook) {
+                    addDiagnosticLog('RAW FACEBOOK STRING SNIFF', {
+                        origin: event.origin,
+                        raw: event.data
+                    });
+                }
+
+                addDiagnosticLog(`Incoming message raw check (${isFromFacebook ? 'FB' : 'Non-FB'})`, {
                     origin: event.origin,
                     dataType: typeof event.data,
                     dataKeys: data && typeof data === 'object' ? Object.keys(data) : 'n/a',
+                    // Log a sanitized snippet of the data if it's a string
+                    rawSnippet: typeof event.data === 'string' ? event.data.substring(0, 150) : 'n/a',
                     typeField: data?.type || 'none',
-                    isWhatsApp: typeof event.data === 'string' && event.data.includes('WA_')
+                    isWhatsApp: (typeof event.data === 'string' && event.data.includes('WA_')) || (data?.type?.includes('WA_'))
                 });
 
                 // Meta documented origins + current origin (for SDK proxies)
@@ -181,11 +194,15 @@ export function useMetaSDK(): UseMetaSDKReturn {
                 // For diagnostics, we only skip if it looks completely unrelated
                 const looksRelevant = (data?.type?.startsWith('WA_')) || (typeof event.data === 'string' && event.data.includes('WA_'));
 
-                if (!allowedOrigins.includes(event.origin) && !looksRelevant) {
+                if (!allowedOrigins.includes(event.origin) && !looksRelevant && !isFromFacebook) {
                     return;
                 }
 
-                addDiagnosticLog('Processing potentially relevant message', { origin: event.origin, type: data?.type });
+                addDiagnosticLog('Analyzing Facebook/Relevant message', {
+                    origin: event.origin,
+                    type: data?.type,
+                    keys: data && typeof data === 'object' ? Object.keys(data) : 'n/a'
+                });
 
                 if (data && data.type === 'WA_EMBEDDED_SIGNUP') {
                     addDiagnosticLog('Captured WA_EMBEDDED_SIGNUP data', data.data);
@@ -232,11 +249,20 @@ export function useMetaSDK(): UseMetaSDKReturn {
                             });
 
                             window.removeEventListener('message', sessionInfoListener);
-                            resolve({
-                                code: response.authResponse.code,
-                                waba_id: embeddedData.waba_id,
-                                phone_number_id: embeddedData.phone_number_id
-                            });
+
+                            if (embeddedData.waba_id && embeddedData.phone_number_id) {
+                                resolve({
+                                    code: response.authResponse.code,
+                                    waba_id: embeddedData.waba_id,
+                                    phone_number_id: embeddedData.phone_number_id
+                                });
+                            } else {
+                                // Specific error for when we have a code but no WhatsApp data
+                                // This almost always means the Config ID is for "FB Login" not "WhatsApp Embedded Signup"
+                                const errorMsg = 'Connected to Facebook, but WhatsApp data was not received. Please verify your Meta "Configuration ID" is set to "WhatsApp Embedded Signup" type.';
+                                addDiagnosticLog('Failed: Code received but Data missing');
+                                reject(new Error(errorMsg));
+                            }
                             delete (window as any).__embeddedSignupData;
                         } else {
                             window.removeEventListener('message', sessionInfoListener);
@@ -251,8 +277,8 @@ export function useMetaSDK(): UseMetaSDKReturn {
                     override_default_response_type: true,
                     extras: {
                         setup: {},
-                        featureType: '',
-                        sessionInfoVersion: 3
+                        feature: 'whatsapp_embedded_signup',
+                        sessionInfoVersion: 2
                     }
                 }
             );
