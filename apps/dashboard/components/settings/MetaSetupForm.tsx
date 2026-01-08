@@ -261,11 +261,16 @@ export function MetaSetupForm({
 
                 {/* Tabbed Setup Options */}
                 <div className="p-6">
-                    <Tabs defaultValue="quick" className="w-full">
+                    <Tabs defaultValue="manual" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 mb-6">
-                            <TabsTrigger value="quick" className="flex items-center gap-2">
+                            <TabsTrigger
+                                value="quick"
+                                className="flex items-center gap-2 opacity-50 cursor-not-allowed"
+                                disabled
+                                onClick={() => toast.info('Coming Soon: Requires Meta Tech Provider Verification')}
+                            >
                                 <Zap className="h-4 w-4" />
-                                Quick Connect
+                                Quick Connect (Coming Soon)
                             </TabsTrigger>
                             <TabsTrigger value="manual" className="flex items-center gap-2">
                                 <Settings className="h-4 w-4" />
@@ -273,7 +278,7 @@ export function MetaSetupForm({
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* Quick Connect Tab - Embedded Signup */}
+                        {/* Quick Connect Tab - Embedded Signup (Disabled for now) */}
                         <TabsContent value="quick" className="space-y-4">
                             <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 p-4 mb-4">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">

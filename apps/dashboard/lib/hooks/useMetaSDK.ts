@@ -67,22 +67,8 @@ export function useMetaSDK(): UseMetaSDKReturn {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Redundant production logging setup
-        const addDiagnosticLog = (msg: string, data?: any) => {
-            (window as any).__metaLogs = (window as any).__metaLogs || [];
-            (window as any).__metaLogs.push({ time: new Date().toISOString(), msg, data });
-            console.info(`[Meta SDK Diagnostic] ${msg}`, data || '');
-        };
-
-        addDiagnosticLog('Hook initialized', {
-            hasAppId: !!META_APP_ID,
-            hasConfigId: !!META_CONFIG_ID,
-            sdkLoaded: !!window.FB
-        });
-
         // Skip if SDK is already loaded
         if (window.FB) {
-            addDiagnosticLog('SDK already present on window');
             setIsReady(true);
             setIsLoading(false);
             return;
@@ -90,7 +76,6 @@ export function useMetaSDK(): UseMetaSDKReturn {
 
         // Skip if no App ID configured
         if (!META_APP_ID) {
-            addDiagnosticLog('ERROR: META_APP_ID is missing');
             setError('META_APP_ID not configured');
             setIsLoading(false);
             return;
@@ -129,11 +114,6 @@ export function useMetaSDK(): UseMetaSDKReturn {
         if (!document.getElementById('facebook-jssdk')) {
             loadScript();
         }
-
-        // Cleanup
-        return () => {
-            // Note: We don't remove the script as FB SDK should persist
-        };
     }, []);
 
     const launchEmbeddedSignup = useCallback((): Promise<EmbeddedSignupResponse> => {
