@@ -155,17 +155,18 @@ export function useMetaSDK(): UseMetaSDKReturn {
                     console.info(`[Meta SDK Diagnostic] ${msg}`, data || '');
                 };
 
-                // Parse data early to see what we're ignoring
+                // Capture everything for a snippet to see what's actually moving
                 let data: any = null;
                 try {
                     data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                } catch (e) {
-                    // Ignore parse errors for noise
-                }
+                } catch (e) { }
 
-                addDiagnosticLog('Received message event', {
+                addDiagnosticLog('Incoming message raw check', {
                     origin: event.origin,
-                    type: data?.type || 'unknown'
+                    dataType: typeof event.data,
+                    dataKeys: data && typeof data === 'object' ? Object.keys(data) : 'n/a',
+                    typeField: data?.type || 'none',
+                    isWhatsApp: typeof event.data === 'string' && event.data.includes('WA_')
                 });
 
                 // Meta documented origins + current origin (for SDK proxies)
@@ -173,14 +174,18 @@ export function useMetaSDK(): UseMetaSDKReturn {
                     'https://www.facebook.com',
                     'https://web.facebook.com',
                     'https://business.facebook.com',
-                    'https://facebook.com', // Added
-                    window.location.origin // Added: allow SDK to proxy via same-origin iframes
+                    'https://facebook.com',
+                    window.location.origin
                 ];
 
-                if (!allowedOrigins.includes(event.origin) && !data?.type?.startsWith('WA_')) {
-                    // Still ignore clear noise, but allow anything WA_ related from any origin for now
+                // For diagnostics, we only skip if it looks completely unrelated
+                const looksRelevant = (data?.type?.startsWith('WA_')) || (typeof event.data === 'string' && event.data.includes('WA_'));
+
+                if (!allowedOrigins.includes(event.origin) && !looksRelevant) {
                     return;
                 }
+
+                addDiagnosticLog('Processing potentially relevant message', { origin: event.origin, type: data?.type });
 
                 if (data && data.type === 'WA_EMBEDDED_SIGNUP') {
                     addDiagnosticLog('Captured WA_EMBEDDED_SIGNUP data', data.data);
@@ -201,7 +206,7 @@ export function useMetaSDK(): UseMetaSDKReturn {
             window.addEventListener('message', sessionInfoListener);
 
             window.FB.login(
-                async (response: FacebookLoginResponse) => {
+                (response: FacebookLoginResponse) => {
                     const addDiagnosticLog = (msg: string, data?: any) => {
                         (window as any).__metaLogs = (window as any).__metaLogs || [];
                         (window as any).__metaLogs.push({ time: new Date().toISOString(), msg, data });
@@ -210,31 +215,35 @@ export function useMetaSDK(): UseMetaSDKReturn {
 
                     addDiagnosticLog('FB.login callback triggered', { status: response.status });
 
-                    if (response.authResponse?.code) {
-                        // Sometimes the postMessage arrives slightly after the popup closes
-                        if (!(window as any).__embeddedSignupData) {
-                            addDiagnosticLog('Auth code received but signup data missing, waiting 1.5s...');
-                            await new Promise(r => setTimeout(r, 1500));
+                    // Handle the logic in an IIFE so the main callback is not async
+                    (async () => {
+                        if (response.authResponse?.code) {
+                            // Sometimes the postMessage arrives slightly after the popup closes
+                            if (!(window as any).__embeddedSignupData) {
+                                addDiagnosticLog('Auth code received but signup data missing, waiting 1.5s...');
+                                await new Promise(r => setTimeout(r, 1500));
+                            }
+
+                            const embeddedData = (window as any).__embeddedSignupData || {};
+                            addDiagnosticLog('Finalizing signup with state', {
+                                hasWabaId: !!embeddedData.waba_id,
+                                hasPhoneId: !!embeddedData.phone_number_id,
+                                rawEmbeddedData: embeddedData
+                            });
+
+                            window.removeEventListener('message', sessionInfoListener);
+                            resolve({
+                                code: response.authResponse.code,
+                                waba_id: embeddedData.waba_id,
+                                phone_number_id: embeddedData.phone_number_id
+                            });
+                            delete (window as any).__embeddedSignupData;
+                        } else {
+                            window.removeEventListener('message', sessionInfoListener);
+                            addDiagnosticLog('Login failed or cancelled', { response, finalEmbeddedState: (window as any).__embeddedSignupData });
+                            reject(new Error('User cancelled or authorization failed'));
                         }
-
-                        const embeddedData = (window as any).__embeddedSignupData || {};
-                        addDiagnosticLog('Finalizing signup', {
-                            hasWabaId: !!embeddedData.waba_id,
-                            hasPhoneId: !!embeddedData.phone_number_id
-                        });
-
-                        window.removeEventListener('message', sessionInfoListener);
-                        resolve({
-                            code: response.authResponse.code,
-                            waba_id: embeddedData.waba_id,
-                            phone_number_id: embeddedData.phone_number_id
-                        });
-                        delete (window as any).__embeddedSignupData;
-                    } else {
-                        window.removeEventListener('message', sessionInfoListener);
-                        addDiagnosticLog('Login failed or cancelled', response);
-                        reject(new Error('User cancelled or authorization failed'));
-                    }
+                    })();
                 },
                 {
                     config_id: META_CONFIG_ID,
