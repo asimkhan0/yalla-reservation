@@ -75,7 +75,7 @@ export const sendAgentMessage = async (conversationId: string, content: string) 
 
     // 3. Send via WhatsApp
     if (conversation.customer && (conversation.customer as any).phone) {
-        await sendWhatsAppMessage(conversation.customer._id.toString(), (conversation.customer as any).phone, content);
+        await sendWhatsAppMessage(conversation.restaurant.toString(), (conversation.customer as any).phone, content);
     }
 
     return message;
