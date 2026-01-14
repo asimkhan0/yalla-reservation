@@ -5,10 +5,10 @@ import {
     clearTestDb,
     createMockRestaurantData,
 } from '../utils/test-helpers.js';
-import { executeTool, CACHE_KEY_RESTAURANT_DEFAULT } from '../../modules/whatsapp/tools.service.js';
+import { executeTool } from '../../modules/whatsapp/tools.service.js';
 import { Restaurant, Table } from '../../models/index.js';
 import { Reservation } from '../../models/reservation.js';
-import { cacheService } from '../../utils/cache.js';
+import { cacheService, CacheKeys } from '../../utils/cache.js';
 
 describe('WhatsApp Tools Service', () => {
     let restaurantId: string;
@@ -23,7 +23,7 @@ describe('WhatsApp Tools Service', () => {
 
     beforeEach(async () => {
         await clearTestDb();
-        await cacheService.del(CACHE_KEY_RESTAURANT_DEFAULT);
+        // Create restaurant first to get ID, then clear cache
         const restaurant = await Restaurant.create({
             ...createMockRestaurantData({
                 name: 'Test Restaurant',
@@ -54,6 +54,9 @@ describe('WhatsApp Tools Service', () => {
             restaurant: restaurantId,
             isActive: true,
         });
+
+        // Clear cache for the newly created restaurant
+        await cacheService.del(CacheKeys.restaurantConfig(restaurantId));
     });
 
     describe('checkAvailability', () => {
@@ -63,7 +66,7 @@ describe('WhatsApp Tools Service', () => {
                 date: '2025-01-20', // Monday
                 time: '19:00',
                 partySize: 4,
-            });
+            }, restaurantId);
 
             expect(result.available).toBe(true);
             expect(result.message).toContain('19:00');
@@ -75,7 +78,7 @@ describe('WhatsApp Tools Service', () => {
                 date: '2025-01-19', // Sunday
                 time: '19:00',
                 partySize: 4,
-            });
+            }, restaurantId);
 
             expect(result.available).toBe(false);
             expect(result.message).toContain('closed');
@@ -85,7 +88,7 @@ describe('WhatsApp Tools Service', () => {
             const result = await executeTool('checkAvailability', {
                 date: '2025-01-20', // Monday
                 partySize: 4,
-            });
+            }, restaurantId);
 
             expect(result.available).toBe(true);
             expect(result.slots).toBeDefined();
@@ -111,7 +114,7 @@ describe('WhatsApp Tools Service', () => {
                 date: '2025-01-20',
                 time: '19:00',
                 partySize: 4,
-            });
+            }, restaurantId);
 
             expect(result.available).toBe(false);
             expect(result.message).toContain('not available');
@@ -126,7 +129,7 @@ describe('WhatsApp Tools Service', () => {
                 partySize: 4,
                 guestName: 'John Doe',
                 guestPhone: '+1234567890',
-            });
+            }, restaurantId);
 
             expect(result.success).toBe(true);
             expect(result.confirmationCode).toBeDefined();
@@ -142,7 +145,7 @@ describe('WhatsApp Tools Service', () => {
                 guestName: 'John Doe',
                 guestPhone: '+1234567890',
                 specialRequests: 'Window seat please',
-            });
+            }, restaurantId);
 
             expect(result.success).toBe(true);
             expect(result.confirmationCode).toBeDefined();
@@ -151,7 +154,7 @@ describe('WhatsApp Tools Service', () => {
 
     describe('Unknown tool', () => {
         it('should return error for unknown tool', async () => {
-            const result = await executeTool('unknownTool', {});
+            const result = await executeTool('unknownTool', {}, restaurantId);
 
             expect(result.error).toBeDefined();
             expect(result.error).toContain('Unknown tool');

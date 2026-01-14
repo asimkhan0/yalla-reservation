@@ -139,7 +139,8 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
     }));
 
     // Get restaurant info
-    const restaurantInfo = await getRestaurantInfoForAgent(); // TODO: this needs to be scoped to restaurant._id if we support multiple
+    const restaurantId = conversation.restaurant.toString();
+    const restaurantInfo = await getRestaurantInfoForAgent(restaurantId);
     if (!restaurantInfo) {
         console.error('[WhatsApp] No restaurant info available for agent');
         return;
@@ -161,7 +162,7 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
         for (const toolCall of toolCalls) {
             try {
                 const args = JSON.parse(toolCall.function.arguments);
-                const result = await executeTool(toolCall.function.name, args);
+                const result = await executeTool(toolCall.function.name, args, restaurantId);
 
                 formattedHistory.push({
                     role: 'tool',
@@ -285,7 +286,7 @@ export async function handleTestChat(restaurantId: string, message: string, phon
         content: msg.content,
     }));
 
-    const restaurantInfo = await getRestaurantInfoForAgent();
+    const restaurantInfo = await getRestaurantInfoForAgent(restaurantId);
     if (!restaurantInfo) return "Error: No restaurant info available.";
 
     let aiResponse = await processUserMessage(message, formattedHistory as any[], restaurantInfo);
@@ -297,7 +298,7 @@ export async function handleTestChat(restaurantId: string, message: string, phon
         formattedHistory.push(aiResponse as any);
         for (const toolCall of toolCalls) {
             const args = JSON.parse(toolCall.function.arguments);
-            const result = await executeTool(toolCall.function.name, args);
+            const result = await executeTool(toolCall.function.name, args, restaurantId);
             formattedHistory.push({
                 role: 'tool',
                 tool_call_id: toolCall.id,

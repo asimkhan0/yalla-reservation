@@ -1,28 +1,20 @@
 import { listReservations, createReservation } from '../reservations/reservations.service.js';
-import { Customer, Restaurant, Table } from '../../models/index.js';
+import { Restaurant, Table } from '../../models/index.js';
 import { cacheService, CacheKeys } from '../../utils/cache.js';
 import type { RestaurantInfo } from './agent.service.js';
 
-export const CACHE_KEY_RESTAURANT_DEFAULT = 'restaurant:default:config';
-
-// Helper: Get cached restaurant (for single-restaurant MVP)
-async function getCachedRestaurant() {
-    // For MVP, we get the first restaurant. In multi-tenant, pass restaurantId.
-    const cacheKey = CACHE_KEY_RESTAURANT_DEFAULT;
-
+// Helper: Get cached restaurant by ID
+async function getCachedRestaurant(restaurantId: string) {
     return cacheService.getOrSetCache(
-        cacheKey,
-        async () => {
-            const restaurant = await Restaurant.findOne().lean();
-            return restaurant;
-        },
+        CacheKeys.restaurantConfig(restaurantId),
+        async () => Restaurant.findById(restaurantId).lean(),
         3600 // 1 hour TTL
     );
 }
 
 // Helper: Convert DB restaurant to RestaurantInfo for agent
-export async function getRestaurantInfoForAgent(): Promise<RestaurantInfo | null> {
-    const restaurant = await getCachedRestaurant();
+export async function getRestaurantInfoForAgent(restaurantId: string): Promise<RestaurantInfo | null> {
+    const restaurant = await getCachedRestaurant(restaurantId);
     if (!restaurant) return null;
 
     return {
@@ -66,12 +58,12 @@ function formatOperatingHours(operatingHours: any): string {
 }
 
 // Real tool execution linked to services
-export async function executeTool(name: string, args: any) {
+export async function executeTool(name: string, args: any, restaurantId: string) {
     console.log(`[Tool Service] Executing ${name} with args:`, args);
 
     try {
         if (name === 'getRestaurantInfo') {
-            const restaurant = await getCachedRestaurant();
+            const restaurant = await getCachedRestaurant(restaurantId);
             if (!restaurant) return { error: 'No restaurant configured' };
 
             const { infoType } = args;
@@ -132,7 +124,7 @@ export async function executeTool(name: string, args: any) {
         }
 
         if (name === 'checkAvailability') {
-            const restaurant = await getCachedRestaurant();
+            const restaurant = await getCachedRestaurant(restaurantId);
             if (!restaurant) return { error: 'No restaurant configured' };
 
             const { date, partySize } = args; // time is optional now if we want to list all
@@ -203,7 +195,7 @@ export async function executeTool(name: string, args: any) {
         }
 
         if (name === 'createReservation') {
-            const restaurant = await getCachedRestaurant();
+            const restaurant = await getCachedRestaurant(restaurantId);
             if (!restaurant) return { error: 'No restaurant configured' };
 
             // Ensure customer exists or update
