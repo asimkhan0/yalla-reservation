@@ -4,6 +4,7 @@ import { executeTool, getRestaurantInfoForAgent } from './tools.service.js';
 import { IWhatsAppProvider, IncomingMessageData } from './providers/whatsapp.provider.interface.js';
 import { TwilioProvider } from './providers/twilio.provider.js';
 import { MetaProvider } from './providers/meta.provider.js';
+import { publishNewMessage, publishConversationListUpdate } from '../../socket/publisher.js';
 
 // Factory to get provider instance
 export function getProvider(restaurant: any): IWhatsAppProvider {
@@ -103,6 +104,25 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
                 status: 'DELIVERED',
                 conversation: conversation._id
             });
+
+            // Publish WebSocket events for real-time updates
+            const restaurantId = restaurant._id.toString();
+            const conversationId = conversation._id.toString();
+
+            publishNewMessage(conversationId, {
+                _id: (currentMessage as any)._id.toString(),
+                content: body,
+                sender: 'CUSTOMER',
+                direction: 'INBOUND',
+                createdAt: (currentMessage as any).createdAt.toISOString(),
+                status: 'DELIVERED',
+            });
+
+            publishConversationListUpdate(restaurantId, conversationId, {
+                content: body,
+                sender: 'CUSTOMER',
+                createdAt: (currentMessage as any).createdAt.toISOString(),
+            });
         }
 
         if (conversation.assignedTo === 'AGENT') {
@@ -192,12 +212,31 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
             console.error('[WhatsApp Service] Customer not found for sending response');
         }
 
-        await Message.create({
+        const botMessage = await Message.create({
             content: aiResponse.content,
             direction: 'OUTBOUND',
             sender: 'BOT',
             status: 'SENT',
             conversation: conversation._id
+        });
+
+        // Publish WebSocket events for bot response
+        const restaurantId = conversation.restaurant.toString();
+        const conversationId = conversation._id.toString();
+
+        publishNewMessage(conversationId, {
+            _id: (botMessage as any)._id.toString(),
+            content: aiResponse.content,
+            sender: 'BOT',
+            direction: 'OUTBOUND',
+            createdAt: (botMessage as any).createdAt.toISOString(),
+            status: 'SENT',
+        });
+
+        publishConversationListUpdate(restaurantId, conversationId, {
+            content: aiResponse.content,
+            sender: 'BOT',
+            createdAt: (botMessage as any).createdAt.toISOString(),
         });
 
         // Update conversation timestamp

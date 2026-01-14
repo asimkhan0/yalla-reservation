@@ -17,6 +17,7 @@ import { restaurantRoutes } from './modules/restaurants/index.js';
 import { whatsappRoutes } from './modules/whatsapp/index.js';
 import { uploadRoutes } from './modules/uploads/uploads.routes.js';
 import { analyticsRoutes } from './modules/analytics/index.js';
+import { registerWebSocket } from './socket/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -131,6 +132,9 @@ export async function buildApp() {
     await fastify.register(uploadRoutes, { prefix: '/api/upload' });
     await fastify.register(analyticsRoutes, { prefix: '/api/analytics' });
     await fastify.register(whatsappRoutes, { prefix: '/api/whatsapp' });
+
+    // Register WebSocket
+    await registerWebSocket(fastify);
 
     return fastify;
 }

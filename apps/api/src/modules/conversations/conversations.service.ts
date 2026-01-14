@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Conversation, Message } from '../../models/index.js';
 import { sendWhatsAppMessage } from '../whatsapp/whatsapp.service.js';
+import { publishNewMessage, publishConversationListUpdate, publishConversationUpdated } from '../../socket/publisher.js';
 
 export const listConversations = async (restaurantId: string) => {
     // Get conversations, most recent updated first
@@ -49,17 +50,30 @@ export const getConversation = async (conversationId: string, restaurantId: stri
 };
 
 export const assignConversation = async (conversationId: string, assignedTo: 'BOT' | 'AGENT') => {
-    return Conversation.findByIdAndUpdate(
+    const conversation = await Conversation.findByIdAndUpdate(
         conversationId,
         { assignedTo },
         { new: true }
     );
+
+    // Publish WebSocket event for assignment change
+    if (conversation) {
+        publishConversationUpdated(
+            conversationId,
+            conversation.restaurant.toString(),
+            { assignedTo }
+        );
+    }
+
+    return conversation;
 };
 
 export const sendAgentMessage = async (conversationId: string, content: string) => {
     // 1. Get Conversation to find Customer phone
     const conversation = await Conversation.findById(conversationId).populate('customer');
     if (!conversation) throw new Error('Conversation not found');
+
+    const restaurantId = conversation.restaurant.toString();
 
     // 2. Save Message to DB
     const message = await Message.create({
@@ -70,12 +84,28 @@ export const sendAgentMessage = async (conversationId: string, content: string) 
         conversation: conversationId
     });
 
+    // Publish WebSocket events for real-time updates
+    publishNewMessage(conversationId, {
+        _id: (message as any)._id.toString(),
+        content,
+        sender: 'AGENT',
+        direction: 'OUTBOUND',
+        createdAt: (message as any).createdAt.toISOString(),
+        status: 'SENT',
+    });
+
+    publishConversationListUpdate(restaurantId, conversationId, {
+        content,
+        sender: 'AGENT',
+        createdAt: (message as any).createdAt.toISOString(),
+    });
+
     // Update conversation timestamp
     await Conversation.findByIdAndUpdate(conversationId, { updatedAt: new Date() });
 
     // 3. Send via WhatsApp
     if (conversation.customer && (conversation.customer as any).phone) {
-        await sendWhatsAppMessage(conversation.restaurant.toString(), (conversation.customer as any).phone, content);
+        await sendWhatsAppMessage(restaurantId, (conversation.customer as any).phone, content);
     }
 
     return message;

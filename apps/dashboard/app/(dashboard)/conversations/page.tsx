@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import api from "@/lib/api";
 import { format } from "date-fns";
 import { Send, User, Phone, Calendar, Search, MoreVertical, Paperclip, Bot } from "lucide-react";
@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatWhatsAppDate } from "@/lib/utils";
+import { useSocket, NewMessagePayload, ConversationListUpdatePayload, ConversationUpdatedPayload } from "@/lib/hooks/useSocket";
 
 // --- Types ---
 
@@ -63,6 +64,83 @@ export default function ConversationsPage() {
     // Derived state
     const selectedConversation = conversations.find(c => c._id === selectedId);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const selectedIdRef = useRef<string | null>(null);
+
+    // Keep ref in sync with state for WebSocket callbacks
+    useEffect(() => {
+        selectedIdRef.current = selectedId;
+    }, [selectedId]);
+
+    // WebSocket handlers
+    const handleNewMessage = useCallback((payload: NewMessagePayload) => {
+        // Only add message if it's for the currently selected conversation
+        if (payload.conversationId === selectedIdRef.current) {
+            setMessages(prev => {
+                // Avoid duplicates
+                if (prev.some(m => m._id === payload.message._id)) {
+                    return prev;
+                }
+                return [...prev, payload.message as Message];
+            });
+            // Scroll to bottom for new messages
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        }
+    }, []);
+
+    const handleConversationListUpdate = useCallback((payload: ConversationListUpdatePayload) => {
+        setConversations(prev => {
+            const updated = prev.map(conv => {
+                if (conv._id === payload.conversationId) {
+                    return {
+                        ...conv,
+                        updatedAt: payload.updatedAt,
+                        lastMessage: payload.lastMessage ? {
+                            ...conv.lastMessage,
+                            content: payload.lastMessage.content,
+                            sender: payload.lastMessage.sender,
+                            createdAt: payload.lastMessage.createdAt,
+                        } as Message : conv.lastMessage,
+                    };
+                }
+                return conv;
+            });
+            // Sort by updatedAt descending
+            return updated.sort((a, b) =>
+                new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            );
+        });
+    }, []);
+
+    const handleConversationUpdated = useCallback((payload: ConversationUpdatedPayload) => {
+        setConversations(prev => prev.map(conv => {
+            if (conv._id === payload.conversationId) {
+                return {
+                    ...conv,
+                    ...payload.changes,
+                };
+            }
+            return conv;
+        }));
+    }, []);
+
+    // Initialize WebSocket connection
+    const { isConnected, subscribeToConversation, unsubscribeFromConversation } = useSocket({
+        onNewMessage: handleNewMessage,
+        onConversationListUpdate: handleConversationListUpdate,
+        onConversationUpdated: handleConversationUpdated,
+    });
+
+    // Subscribe to selected conversation for real-time updates
+    useEffect(() => {
+        if (selectedId && isConnected) {
+            subscribeToConversation(selectedId);
+            return () => {
+                unsubscribeFromConversation(selectedId);
+            };
+        }
+    }, [selectedId, isConnected, subscribeToConversation, unsubscribeFromConversation]);
 
     // 1. Fetch Conversations
     const fetchConversations = async () => {
@@ -78,8 +156,9 @@ export default function ConversationsPage() {
 
     useEffect(() => {
         fetchConversations();
-        // Optional: Poll for new conversations every 30s
-        const interval = setInterval(fetchConversations, 30000);
+        // Reduced polling interval since WebSocket handles real-time updates
+        // This is now just a fallback for missed events
+        const interval = setInterval(fetchConversations, 60000);
         return () => clearInterval(interval);
     }, []);
 
