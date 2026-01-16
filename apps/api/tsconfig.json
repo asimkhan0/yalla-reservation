@@ -1,5 +1,4 @@
 {
-    "extends": "@repo/typescript-config/base.json",
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
@@ -17,9 +16,12 @@
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
+        "isolatedModules": true,
         "baseUrl": "./src",
         "paths": {
-            "@/*": ["./*"]
+            "@/*": [
+                "./*"
+            ]
         }
     },
     "include": [
@@ -27,6 +29,7 @@
     ],
     "exclude": [
         "node_modules",
-        "dist"
+        "dist",
+        "src/__tests__"
     ]
 }
