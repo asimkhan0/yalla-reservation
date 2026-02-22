@@ -27,7 +27,11 @@ interface MetaSetupFormProps {
     onSave: (config: MetaConfig) => Promise<void>;
     onDisconnect: () => Promise<void>;
     onTest: (testPhone: string) => Promise<void>;
-    onEmbeddedSignup?: (data: { code: string; wabaId: string; phoneNumberId: string }) => Promise<void>;
+    onEmbeddedSignup?: (data: {
+        code: string;
+        wabaId: string;
+        phoneNumberId: string;
+    }) => Promise<void>;
 }
 
 export function MetaSetupForm({
@@ -37,7 +41,7 @@ export function MetaSetupForm({
     onSave,
     onDisconnect,
     onTest,
-    onEmbeddedSignup
+    onEmbeddedSignup,
 }: MetaSetupFormProps) {
     const [phoneNumberId, setPhoneNumberId] = useState(config?.phoneNumberId || '');
     const [wabaId, setWabaId] = useState(config?.wabaId || '');
@@ -64,7 +68,7 @@ export function MetaSetupForm({
                 phoneNumberId,
                 wabaId,
                 accessToken,
-                enabled: true
+                enabled: true,
             });
             setShowForm(false);
         } finally {
@@ -108,7 +112,9 @@ export function MetaSetupForm({
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Meta WhatsApp Business API</h3>
                     <p className="text-sm text-muted-foreground">
-                        Connect using Meta's official WhatsApp Business API. This requires a verified business account and provides advanced features like message templates and business profiles.
+                        Connect using Meta's official WhatsApp Business API. This requires a
+                        verified business account and provides advanced features like message
+                        templates and business profiles.
                     </p>
                 </div>
 
@@ -121,7 +127,9 @@ export function MetaSetupForm({
                             </div>
                             <div>
                                 <h4 className="font-semibold">WhatsApp Business Connection</h4>
-                                <p className="text-sm text-muted-foreground">Current WhatsApp Business API connection status</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Current WhatsApp Business API connection status
+                                </p>
                             </div>
                         </div>
                         <Badge variant="success" className="font-normal">
@@ -132,15 +140,25 @@ export function MetaSetupForm({
 
                     <div className="grid gap-3 pt-2 border-t">
                         <div className="grid grid-cols-[140px_1fr] gap-2 items-center">
-                            <span className="text-sm font-medium text-muted-foreground">Business Name:</span>
-                            <span className="text-sm">{config?.businessName || 'Your Business'}</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                                Business Name:
+                            </span>
+                            <span className="text-sm">
+                                {config?.businessName || 'Your Business'}
+                            </span>
                         </div>
                         <div className="grid grid-cols-[140px_1fr] gap-2 items-center">
-                            <span className="text-sm font-medium text-muted-foreground">Phone Number:</span>
-                            <span className="text-sm font-mono">{config?.displayPhoneNumber || config?.phoneNumberId}</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                                Phone Number:
+                            </span>
+                            <span className="text-sm font-mono">
+                                {config?.displayPhoneNumber || config?.phoneNumberId}
+                            </span>
                         </div>
                         <div className="grid grid-cols-[140px_1fr] gap-2 items-center">
-                            <span className="text-sm font-medium text-muted-foreground">Business Account ID:</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                                Business Account ID:
+                            </span>
                             <span className="text-sm font-mono">{config?.wabaId}</span>
                         </div>
                     </div>
@@ -155,11 +173,7 @@ export function MetaSetupForm({
                             {isDisconnecting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Disconnect
                         </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowForm(true)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => setShowForm(true)}>
                             Edit Configuration
                         </Button>
                     </div>
@@ -169,14 +183,19 @@ export function MetaSetupForm({
                 <div className="rounded-xl bg-muted/50 border border-border/50 p-4 space-y-3">
                     <div className="text-sm font-medium">Webhook Configuration</div>
                     <p className="text-sm text-muted-foreground">
-                        Configure this Callback URL in your Meta App Dashboard under WhatsApp → Configuration.
+                        Configure this Callback URL in your Meta App Dashboard under WhatsApp →
+                        Configuration.
                     </p>
                     <div className="space-y-3">
                         <div>
                             <Label className="text-xs text-muted-foreground">Callback URL</Label>
                             <div className="flex items-center gap-2 mt-1">
                                 <Input readOnly value={webhookUrl} className="font-mono text-xs" />
-                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(webhookUrl)}>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => copyToClipboard(webhookUrl)}
+                                >
                                     <Copy className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -185,7 +204,11 @@ export function MetaSetupForm({
                             <Label className="text-xs text-muted-foreground">Verify Token</Label>
                             <div className="flex items-center gap-2 mt-1">
                                 <Input readOnly value={verifyToken} className="font-mono text-xs" />
-                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(verifyToken)}>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => copyToClipboard(verifyToken)}
+                                >
                                     <Copy className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -198,7 +221,7 @@ export function MetaSetupForm({
                     <Input
                         placeholder="Test Phone (+1...)"
                         value={testPhone}
-                        onChange={e => setTestPhone(e.target.value)}
+                        onChange={(e) => setTestPhone(e.target.value)}
                         className="w-[180px]"
                     />
                     <Button
@@ -220,7 +243,11 @@ export function MetaSetupForm({
 
     // Setup Flow View (Not Connected or Editing)
 
-    const handleEmbeddedSignup = async (data: { code: string; wabaId: string; phoneNumberId: string }) => {
+    const handleEmbeddedSignup = async (data: {
+        code: string;
+        wabaId: string;
+        phoneNumberId: string;
+    }) => {
         if (!onEmbeddedSignup) {
             toast.error('Embedded signup not configured');
             return;
@@ -242,7 +269,9 @@ export function MetaSetupForm({
             <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Meta WhatsApp Business API</h3>
                 <p className="text-sm text-muted-foreground">
-                    Connect using Meta's official WhatsApp Business API. This requires a verified business account and provides advanced features like message templates and business profiles.
+                    Connect using Meta's official WhatsApp Business API. This requires a verified
+                    business account and provides advanced features like message templates and
+                    business profiles.
                 </p>
             </div>
 
@@ -255,7 +284,8 @@ export function MetaSetupForm({
                     </div>
                     <h4 className="text-lg font-semibold">WhatsApp Business Setup</h4>
                     <p className="text-sm text-muted-foreground text-center max-w-md mt-1">
-                        Connect your WhatsApp Business account to start receiving and sending messages through our platform.
+                        Connect your WhatsApp Business account to start receiving and sending
+                        messages through our platform.
                     </p>
                 </div>
 
@@ -267,7 +297,11 @@ export function MetaSetupForm({
                                 value="quick"
                                 className="flex items-center gap-2 opacity-50 cursor-not-allowed"
                                 disabled
-                                onClick={() => toast.info('Coming Soon: Requires Meta Tech Provider Verification')}
+                                onClick={() =>
+                                    toast.info(
+                                        'Coming Soon: Requires Meta Tech Provider Verification',
+                                    )
+                                }
                             >
                                 <Zap className="h-4 w-4" />
                                 Quick Connect (Coming Soon)
@@ -282,14 +316,17 @@ export function MetaSetupForm({
                         <TabsContent value="quick" className="space-y-4">
                             <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 p-4 mb-4">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                                    <strong>Recommended:</strong> Connect instantly with one click. We'll handle all the technical setup for you.
+                                    <strong>Recommended:</strong> Connect instantly with one click.
+                                    We'll handle all the technical setup for you.
                                 </p>
                             </div>
 
                             {isEmbeddedSignupLoading ? (
                                 <div className="flex flex-col items-center py-8">
                                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-                                    <p className="text-sm text-muted-foreground">Setting up your WhatsApp Business...</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Setting up your WhatsApp Business...
+                                    </p>
                                 </div>
                             ) : (
                                 <MetaEmbeddedSignup
@@ -307,12 +344,12 @@ export function MetaSetupForm({
                                 </h5>
                                 <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
                                     <li className="flex items-center gap-2">
-                                        <span className="text-amber-500">•</span>
-                                        A Facebook Business account
+                                        <span className="text-amber-500">•</span>A Facebook Business
+                                        account
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <span className="text-amber-500">•</span>
-                                        A WhatsApp Business account
+                                        <span className="text-amber-500">•</span>A WhatsApp Business
+                                        account
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <span className="text-amber-500">•</span>
@@ -328,7 +365,7 @@ export function MetaSetupForm({
                                     <Input
                                         id="phoneNumberId"
                                         value={phoneNumberId}
-                                        onChange={e => setPhoneNumberId(e.target.value)}
+                                        onChange={(e) => setPhoneNumberId(e.target.value)}
                                         placeholder="100..."
                                     />
                                     <p className="text-xs text-muted-foreground">
@@ -341,7 +378,7 @@ export function MetaSetupForm({
                                     <Input
                                         id="wabaId"
                                         value={wabaId}
-                                        onChange={e => setWabaId(e.target.value)}
+                                        onChange={(e) => setWabaId(e.target.value)}
                                         placeholder="200..."
                                     />
                                 </div>
@@ -352,11 +389,15 @@ export function MetaSetupForm({
                                         id="accessToken"
                                         type="password"
                                         value={accessToken}
-                                        onChange={e => setAccessToken(e.target.value)}
+                                        onChange={(e) => setAccessToken(e.target.value)}
                                         placeholder="EAAG..."
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                        Use a System User access token with <code className="px-1 py-0.5 bg-muted rounded text-xs">whatsapp_business_messaging</code> permission.
+                                        Use a System User access token with{' '}
+                                        <code className="px-1 py-0.5 bg-muted rounded text-xs">
+                                            whatsapp_business_messaging
+                                        </code>{' '}
+                                        permission.
                                     </p>
                                 </div>
                             </div>
@@ -364,10 +405,7 @@ export function MetaSetupForm({
                             {/* Actions */}
                             <div className="flex justify-end gap-3 pt-4">
                                 {(isConnected || showForm) && (
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setShowForm(false)}
-                                    >
+                                    <Button variant="outline" onClick={() => setShowForm(false)}>
                                         Cancel
                                     </Button>
                                 )}
@@ -383,4 +421,3 @@ export function MetaSetupForm({
         </div>
     );
 }
-

@@ -1,38 +1,41 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Bot, MessageSquare, BarChart3, ShieldCheck, Clock, Smartphone } from "lucide-react";
+import { motion } from 'framer-motion';
+import { Bot, MessageSquare, BarChart3, ShieldCheck, Clock, Smartphone } from 'lucide-react';
 
 const features = [
     {
         icon: Bot,
-        title: "24/7 AI Agent",
-        description: "Never miss a reservation. Our AI handles inquiries and bookings instantly, day or night.",
+        title: '24/7 AI Agent',
+        description:
+            'Never miss a reservation. Our AI handles inquiries and bookings instantly, day or night.',
     },
     {
         icon: Smartphone,
-        title: "WhatsApp Integrated",
-        description: "Meet your customers where they are. Seamless booking experience directly within WhatsApp.",
+        title: 'WhatsApp Integrated',
+        description:
+            'Meet your customers where they are. Seamless booking experience directly within WhatsApp.',
     },
     {
         icon: ShieldCheck,
-        title: "No-Show Protection",
-        description: "Automated confirmations and deposits (coming soon) to drastically reduce no-shows.",
+        title: 'No-Show Protection',
+        description:
+            'Automated confirmations and deposits (coming soon) to drastically reduce no-shows.',
     },
     {
         icon: Clock,
-        title: "Real-time Availability",
-        description: "Two-way sync with your table management. No double bookings, ever.",
+        title: 'Real-time Availability',
+        description: 'Two-way sync with your table management. No double bookings, ever.',
     },
     {
         icon: MessageSquare,
-        title: "Smart Responses",
-        description: "Answers FAQs about menu, location, and parking automatically.",
+        title: 'Smart Responses',
+        description: 'Answers FAQs about menu, location, and parking automatically.',
     },
     {
         icon: BarChart3,
-        title: "Deep Analytics",
-        description: "Understand your peak hours and loyal customers with detailed insights.",
+        title: 'Deep Analytics',
+        description: 'Understand your peak hours and loyal customers with detailed insights.',
     },
 ];
 
@@ -65,7 +68,9 @@ export function Features() {
                             <div className="h-12 w-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <feature.icon className="h-6 w-6 text-purple-400" />
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
+                            <h3 className="text-xl font-semibold text-white mb-2">
+                                {feature.title}
+                            </h3>
                             <p className="text-slate-400 leading-relaxed">{feature.description}</p>
                         </motion.div>
                     ))}

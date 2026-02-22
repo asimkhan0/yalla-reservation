@@ -1,23 +1,38 @@
 import OpenAI from 'openai';
 import { env } from '../../config/env.js';
 
+let openaiInstance: OpenAI | null = null;
+
 const getOpenAIClient = () => {
+    if (openaiInstance) return openaiInstance;
+
     if (env.LLM_PROVIDER === 'deepseek') {
-        if (!env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is missing');
-        return new OpenAI({
+        if (!env.DEEPSEEK_API_KEY) {
+            if (env.NODE_ENV === 'test') {
+                // Return a dummy client for tests if key is missing
+                return new OpenAI({ apiKey: 'dummy', baseURL: 'https://api.deepseek.com' });
+            }
+            throw new Error('DEEPSEEK_API_KEY is missing');
+        }
+        openaiInstance = new OpenAI({
             baseURL: 'https://api.deepseek.com',
             apiKey: env.DEEPSEEK_API_KEY,
         });
+    } else {
+        // Default to OpenAI
+        if (!env.OPENAI_API_KEY) {
+            if (env.NODE_ENV === 'test') {
+                return new OpenAI({ apiKey: 'dummy' });
+            }
+            throw new Error('OPENAI_API_KEY is missing');
+        }
+        openaiInstance = new OpenAI({
+            apiKey: env.OPENAI_API_KEY,
+        });
     }
 
-    // Default to OpenAI
-    if (!env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is missing');
-    return new OpenAI({
-        apiKey: env.OPENAI_API_KEY,
-    });
+    return openaiInstance;
 };
-
-const openai = getOpenAIClient();
 
 // Type for restaurant info passed to the agent
 export interface RestaurantInfo {
@@ -37,51 +52,67 @@ export interface RestaurantInfo {
             open?: string;
             close?: string;
             closed?: boolean;
-        }
+        };
     };
     aiPrompt?: string;
     additionalContext?: string;
 }
 
 // Extract reservation details mentioned in conversation history
-function extractCollectedInfo(history: { role: string; content: string }[]): Record<string, string> {
+export function extractCollectedInfo(
+    history: { role: string; content: string }[],
+): Record<string, string> {
     const collected: Record<string, string> = {};
     // Only look at user messages for extraction
-    const userMessages = history.filter(m => m.role === 'user').map(m => m.content).join(' ');
-    
+    const userMessages = history
+        .filter((m) => m.role === 'user')
+        .map((m) => m.content)
+        .join(' ');
+
     // Look for party size patterns
-    const sizeMatch = userMessages.match(/(\d+)\s*(?:people|persons|guests|of us|pax)/i) 
-        || userMessages.match(/(?:party of|table for|for)\s*(\d+)/i);
+    const sizeMatch =
+        userMessages.match(/(\d+)\s*(?:people|persons|guests|of us|pax)/i) ||
+        userMessages.match(/(?:party of|table for|for)\s*(\d+)/i);
     if (sizeMatch?.[1]) collected.partySize = sizeMatch[1];
-    
+
     // Look for time patterns - be more specific to avoid matching assistant messages
-    const timeMatch = userMessages.match(/(?:at|around|@)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i)
-        || userMessages.match(/,\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i)
-        || userMessages.match(/(\d{1,2}:\d{2}\s*(?:am|pm))/i)
-        || userMessages.match(/(\d{1,2}\s*(?:am|pm))/i);
+    const timeMatch =
+        userMessages.match(/(?:at|around|@)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i) ||
+        userMessages.match(/,\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i) ||
+        userMessages.match(/(\d{1,2}:\d{2}\s*(?:am|pm))/i) ||
+        userMessages.match(/(\d{1,2}\s*(?:am|pm))/i);
     if (timeMatch?.[1]) collected.time = timeMatch[1];
-    
+
     // Look for date patterns
-    const dateMatch = userMessages.match(/\b(today|tomorrow)\b/i)
-        || userMessages.match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i)
-        || userMessages.match(/(\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*)/i)
-        || userMessages.match(/(\d{4}-\d{2}-\d{2})/);
+    const dateMatch =
+        userMessages.match(/\b(today|tomorrow)\b/i) ||
+        userMessages.match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i) ||
+        userMessages.match(
+            /(\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*)/i,
+        ) ||
+        userMessages.match(/(\d{4}-\d{2}-\d{2})/);
     if (dateMatch?.[1]) collected.date = dateMatch[1];
-    
+
     // Look for name patterns - stop at common words
-    const nameMatch = userMessages.match(/(?:my name is|i'm|i am|name is|call me)\s+([A-Z][a-z]+)/i);
+    const nameMatch = userMessages.match(
+        /(?:my name is|i'm|i am|name is|call me)\s+([A-Z][a-z]+)/i,
+    );
     if (nameMatch?.[1]) collected.guestName = nameMatch[1];
-    
+
     // Look for phone patterns
-    const phoneMatch = userMessages.match(/(?:phone|number|contact).*?(\+?\d[\d\s\-]{8,})/i)
-        || userMessages.match(/(\+\d{10,15})/);
+    const phoneMatch =
+        userMessages.match(/(?:phone|number|contact).*?(\+?\d[\d\s\-]{8,})/i) ||
+        userMessages.match(/(\+\d{10,15})/);
     if (phoneMatch?.[1]) collected.guestPhone = phoneMatch[1].replace(/\s/g, '');
-    
+
     return collected;
 }
 
 // Generate dynamic system prompt based on restaurant info
-function generateSystemPrompt(restaurant: RestaurantInfo, collectedInfo?: Record<string, string>): string {
+function generateSystemPrompt(
+    restaurant: RestaurantInfo,
+    collectedInfo?: Record<string, string>,
+): string {
     // Format operating hours
     const formatHours = () => {
         if (!restaurant.operatingHours) return 'Hours not configured';
@@ -127,13 +158,17 @@ ${formatHours()}
 
 ${customPrompt ? `Custom Instructions:\n${customPrompt}\n` : ''}
 ${additionalContext ? `Additional Context:\n${additionalContext}\n` : ''}
-${collectedInfo && Object.keys(collectedInfo).length > 0 ? `
+${
+    collectedInfo && Object.keys(collectedInfo).length > 0
+        ? `
 ## ALREADY COLLECTED (DO NOT ASK AGAIN):
 ${collectedInfo.guestName ? `- Guest Name: ${collectedInfo.guestName}` : ''}
 ${collectedInfo.date ? `- Date: ${collectedInfo.date}` : ''}
 ${collectedInfo.time ? `- Time: ${collectedInfo.time}` : ''}
 ${collectedInfo.partySize ? `- Party Size: ${collectedInfo.partySize}` : ''}
-` : ''}
+`
+        : ''
+}
 Rules:
 1. Be friendly, professional, and concise (WhatsApp messages should be short).
 2. To make a reservation, you MUST collect: Name, Date, Time, and Party Size.
@@ -163,12 +198,16 @@ const getToolDefinitions = () => [
         type: 'function' as const,
         function: {
             name: 'checkAvailability',
-            description: 'Check table availability. Can return a specific slot status OR a list of all available slots for the day.',
+            description:
+                'Check table availability. Can return a specific slot status OR a list of all available slots for the day.',
             parameters: {
                 type: 'object',
                 properties: {
                     date: { type: 'string', description: 'YYYY-MM-DD format' },
-                    time: { type: 'string', description: 'HH:MM format (Optional if listing all slots)' },
+                    time: {
+                        type: 'string',
+                        description: 'HH:MM format (Optional if listing all slots)',
+                    },
                     partySize: { type: 'number' },
                 },
                 required: ['date', 'partySize'],
@@ -179,7 +218,8 @@ const getToolDefinitions = () => [
         type: 'function' as const,
         function: {
             name: 'createReservation',
-            description: 'Create a new reservation in the database. Call this ONLY when user confirms details.',
+            description:
+                'Create a new reservation in the database. Call this ONLY when user confirms details.',
             parameters: {
                 type: 'object',
                 properties: {
@@ -198,14 +238,16 @@ const getToolDefinitions = () => [
         type: 'function' as const,
         function: {
             name: 'getRestaurantInfo',
-            description: 'Get detailed information about the restaurant including menu, special services, or policies not in the base context.',
+            description:
+                'Get detailed information about the restaurant including menu, special services, or policies not in the base context.',
             parameters: {
                 type: 'object',
                 properties: {
                     infoType: {
                         type: 'string',
-                        description: 'Type of info needed: hours, location, contact, services, policies, or general',
-                        enum: ['hours', 'location', 'contact', 'services', 'policies', 'general']
+                        description:
+                            'Type of info needed: hours, location, contact, services, policies, or general',
+                        enum: ['hours', 'location', 'contact', 'services', 'policies', 'general'],
                     },
                 },
                 required: ['infoType'],
@@ -217,9 +259,10 @@ const getToolDefinitions = () => [
 export async function processUserMessage(
     userMessage: string,
     history: { role: 'user' | 'assistant' | 'system'; content: string }[],
-    restaurant: RestaurantInfo
+    restaurant: RestaurantInfo,
 ): Promise<any> {
     try {
+        const openai = getOpenAIClient();
         // Extract what's already been collected from conversation
         const collectedInfo = extractCollectedInfo(history as any[]);
         const systemPrompt = generateSystemPrompt(restaurant, collectedInfo);
@@ -244,7 +287,9 @@ export async function processUserMessage(
         return choice.message;
     } catch (error) {
         console.error('OpenAI Error:', error);
-        return { content: "I'm having trouble connecting right now. Please try again later.", role: 'assistant' };
+        return {
+            content: "I'm having trouble connecting right now. Please try again later.",
+            role: 'assistant',
+        };
     }
 }
-

@@ -30,7 +30,7 @@ export const useUserStore = create<UserState>((set) => ({
             console.error('Failed to fetch user:', error);
             set({
                 error: error.response?.data?.message || 'Failed to fetch user details',
-                isLoading: false
+                isLoading: false,
             });
         }
     },

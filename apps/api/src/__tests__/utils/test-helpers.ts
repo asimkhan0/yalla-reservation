@@ -52,14 +52,16 @@ export function generateTestToken(payload: {
 /**
  * Create mock user data for testing
  */
-export function createMockUserData(overrides: Partial<{
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    phone: string;
-    role: 'OWNER' | 'MANAGER' | 'STAFF';
-}> = {}) {
+export function createMockUserData(
+    overrides: Partial<{
+        email: string;
+        password: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        role: 'OWNER' | 'MANAGER' | 'STAFF';
+    }> = {},
+) {
     return {
         email: overrides.email || `test-${Date.now()}@example.com`,
         password: overrides.password || 'testPassword123',
@@ -73,17 +75,19 @@ export function createMockUserData(overrides: Partial<{
 /**
  * Create mock restaurant data for testing
  */
-export function createMockRestaurantData(overrides: Partial<{
-    name: string;
-    slug: string;
-    phone: string;
-    email: string;
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode: string;
-}> = {}) {
+export function createMockRestaurantData(
+    overrides: Partial<{
+        name: string;
+        slug: string;
+        phone: string;
+        email: string;
+        address: string;
+        city: string;
+        state: string;
+        country: string;
+        postalCode: string;
+    }> = {},
+) {
     const timestamp = Date.now();
     return {
         name: overrides.name || `Test Restaurant ${timestamp}`,
@@ -101,15 +105,18 @@ export function createMockRestaurantData(overrides: Partial<{
 /**
  * Create mock reservation data for testing
  */
-export function createMockReservationData(restaurantId: string, overrides: Partial<{
-    date: string;
-    time: string;
-    partySize: number;
-    guestName: string;
-    guestPhone: string;
-    guestEmail: string;
-    status: string;
-}> = {}) {
+export function createMockReservationData(
+    restaurantId: string,
+    overrides: Partial<{
+        date: string;
+        time: string;
+        partySize: number;
+        guestName: string;
+        guestPhone: string;
+        guestEmail: string;
+        status: string;
+    }> = {},
+) {
     return {
         restaurant: restaurantId,
         date: overrides.date || new Date().toISOString(),
@@ -125,13 +132,16 @@ export function createMockReservationData(restaurantId: string, overrides: Parti
 /**
  * Create mock customer data for testing
  */
-export function createMockCustomerData(restaurantId: string, overrides: Partial<{
-    phone: string;
-    phoneCountry: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-}> = {}) {
+export function createMockCustomerData(
+    restaurantId: string,
+    overrides: Partial<{
+        phone: string;
+        phoneCountry: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+    }> = {},
+) {
     const timestamp = Date.now();
     return {
         restaurant: restaurantId,

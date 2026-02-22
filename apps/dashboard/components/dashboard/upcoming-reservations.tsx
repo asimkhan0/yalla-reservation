@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn, formatDate } from "@/lib/utils";
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn, formatDate } from '@/lib/utils';
 
 interface UpcomingReservationsProps {
     reservations: any[];
@@ -15,9 +15,7 @@ export function UpcomingReservations({ reservations, loading }: UpcomingReservat
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                     <span>Upcoming Reservations</span>
-                    <span className="text-sm font-normal text-muted-foreground">
-                        {today}
-                    </span>
+                    <span className="text-sm font-normal text-muted-foreground">{today}</span>
                 </CardTitle>
             </CardHeader>
             <CardContent>
@@ -51,10 +49,10 @@ export function UpcomingReservations({ reservations, loading }: UpcomingReservat
                                 </div>
                                 <span
                                     className={cn(
-                                        "rounded-md px-2.5 py-1 text-xs font-medium",
-                                        res.status === "CONFIRMED"
-                                            ? "status-confirmed"
-                                            : "status-pending"
+                                        'rounded-md px-2.5 py-1 text-xs font-medium',
+                                        res.status === 'CONFIRMED'
+                                            ? 'status-confirmed'
+                                            : 'status-pending',
                                     )}
                                 >
                                     {res.status}
@@ -63,7 +61,10 @@ export function UpcomingReservations({ reservations, loading }: UpcomingReservat
                         ))}
                         {reservations.length > 5 && (
                             <div className="pt-2 text-center">
-                                <Link href="/reservations" className="text-sm text-primary hover:underline font-medium">
+                                <Link
+                                    href="/reservations"
+                                    className="text-sm text-primary hover:underline font-medium"
+                                >
                                     View all {reservations.length} reservations
                                 </Link>
                             </div>

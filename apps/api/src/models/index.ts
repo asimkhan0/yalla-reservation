@@ -29,7 +29,7 @@ const userSchema = new Schema<IUser>(
         emailVerified: Date,
         restaurant: { type: Schema.Types.ObjectId, ref: 'Restaurant', required: true },
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 userSchema.index({ restaurant: 1 });
@@ -45,7 +45,8 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
-export const User = (mongoose.models.User as mongoose.Model<IUser>) || mongoose.model<IUser>('User', userSchema);
+export const User =
+    (mongoose.models.User as mongoose.Model<IUser>) || mongoose.model<IUser>('User', userSchema);
 
 // ==================== RESTAURANT ====================
 export interface IRestaurant extends Document {
@@ -81,11 +82,18 @@ export interface IRestaurant extends Document {
     aiPrompt?: string;
     additionalContext?: string;
     operatingHours?: {
-        [key in 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday']: {
+        [key in
+            | 'monday'
+            | 'tuesday'
+            | 'wednesday'
+            | 'thursday'
+            | 'friday'
+            | 'saturday'
+            | 'sunday']: {
             open?: string;
             close?: string;
             closed?: boolean;
-        }
+        };
     };
     services?: Array<{
         name: string;
@@ -112,7 +120,7 @@ const restaurantSchema = new Schema<IRestaurant>(
         address: { type: String, required: true },
         location: {
             address: String,
-            googleMapsUrl: String
+            googleMapsUrl: String,
         },
         city: { type: String, required: true },
         state: { type: String, required: true },
@@ -143,25 +151,28 @@ const restaurantSchema = new Schema<IRestaurant>(
             thursday: { open: String, close: String, closed: Boolean },
             friday: { open: String, close: String, closed: Boolean },
             saturday: { open: String, close: String, closed: Boolean },
-            sunday: { open: String, close: String, closed: Boolean }
+            sunday: { open: String, close: String, closed: Boolean },
         },
 
         // Services
-        services: [{
-            name: { type: String, required: true },
-            description: String,
-            duration: [Number], // Array of durations in minutes
-            price: Number
-        }],
+        services: [
+            {
+                name: { type: String, required: true },
+                description: String,
+                duration: [Number], // Array of durations in minutes
+                price: Number,
+            },
+        ],
 
         plan: { type: String, enum: ['STARTER', 'GROWTH', 'ENTERPRISE'], default: 'STARTER' },
         planExpiresAt: Date,
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
-
-export const Restaurant = (mongoose.models.Restaurant as mongoose.Model<IRestaurant>) || mongoose.model<IRestaurant>('Restaurant', restaurantSchema);
+export const Restaurant =
+    (mongoose.models.Restaurant as mongoose.Model<IRestaurant>) ||
+    mongoose.model<IRestaurant>('Restaurant', restaurantSchema);
 
 // ==================== TABLE ====================
 export interface ITable extends Document {
@@ -184,16 +195,22 @@ const tableSchema = new Schema<ITable>(
         capacity: { type: Number, required: true },
         minCapacity: { type: Number, default: 1 },
         isActive: { type: Boolean, default: true },
-        shape: { type: String, enum: ['RECTANGLE', 'ROUND', 'SQUARE', 'OVAL'], default: 'RECTANGLE' },
+        shape: {
+            type: String,
+            enum: ['RECTANGLE', 'ROUND', 'SQUARE', 'OVAL'],
+            default: 'RECTANGLE',
+        },
         position: { x: Number, y: Number },
         restaurant: { type: Schema.Types.ObjectId, ref: 'Restaurant', required: true },
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 tableSchema.index({ restaurant: 1 });
 
-export const Table = (mongoose.models.Table as mongoose.Model<ITable>) || mongoose.model<ITable>('Table', tableSchema);
+export const Table =
+    (mongoose.models.Table as mongoose.Model<ITable>) ||
+    mongoose.model<ITable>('Table', tableSchema);
 
 // ==================== CUSTOMER ====================
 export interface ICustomer extends Document {
@@ -232,15 +249,15 @@ const customerSchema = new Schema<ICustomer>(
         vipNotes: String,
         restaurant: { type: Schema.Types.ObjectId, ref: 'Restaurant', required: true },
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 customerSchema.index({ phone: 1, restaurant: 1 }, { unique: true });
 customerSchema.index({ restaurant: 1 });
 
-
-export const Customer = (mongoose.models.Customer as mongoose.Model<ICustomer>) || mongoose.model<ICustomer>('Customer', customerSchema);
+export const Customer =
+    (mongoose.models.Customer as mongoose.Model<ICustomer>) ||
+    mongoose.model<ICustomer>('Customer', customerSchema);
 
 export * from './conversation.js';
 export * from './message.js';
-

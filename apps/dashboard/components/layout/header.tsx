@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef } from "react";
-import { Bell, Search } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ConversationService } from "@/lib/services/conversation.service";
-import { ModeToggle } from "@/components/mode-toggle";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from 'react';
+import { Bell, Search } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ConversationService } from '@/lib/services/conversation.service';
+import { ModeToggle } from '@/components/mode-toggle';
+import { useRouter } from 'next/navigation';
 
 interface User {
     firstName: string;
@@ -34,24 +34,24 @@ export function Header() {
             // 2. The count has increased
             if (lastCountRef.current !== -1 && count > lastCountRef.current) {
                 toast.info(`You have ${count} unread conversation${count > 1 ? 's' : ''}`, {
-                    description: "New message received",
+                    description: 'New message received',
                     action: {
-                        label: "View",
-                        onClick: () => router.push('/conversations')
-                    }
+                        label: 'View',
+                        onClick: () => router.push('/conversations'),
+                    },
                 });
             }
 
             lastCountRef.current = count;
             // setUnreadCount(count);
         } catch (error) {
-            console.error("Failed to fetch unread count", error);
+            console.error('Failed to fetch unread count', error);
         }
     };
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        const storedRestaurant = localStorage.getItem("restaurant");
+        const storedUser = localStorage.getItem('user');
+        const storedRestaurant = localStorage.getItem('restaurant');
         if (storedUser) setUser(JSON.parse(storedUser));
         if (storedRestaurant) setRestaurant(JSON.parse(storedRestaurant));
 
@@ -107,7 +107,7 @@ export function Header() {
                     <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20 ring-2 ring-primary/20">
                             <span className="text-sm font-semibold text-primary-foreground">
-                                {user.firstName?.[0]?.toUpperCase() || "U"}
+                                {user.firstName?.[0]?.toUpperCase() || 'U'}
                             </span>
                         </div>
                     </div>

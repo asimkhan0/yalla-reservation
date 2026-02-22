@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DashboardStats } from '@/lib/services/analytics';
@@ -13,7 +13,7 @@ import {
     PieChart,
     Pie,
     Cell,
-    Legend
+    Legend,
 } from 'recharts';
 
 interface AnalyticsChartsProps {
@@ -50,10 +50,18 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
                                 tickFormatter={(value) => `${value}`}
                             />
                             <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                contentStyle={{
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                }}
                                 cursor={{ fill: 'transparent' }}
                             />
-                            <Bar dataKey="reservations" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                            <Bar
+                                dataKey="reservations"
+                                fill="hsl(var(--primary))"
+                                radius={[4, 4, 0, 0]}
+                            />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -78,7 +86,10 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
                                 dataKey="value"
                             >
                                 {data.reservationsBySource.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                    />
                                 ))}
                             </Pie>
                             <Tooltip />
@@ -102,13 +113,18 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
-                                label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                                label={({ name, percent }: any) =>
+                                    `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                                }
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
                             >
                                 {data.reservationsByStatus.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                    />
                                 ))}
                             </Pie>
                             <Tooltip />

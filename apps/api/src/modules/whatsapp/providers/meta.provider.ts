@@ -25,18 +25,20 @@ export class MetaProvider implements IWhatsAppProvider {
                     recipient_type: 'individual',
                     to: to,
                     type: 'text',
-                    text: { preview_url: false, body: body }
+                    text: { preview_url: false, body: body },
                 },
                 {
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
+                        'Content-Type': 'application/json',
+                    },
+                },
             );
             console.log(`[MetaProvider] Sent to ${to}`);
         } catch (error: any) {
             console.error('[MetaProvider] Send Error:', error.response?.data || error.message);
-            throw new Error(`Meta Send Error: ${JSON.stringify(error.response?.data || error.message)}`);
+            throw new Error(
+                `Meta Send Error: ${JSON.stringify(error.response?.data || error.message)}`,
+            );
         }
     }
 
@@ -51,18 +53,20 @@ export class MetaProvider implements IWhatsAppProvider {
                     template: {
                         name: template,
                         language: { code: 'en_US' }, // make dynamic if needed
-                        components: components
-                    }
+                        components: components,
+                    },
                 },
                 {
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
+                        'Content-Type': 'application/json',
+                    },
+                },
             );
         } catch (error: any) {
             console.error('[MetaProvider] Template Error:', error.response?.data || error.message);
-            throw new Error(`Meta Template Error: ${JSON.stringify(error.response?.data || error.message)}`);
+            throw new Error(
+                `Meta Template Error: ${JSON.stringify(error.response?.data || error.message)}`,
+            );
         }
     }
 
@@ -98,7 +102,7 @@ export class MetaProvider implements IWhatsAppProvider {
             body: message.text?.body || '', // Handle different types (image, button) if needed
             messageId: message.id,
             profileName: contact?.profile?.name,
-            timestamp: new Date(parseInt(message.timestamp) * 1000)
+            timestamp: new Date(parseInt(message.timestamp) * 1000),
         };
     }
 }

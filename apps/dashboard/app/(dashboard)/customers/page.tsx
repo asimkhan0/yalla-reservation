@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import api from "@/lib/api";
-import { format } from "date-fns";
-import { Search, Loader2, Star, Ban, Mail, Phone as PhoneIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
+import { format } from 'date-fns';
+import { Search, Loader2, Star, Ban, Mail, Phone as PhoneIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -13,16 +13,10 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Customer {
     _id: string;
@@ -40,10 +34,10 @@ interface Customer {
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState('');
 
     // Debounce search
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
         return () => clearTimeout(timer);
@@ -53,11 +47,11 @@ export default function CustomersPage() {
         setIsLoading(true);
         try {
             const { data } = await api.get('/customers', {
-                params: { search: debouncedSearch }
+                params: { search: debouncedSearch },
             });
             setCustomers(data.customers);
         } catch (error) {
-            console.error("Failed to fetch customers", error);
+            console.error('Failed to fetch customers', error);
         } finally {
             setIsLoading(false);
         }
@@ -123,7 +117,10 @@ export default function CustomersPage() {
                                     </TableRow>
                                 ) : customers.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                        <TableCell
+                                            colSpan={6}
+                                            className="h-24 text-center text-muted-foreground"
+                                        >
                                             No customers found.
                                         </TableCell>
                                     </TableRow>
@@ -134,7 +131,9 @@ export default function CustomersPage() {
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-9 w-9 border border-border/50">
                                                         <AvatarFallback className="bg-primary/10 text-primary">
-                                                            {customer.firstName?.[0] || customer.phone?.[0] || "?"}
+                                                            {customer.firstName?.[0] ||
+                                                                customer.phone?.[0] ||
+                                                                '?'}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex flex-col">
@@ -163,13 +162,19 @@ export default function CustomersPage() {
                                             <TableCell>
                                                 <div className="flex gap-2">
                                                     {customer.vipStatus && (
-                                                        <Badge variant="warning" className="gap-1 pl-1.5">
+                                                        <Badge
+                                                            variant="warning"
+                                                            className="gap-1 pl-1.5"
+                                                        >
                                                             <Star className="h-3 w-3 fill-current" />
                                                             VIP
                                                         </Badge>
                                                     )}
                                                     {customer.noShows > 2 && (
-                                                        <Badge variant="error" className="gap-1 pl-1.5">
+                                                        <Badge
+                                                            variant="error"
+                                                            className="gap-1 pl-1.5"
+                                                        >
                                                             <Ban className="h-3 w-3" />
                                                             Risk
                                                         </Badge>
@@ -183,7 +188,12 @@ export default function CustomersPage() {
                                                 {customer.noShows}
                                             </TableCell>
                                             <TableCell className="text-right text-muted-foreground">
-                                                {customer.lastVisit ? format(new Date(customer.lastVisit), 'MMM d, yyyy') : '-'}
+                                                {customer.lastVisit
+                                                    ? format(
+                                                          new Date(customer.lastVisit),
+                                                          'MMM d, yyyy',
+                                                      )
+                                                    : '-'}
                                             </TableCell>
                                         </TableRow>
                                     ))

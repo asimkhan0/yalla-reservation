@@ -33,10 +33,12 @@ describe('Restaurants Service', () => {
 
     beforeEach(async () => {
         await clearTestDb();
-        const restaurant = await Restaurant.create(createMockRestaurantData({
-            name: 'Test Restaurant',
-            slug: 'test-restaurant',
-        }));
+        const restaurant = await Restaurant.create(
+            createMockRestaurantData({
+                name: 'Test Restaurant',
+                slug: 'test-restaurant',
+            }),
+        );
         restaurantId = restaurant._id.toString();
     });
 
@@ -89,8 +91,18 @@ describe('Restaurants Service', () => {
         it('should update services', async () => {
             const result = await updateRestaurant(restaurantId, {
                 services: [
-                    { name: 'Dine-in', description: 'Regular dining', duration: [60, 90], price: 0 },
-                    { name: 'Private Event', description: 'Book the venue', duration: [180], price: 500 },
+                    {
+                        name: 'Dine-in',
+                        description: 'Regular dining',
+                        duration: [60, 90],
+                        price: 0,
+                    },
+                    {
+                        name: 'Private Event',
+                        description: 'Book the venue',
+                        duration: [180],
+                        price: 500,
+                    },
                 ],
             });
 
@@ -101,9 +113,9 @@ describe('Restaurants Service', () => {
 
         it('should throw error for non-existent restaurant', async () => {
             const fakeId = new mongoose.Types.ObjectId().toString();
-            await expect(
-                updateRestaurant(fakeId, { name: 'New Name' })
-            ).rejects.toThrow('Restaurant not found');
+            await expect(updateRestaurant(fakeId, { name: 'New Name' })).rejects.toThrow(
+                'Restaurant not found',
+            );
         });
 
         it('should update WhatsApp settings', async () => {

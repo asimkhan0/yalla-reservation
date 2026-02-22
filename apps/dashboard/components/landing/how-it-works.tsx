@@ -1,22 +1,24 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
 const steps = [
     {
-        number: "01",
-        title: "Connect WhatsApp",
-        description: "Link your business WhatsApp account in seconds. Scan the QR code and you're ready.",
+        number: '01',
+        title: 'Connect WhatsApp',
+        description:
+            "Link your business WhatsApp account in seconds. Scan the QR code and you're ready.",
     },
     {
-        number: "02",
-        title: "Customize Your Agent",
-        description: "Set your opening hours, upload your menu, and define your table rules.",
+        number: '02',
+        title: 'Customize Your Agent',
+        description: 'Set your opening hours, upload your menu, and define your table rules.',
     },
     {
-        number: "03",
-        title: "Auto-Pilot Mode",
-        description: "Sit back as the AI handles bookings, questions, and confirmations automatically.",
+        number: '03',
+        title: 'Auto-Pilot Mode',
+        description:
+            'Sit back as the AI handles bookings, questions, and confirmations automatically.',
     },
 ];
 
@@ -52,7 +54,9 @@ export function HowItWorks() {
                                 </span>
                             </div>
                             <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-                            <p className="text-slate-400 leading-relaxed max-w-xs">{step.description}</p>
+                            <p className="text-slate-400 leading-relaxed max-w-xs">
+                                {step.description}
+                            </p>
                         </motion.div>
                     ))}
                 </div>

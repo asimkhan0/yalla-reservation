@@ -15,10 +15,18 @@ export const createReservationSchema = z.object({
 });
 
 export const updateReservationSchema = createReservationSchema.partial().extend({
-    status: z.enum([
-        'PENDING', 'CONFIRMED', 'REMINDED', 'SEATED',
-        'COMPLETED', 'CANCELLED', 'NO_SHOW', 'WAITLISTED'
-    ]).optional(),
+    status: z
+        .enum([
+            'PENDING',
+            'CONFIRMED',
+            'REMINDED',
+            'SEATED',
+            'COMPLETED',
+            'CANCELLED',
+            'NO_SHOW',
+            'WAITLISTED',
+        ])
+        .optional(),
     cancelReason: z.string().optional(),
 });
 

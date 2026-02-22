@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
-const operatingHoursSchema = z.object({
-    open: z.string().optional(),
-    close: z.string().optional(),
-    closed: z.boolean().optional(),
-}).optional();
+const operatingHoursSchema = z
+    .object({
+        open: z.string().optional(),
+        close: z.string().optional(),
+        closed: z.boolean().optional(),
+    })
+    .optional();
 
 const twilioConfig = z.object({
     provider: z.literal('twilio'),
@@ -25,12 +27,13 @@ const metaConfig = z.object({
     displayPhoneNumber: z.string().optional(),
 });
 
-export const whatsappIntegrationSchema = z.discriminatedUnion('provider', [
-    twilioConfig,
-    metaConfig
-]).and(z.object({
-    enabled: z.boolean().default(false),
-}));
+export const whatsappIntegrationSchema = z
+    .discriminatedUnion('provider', [twilioConfig, metaConfig])
+    .and(
+        z.object({
+            enabled: z.boolean().default(false),
+        }),
+    );
 
 export const updateRestaurantSchema = z.object({
     name: z.string().min(1).optional(),
@@ -47,27 +50,35 @@ export const updateRestaurantSchema = z.object({
     // New fields
     aiPrompt: z.string().optional(),
     additionalContext: z.string().optional(),
-    location: z.object({
-        address: z.string().optional(),
-        googleMapsUrl: z.string().optional(),
-    }).optional(),
+    location: z
+        .object({
+            address: z.string().optional(),
+            googleMapsUrl: z.string().optional(),
+        })
+        .optional(),
 
-    operatingHours: z.object({
-        monday: operatingHoursSchema,
-        tuesday: operatingHoursSchema,
-        wednesday: operatingHoursSchema,
-        thursday: operatingHoursSchema,
-        friday: operatingHoursSchema,
-        saturday: operatingHoursSchema,
-        sunday: operatingHoursSchema,
-    }).optional(),
+    operatingHours: z
+        .object({
+            monday: operatingHoursSchema,
+            tuesday: operatingHoursSchema,
+            wednesday: operatingHoursSchema,
+            thursday: operatingHoursSchema,
+            friday: operatingHoursSchema,
+            saturday: operatingHoursSchema,
+            sunday: operatingHoursSchema,
+        })
+        .optional(),
 
-    services: z.array(z.object({
-        name: z.string(),
-        description: z.string().optional(),
-        duration: z.array(z.number()),
-        price: z.number().optional()
-    })).optional()
+    services: z
+        .array(
+            z.object({
+                name: z.string(),
+                description: z.string().optional(),
+                duration: z.array(z.number()),
+                price: z.number().optional(),
+            }),
+        )
+        .optional(),
 });
 
 export type UpdateRestaurantInput = z.infer<typeof updateRestaurantSchema>;

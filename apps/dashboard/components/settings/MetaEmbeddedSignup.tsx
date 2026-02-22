@@ -7,11 +7,7 @@ import { Loader2, Facebook, CheckCircle2, AlertCircle, ExternalLink } from 'luci
 import { useMetaSDK } from '@/lib/hooks/useMetaSDK';
 
 interface MetaEmbeddedSignupProps {
-    onSuccess: (data: {
-        code: string;
-        wabaId: string;
-        phoneNumberId: string
-    }) => void;
+    onSuccess: (data: { code: string; wabaId: string; phoneNumberId: string }) => void;
     onError?: (error: string) => void;
 }
 
@@ -28,13 +24,15 @@ export function MetaEmbeddedSignup({ onSuccess, onError }: MetaEmbeddedSignupPro
             const response = await launchEmbeddedSignup();
 
             if (!response.waba_id || !response.phone_number_id) {
-                throw new Error('Failed to get WhatsApp Business Account details. Please try again.');
+                throw new Error(
+                    'Failed to get WhatsApp Business Account details. Please try again.',
+                );
             }
 
             onSuccess({
                 code: response.code,
                 wabaId: response.waba_id,
-                phoneNumberId: response.phone_number_id
+                phoneNumberId: response.phone_number_id,
             });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Connection failed';

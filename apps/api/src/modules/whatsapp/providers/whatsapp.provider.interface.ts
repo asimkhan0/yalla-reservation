@@ -1,4 +1,3 @@
-
 export interface IncomingMessageData {
     from: string;
     to: string;

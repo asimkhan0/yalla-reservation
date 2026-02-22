@@ -57,7 +57,11 @@ export const cacheService = {
         }
     },
 
-    async getOrSetCache<T>(key: string, callback: () => Promise<T>, ttlSeconds: number = DEFAULT_EXPIRATION): Promise<T> {
+    async getOrSetCache<T>(
+        key: string,
+        callback: () => Promise<T>,
+        ttlSeconds: number = DEFAULT_EXPIRATION,
+    ): Promise<T> {
         return new Promise(async (resolve, reject) => {
             if (!redis) {
                 try {
@@ -69,7 +73,7 @@ export const cacheService = {
             redis.get(key, async (error, data) => {
                 if (error) return reject(error);
 
-                if (data != null) return resolve(JSON.parse(data))
+                if (data != null) return resolve(JSON.parse(data));
 
                 try {
                     const result = await callback();
@@ -78,7 +82,7 @@ export const cacheService = {
                 } catch (error) {
                     reject(error);
                 }
-            })
-        })
+            });
+        });
     },
 };

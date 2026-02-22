@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface LogoProps {
     className?: string;
@@ -18,10 +18,10 @@ export function Logo({ className }: LogoProps) {
     }, []);
 
     if (!mounted) {
-        return <div className={cn("w-[200px] h-[100px]", className)} />;
+        return <div className={cn('w-[200px] h-[100px]', className)} />;
     }
 
-    const isDark = resolvedTheme === "dark";
+    const isDark = resolvedTheme === 'dark';
 
     if (isDark) {
         return (
@@ -30,7 +30,7 @@ export function Logo({ className }: LogoProps) {
                 height="200"
                 viewBox="0 0 400 200"
                 xmlns="http://www.w3.org/2000/svg"
-                className={cn("h-auto w-full", className)}
+                className={cn('h-auto w-full', className)}
             >
                 <defs>
                     <linearGradient id="dineGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -54,7 +54,12 @@ export function Logo({ className }: LogoProps) {
                 <circle cx="280" cy="55" r="6" fill="#C084FC" />
                 <circle cx="40" cy="100" r="4" fill="#C084FC" filter="url(#aiGlowDark)">
                     <animate attributeName="r" values="3;7;3" dur="2s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite" />
+                    <animate
+                        attributeName="opacity"
+                        values="1;0.6;1"
+                        dur="2s"
+                        repeatCount="indefinite"
+                    />
                 </circle>
                 <text
                     x="50"
@@ -77,7 +82,7 @@ export function Logo({ className }: LogoProps) {
             height="200"
             viewBox="0 0 400 200"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn("h-auto w-full", className)}
+            className={cn('h-auto w-full', className)}
         >
             <defs>
                 <linearGradient id="dineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -101,7 +106,12 @@ export function Logo({ className }: LogoProps) {
             <circle cx="280" cy="55" r="6" fill="#9333EA" />
             <circle cx="40" cy="100" r="4" fill="#9333EA" filter="url(#aiGlow)">
                 <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite" />
+                <animate
+                    attributeName="opacity"
+                    values="1;0.7;1"
+                    dur="2s"
+                    repeatCount="indefinite"
+                />
             </circle>
             <text
                 x="50"

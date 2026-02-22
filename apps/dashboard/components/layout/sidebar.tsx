@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
     CalendarDays,
@@ -11,19 +11,19 @@ import {
     BarChart3,
     Settings,
     LogOut,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { clearAuthCookies } from "@/lib/cookies";
-import { useRestaurantStore } from "@/stores/use-restaurant-store";
-import { Logo } from "@/components/logo";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { clearAuthCookies } from '@/lib/cookies';
+import { useRestaurantStore } from '@/stores/use-restaurant-store';
+import { Logo } from '@/components/logo';
 
 const navigation = [
-    { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Reservations", href: "/reservations", icon: CalendarDays },
-    { name: "Conversations", href: "/conversations", icon: MessageSquare },
-    { name: "Customers", href: "/customers", icon: Users },
-    { name: "Analytics", href: "/analytics", icon: BarChart3 },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Reservations', href: '/reservations', icon: CalendarDays },
+    { name: 'Conversations', href: '/conversations', icon: MessageSquare },
+    { name: 'Customers', href: '/customers', icon: Users },
+    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function Sidebar() {
@@ -32,13 +32,13 @@ export function Sidebar() {
     const resetRestaurantStore = useRestaurantStore((state) => state.reset);
 
     const handleLogout = () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-        localStorage.removeItem("restaurant");
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('restaurant');
         clearAuthCookies();
         resetRestaurantStore();
-        router.push("/login");
+        router.push('/login');
     };
 
     return (
@@ -58,16 +58,20 @@ export function Sidebar() {
                                 key={item.name}
                                 href={item.href}
                                 className={cn(
-                                    "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                                    'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                                     isActive
-                                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                                 )}
                             >
-                                <item.icon className={cn(
-                                    "h-5 w-5 transition-colors",
-                                    isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
-                                )} />
+                                <item.icon
+                                    className={cn(
+                                        'h-5 w-5 transition-colors',
+                                        isActive
+                                            ? 'text-primary-foreground'
+                                            : 'text-muted-foreground group-hover:text-foreground',
+                                    )}
+                                />
                                 {item.name}
                             </Link>
                         );

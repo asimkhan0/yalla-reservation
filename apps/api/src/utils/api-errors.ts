@@ -1,6 +1,6 @@
 /**
  * Standardized API Error Handling
- * 
+ *
  * This module provides a consistent error response structure across all API endpoints.
  * All errors should use the ApiError class to ensure uniform error responses.
  */
@@ -116,10 +116,8 @@ export const ApiErrors = {
 
     forbidden: (message?: string) => new ApiError(ErrorCodes.FORBIDDEN, message),
 
-    notFound: (resource?: string) => new ApiError(
-        ErrorCodes.NOT_FOUND,
-        resource ? `${resource} not found` : undefined
-    ),
+    notFound: (resource?: string) =>
+        new ApiError(ErrorCodes.NOT_FOUND, resource ? `${resource} not found` : undefined),
 
     userNotFound: () => new ApiError(ErrorCodes.USER_NOT_FOUND),
 

@@ -194,14 +194,18 @@ describe('Reservations Service', () => {
 
         it('should throw error for non-existent reservation', async () => {
             const fakeId = new mongoose.Types.ObjectId().toString();
-            await expect(getReservationById(fakeId, restaurantId)).rejects.toThrow('Reservation not found');
+            await expect(getReservationById(fakeId, restaurantId)).rejects.toThrow(
+                'Reservation not found',
+            );
         });
 
         it('should throw error for wrong restaurant', async () => {
-            const otherRestaurant = await Restaurant.create(createMockRestaurantData({
-                slug: 'other-restaurant',
-                email: 'other@restaurant.com',
-            }));
+            const otherRestaurant = await Restaurant.create(
+                createMockRestaurantData({
+                    slug: 'other-restaurant',
+                    email: 'other@restaurant.com',
+                }),
+            );
 
             const reservation = await Reservation.create({
                 restaurant: restaurantId,
@@ -213,7 +217,7 @@ describe('Reservations Service', () => {
             });
 
             await expect(
-                getReservationById(reservation._id.toString(), otherRestaurant._id.toString())
+                getReservationById(reservation._id.toString(), otherRestaurant._id.toString()),
             ).rejects.toThrow('Reservation not found');
         });
     });
@@ -268,11 +272,10 @@ describe('Reservations Service', () => {
                 status: 'CONFIRMED',
             });
 
-            const result = await updateReservation(
-                reservation._id.toString(),
-                restaurantId,
-                { partySize: 6, time: '20:00' }
-            );
+            const result = await updateReservation(reservation._id.toString(), restaurantId, {
+                partySize: 6,
+                time: '20:00',
+            });
 
             expect(result.partySize).toBe(6);
             expect(result.time).toBe('20:00');
@@ -290,11 +293,9 @@ describe('Reservations Service', () => {
                 status: 'PENDING',
             });
 
-            const result = await updateReservation(
-                reservation._id.toString(),
-                restaurantId,
-                { status: 'CONFIRMED' }
-            );
+            const result = await updateReservation(reservation._id.toString(), restaurantId, {
+                status: 'CONFIRMED',
+            });
 
             expect(result.status).toBe('CONFIRMED');
             expect(result.confirmedAt).toBeDefined();
@@ -311,11 +312,9 @@ describe('Reservations Service', () => {
                 status: 'CONFIRMED',
             });
 
-            const result = await updateReservation(
-                reservation._id.toString(),
-                restaurantId,
-                { status: 'SEATED' }
-            );
+            const result = await updateReservation(reservation._id.toString(), restaurantId, {
+                status: 'SEATED',
+            });
 
             expect(result.status).toBe('SEATED');
             expect(result.seatedAt).toBeDefined();
@@ -323,9 +322,9 @@ describe('Reservations Service', () => {
 
         it('should throw error for non-existent reservation', async () => {
             const fakeId = new mongoose.Types.ObjectId().toString();
-            await expect(
-                updateReservation(fakeId, restaurantId, { partySize: 6 })
-            ).rejects.toThrow('Reservation not found');
+            await expect(updateReservation(fakeId, restaurantId, { partySize: 6 })).rejects.toThrow(
+                'Reservation not found',
+            );
         });
     });
 
@@ -350,9 +349,9 @@ describe('Reservations Service', () => {
 
         it('should throw error for non-existent reservation', async () => {
             const fakeId = new mongoose.Types.ObjectId().toString();
-            await expect(
-                deleteReservation(fakeId, restaurantId)
-            ).rejects.toThrow('Reservation not found');
+            await expect(deleteReservation(fakeId, restaurantId)).rejects.toThrow(
+                'Reservation not found',
+            );
         });
     });
 });

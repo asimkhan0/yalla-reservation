@@ -14,9 +14,9 @@ export async function customerRoutes(fastify: FastifyInstance) {
                     properties: {
                         page: { type: 'integer', minimum: 1 },
                         limit: { type: 'integer', minimum: 1, maximum: 100 },
-                        search: { type: 'string' }
-                    }
-                }
+                        search: { type: 'string' },
+                    },
+                },
             },
             preHandler: fastify.authenticate,
         },
@@ -25,6 +25,6 @@ export async function customerRoutes(fastify: FastifyInstance) {
             const query = request.query as { page?: number; limit?: number; search?: string };
             const result = await service.listCustomers(user.restaurantId, query);
             return reply.send(result);
-        }
+        },
     );
 }

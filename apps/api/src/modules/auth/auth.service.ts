@@ -24,11 +24,9 @@ export const generateAccessToken = (user: IUser): string => {
 
 // Generate refresh token (long-lived)
 export const generateRefreshToken = (user: IUser): string => {
-    return jwt.sign(
-        { userId: user._id.toString() },
-        env.JWT_SECRET,
-        { expiresIn: env.JWT_EXPIRES_IN as any }
-    );
+    return jwt.sign({ userId: user._id.toString() }, env.JWT_SECRET, {
+        expiresIn: env.JWT_EXPIRES_IN as any,
+    });
 };
 
 // Verify token
@@ -49,7 +47,9 @@ export const registerUser = async (input: RegisterInput) => {
     }
 
     // Check if restaurant slug already exists
-    const existingRestaurant = await Restaurant.findOne({ slug: input.restaurantSlug.toLowerCase() });
+    const existingRestaurant = await Restaurant.findOne({
+        slug: input.restaurantSlug.toLowerCase(),
+    });
     if (existingRestaurant) {
         throw new Error('Restaurant slug already taken');
     }

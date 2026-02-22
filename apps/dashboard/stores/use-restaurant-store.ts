@@ -75,7 +75,7 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
             console.error('Failed to fetch restaurant:', error);
             set({
                 error: error.response?.data?.message || 'Failed to fetch restaurant details',
-                isLoading: false
+                isLoading: false,
             });
         }
     },
@@ -89,7 +89,7 @@ export const useRestaurantStore = create<RestaurantState>((set) => ({
             console.error('Failed to update restaurant:', error);
             set({
                 error: error.response?.data?.message || 'Failed to update restaurant',
-                isLoading: false
+                isLoading: false,
             });
             throw error;
         }

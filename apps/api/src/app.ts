@@ -6,9 +6,14 @@ import swaggerUi from '@fastify/swagger-ui';
 import formbody from '@fastify/formbody';
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import { env } from './config/env.js';
+import { redis } from './config/redis.js';
+import { ApiError } from './utils/api-errors.js';
 import { authRoutes } from './modules/auth/index.js';
 import { reservationRoutes } from './modules/reservations/index.js';
 import { conversationRoutes } from './modules/conversations/index.js';
@@ -27,17 +32,22 @@ export async function buildApp() {
             transport:
                 env.NODE_ENV === 'development'
                     ? {
-                        target: 'pino-pretty',
-                        options: { colorize: true },
-                    }
+                          target: 'pino-pretty',
+                          options: { colorize: true },
+                      }
                     : undefined,
         },
     });
 
+    // Register security plugins
+    await fastify.register(helmet);
+    await fastify.register(rateLimit, {
+        max: env.NODE_ENV === 'test' ? 1000 : 100, // Higher limit for tests
+        timeWindow: '1 minute',
+    });
+
     // Register plugins
-    const corsOrigin = env.CORS_ORIGIN.includes(',')
-        ? env.CORS_ORIGIN.split(',')
-        : env.CORS_ORIGIN;
+    const corsOrigin = env.CORS_ORIGIN.includes(',') ? env.CORS_ORIGIN.split(',') : env.CORS_ORIGIN;
 
     await fastify.register(cors, {
         origin: corsOrigin,
@@ -55,11 +65,47 @@ export async function buildApp() {
         }
     });
 
+    // Global Error Handler
+    fastify.setErrorHandler((error, request, reply) => {
+        if (error instanceof ApiError) {
+            return reply.status(error.statusCode).send({
+                success: false,
+                error: {
+                    code: error.code,
+                    message: error.message,
+                },
+            });
+        }
+
+        // Fastify validation errors
+        if (error.validation) {
+            return reply.status(400).send({
+                success: false,
+                error: {
+                    code: 'VALIDATION_ERROR',
+                    message: 'Validation failed',
+                    details: error.validation,
+                },
+            });
+        }
+
+        // Default error
+        fastify.log.error(error);
+        return reply.status(500).send({
+            success: false,
+            error: {
+                code: 'SERVER_ERROR',
+                message: env.NODE_ENV === 'production' ? 'Internal server error' : error.message,
+            },
+        });
+    });
+
     await fastify.register(swagger, {
         openapi: {
             info: {
                 title: 'DineLine API',
-                description: 'REST API for restaurant reservation system with WhatsApp bot integration',
+                description:
+                    'REST API for restaurant reservation system with WhatsApp bot integration',
                 version: '0.1.0',
             },
             servers: [
@@ -99,8 +145,20 @@ export async function buildApp() {
     // ==================== ROUTES ====================
 
     // Health check
-    fastify.get('/health', async () => {
-        return { status: 'ok', timestamp: new Date().toISOString() };
+    fastify.get('/health', async (request, reply) => {
+        const dbStatus = mongoose.connection.readyState === 1 ? 'up' : 'down';
+        const redisStatus = redis && (redis as any).status === 'ready' ? 'up' : 'down';
+
+        const isHealthy = dbStatus === 'up';
+
+        return reply.status(isHealthy ? 200 : 503).send({
+            status: isHealthy ? 'ok' : 'error',
+            timestamp: new Date().toISOString(),
+            services: {
+                database: dbStatus,
+                redis: env.REDIS_URL ? redisStatus : 'disabled',
+            },
+        });
     });
 
     // API info

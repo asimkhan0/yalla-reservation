@@ -22,9 +22,11 @@ const messageSchema = new Schema<IMessage>(
         status: { type: String, enum: ['SENT', 'DELIVERED', 'READ', 'FAILED'], default: 'SENT' },
         metadata: Schema.Types.Mixed,
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 messageSchema.index({ conversation: 1, createdAt: 1 });
 
-export const Message = (mongoose.models.Message as mongoose.Model<IMessage>) || mongoose.model<IMessage>('Message', messageSchema);
+export const Message =
+    (mongoose.models.Message as mongoose.Model<IMessage>) ||
+    mongoose.model<IMessage>('Message', messageSchema);

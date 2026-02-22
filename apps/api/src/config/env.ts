@@ -20,7 +20,10 @@ const envSchema = z.object({
     REDIS_URL: z.string().optional(),
 
     // Authentication
-    JWT_SECRET: z.string().min(32).default('your-super-secret-jwt-key-change-me-in-production-32chars'),
+    JWT_SECRET: z
+        .string()
+        .min(32)
+        .default('your-super-secret-jwt-key-change-me-in-production-32chars'),
     JWT_EXPIRES_IN: z.string().default('7d'),
 
     // WhatsApp (Twilio)

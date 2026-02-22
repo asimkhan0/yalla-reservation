@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { AnalyticsService, DashboardStats } from "@/lib/services/analytics";
-import { StatsCards } from "@/components/analytics/StatsCards";
-import { AnalyticsCharts } from "@/components/analytics/AnalyticsCharts";
-import { toast } from "@/components/ui/sonner";
+import { useEffect, useState } from 'react';
+import { AnalyticsService, DashboardStats } from '@/lib/services/analytics';
+import { StatsCards } from '@/components/analytics/StatsCards';
+import { AnalyticsCharts } from '@/components/analytics/AnalyticsCharts';
+import { toast } from '@/components/ui/sonner';
 
 export default function AnalyticsPage() {
-    return `Coming soon..`
+    return `Coming soon..`;
     // const [stats, setStats] = useState<DashboardStats | null>(null);
     // const [loading, setLoading] = useState(true);
 

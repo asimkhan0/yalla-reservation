@@ -4,7 +4,13 @@ import { CreateReservationInput, UpdateReservationInput } from './reservations.s
 // List reservations for a restaurant
 export async function listReservations(
     restaurantId: string,
-    options: { date?: string; startDate?: string; endDate?: string; status?: string; customerId?: string } = {}
+    options: {
+        date?: string;
+        startDate?: string;
+        endDate?: string;
+        status?: string;
+        customerId?: string;
+    } = {},
 ) {
     const query: Record<string, unknown> = { restaurant: restaurantId };
 
@@ -67,7 +73,7 @@ export async function createReservation(restaurantId: string, data: CreateReserv
 export async function updateReservation(
     id: string,
     restaurantId: string,
-    data: UpdateReservationInput
+    data: UpdateReservationInput,
 ) {
     // Handle status transitions
     const updates: Record<string, unknown> = { ...data };
@@ -88,7 +94,7 @@ export async function updateReservation(
     const reservation = await Reservation.findOneAndUpdate(
         { _id: id, restaurant: restaurantId },
         { $set: updates },
-        { new: true }
+        { new: true },
     ).lean();
 
     if (!reservation) {

@@ -13,7 +13,14 @@ export async function authRoutes(fastify: FastifyInstance) {
                 description: 'Register a new user and restaurant',
                 body: {
                     type: 'object',
-                    required: ['email', 'password', 'firstName', 'lastName', 'restaurantName', 'restaurantSlug'],
+                    required: [
+                        'email',
+                        'password',
+                        'firstName',
+                        'lastName',
+                        'restaurantName',
+                        'restaurantSlug',
+                    ],
                     properties: {
                         email: { type: 'string', format: 'email' },
                         password: { type: 'string', minLength: 8 },
@@ -43,13 +50,16 @@ export async function authRoutes(fastify: FastifyInstance) {
                 const result = await authService.registerUser(data);
                 return reply.status(201).send(result);
             } catch (error: any) {
-                if (error.message === 'Email already registered' || error.message === 'Restaurant slug already taken') {
+                if (
+                    error.message === 'Email already registered' ||
+                    error.message === 'Restaurant slug already taken'
+                ) {
                     return reply.status(409).send({ error: error.message });
                 }
                 fastify.log.error(error);
                 return reply.status(400).send({ error: error.message || 'Registration failed' });
             }
-        }
+        },
     );
 
     // Login
@@ -104,7 +114,7 @@ export async function authRoutes(fastify: FastifyInstance) {
                 const apiError = ApiErrors.badRequest(error.message || 'Login failed');
                 return reply.status(apiError.statusCode).send(apiError.toJSON());
             }
-        }
+        },
     );
 
     // Refresh token
@@ -139,7 +149,7 @@ export async function authRoutes(fastify: FastifyInstance) {
             } catch (error: any) {
                 return reply.status(401).send({ error: 'Invalid refresh token' });
             }
-        }
+        },
     );
 
     // Get current user (protected)
@@ -180,6 +190,6 @@ export async function authRoutes(fastify: FastifyInstance) {
             } catch (error: any) {
                 return reply.status(404).send({ error: 'User not found' });
             }
-        }
+        },
     );
 }

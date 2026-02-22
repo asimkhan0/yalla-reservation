@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef } from "react";
-import api from "@/lib/api";
-import { format } from "date-fns";
-import { Send, User, Phone, Calendar, Search, MoreVertical, Paperclip, Bot } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { cn, formatWhatsAppDate } from "@/lib/utils";
+import { useEffect, useState, useRef } from 'react';
+import api from '@/lib/api';
+import { format } from 'date-fns';
+import { Send, User, Phone, Calendar, Search, MoreVertical, Paperclip, Bot } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { cn, formatWhatsAppDate } from '@/lib/utils';
 
 // --- Types ---
 
@@ -58,10 +58,10 @@ export default function ConversationsPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [input, setInput] = useState("");
+    const [input, setInput] = useState('');
 
     // Derived state
-    const selectedConversation = conversations.find(c => c._id === selectedId);
+    const selectedConversation = conversations.find((c) => c._id === selectedId);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // 1. Fetch Conversations
@@ -71,7 +71,7 @@ export default function ConversationsPage() {
             setConversations(data.conversations);
             setIsLoading(false);
         } catch (error) {
-            console.error("Failed to fetch conversations", error);
+            console.error('Failed to fetch conversations', error);
             setIsLoading(false);
         }
     };
@@ -96,7 +96,7 @@ export default function ConversationsPage() {
                     scrollToBottom(true); // instant scroll on initial load
                 });
             } catch (error) {
-                console.error("Failed to fetch messages", error);
+                console.error('Failed to fetch messages', error);
             }
         };
 
@@ -115,12 +115,12 @@ export default function ConversationsPage() {
                 const { data } = await api.get('/reservations', {
                     params: {
                         customerId: selectedConversation.customer._id,
-                        status: 'CONFIRMED,PENDING,SEATED,COMPLETED' // Optional: filter if needed, or get all
-                    }
+                        status: 'CONFIRMED,PENDING,SEATED,COMPLETED', // Optional: filter if needed, or get all
+                    },
                 });
                 setReservations(data.reservations || []);
             } catch (error) {
-                console.error("Failed to fetch reservations", error);
+                console.error('Failed to fetch reservations', error);
             }
         };
 
@@ -130,11 +130,11 @@ export default function ConversationsPage() {
     const scrollToBottom = (instant = false) => {
         if (instant) {
             // Instant scroll for initial message load - no visible animation
-            messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+            messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
         } else {
             // Smooth scroll for new messages during conversation
             setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
         }
     };
@@ -149,21 +149,23 @@ export default function ConversationsPage() {
             sender: 'AGENT',
             content: input.trim(),
             createdAt: new Date().toISOString(),
-            status: 'SENDING'
+            status: 'SENDING',
         };
 
-        setMessages(prev => [...prev, optimisticMessage]);
-        setInput("");
+        setMessages((prev) => [...prev, optimisticMessage]);
+        setInput('');
         scrollToBottom();
 
         try {
-            await api.post(`/conversations/${selectedId}/messages`, { content: optimisticMessage.content });
+            await api.post(`/conversations/${selectedId}/messages`, {
+                content: optimisticMessage.content,
+            });
             const { data } = await api.get(`/conversations/${selectedId}/messages`);
             setMessages(data.messages);
             scrollToBottom();
         } catch (error) {
-            console.error("Failed to send message", error);
-            setMessages(prev => prev.filter(m => m._id !== tempId));
+            console.error('Failed to send message', error);
+            setMessages((prev) => prev.filter((m) => m._id !== tempId));
         }
     };
 
@@ -171,17 +173,16 @@ export default function ConversationsPage() {
         if (!selectedId) return;
         try {
             await api.patch(`/conversations/${selectedId}/assign`, { assignedTo: newStatus });
-            setConversations(prev => prev.map(c =>
-                c._id === selectedId ? { ...c, assignedTo: newStatus } : c
-            ));
+            setConversations((prev) =>
+                prev.map((c) => (c._id === selectedId ? { ...c, assignedTo: newStatus } : c)),
+            );
         } catch (error) {
-            console.error("Failed to update assignment", error);
+            console.error('Failed to update assignment', error);
         }
     };
 
     return (
         <div className="flex h-[calc(100vh-theme(spacing.16))] -m-6 overflow-hidden bg-background">
-
             {/* --- Left Sidebar: Conversation List --- */}
             <div className="w-80 flex flex-col border-r border-border/50 bg-card/50">
                 <div className="p-4 border-b border-border/50">
@@ -195,38 +196,46 @@ export default function ConversationsPage() {
                 <ScrollArea className="flex-1 [&>[data-radix-scroll-area-viewport]>div]:!block">
                     <div className="flex flex-col">
                         {isLoading ? (
-                            <div className="p-4 text-center text-muted-foreground text-sm">Loading chats...</div>
+                            <div className="p-4 text-center text-muted-foreground text-sm">
+                                Loading chats...
+                            </div>
                         ) : conversations.length === 0 ? (
-                            <div className="p-4 text-center text-muted-foreground text-sm">No active conversations</div>
+                            <div className="p-4 text-center text-muted-foreground text-sm">
+                                No active conversations
+                            </div>
                         ) : (
                             conversations.map((conv) => (
                                 <button
                                     key={conv._id}
                                     onClick={() => setSelectedId(conv._id)}
                                     className={cn(
-                                        "group flex items-start gap-3 p-4 text-left transition-all duration-200 border-b border-border/30 last:border-0",
+                                        'group flex items-start gap-3 p-4 text-left transition-all duration-200 border-b border-border/30 last:border-0',
                                         selectedId === conv._id
-                                            ? "bg-primary/10 border-l-2 border-l-primary"
-                                            : "hover:bg-muted/50"
+                                            ? 'bg-primary/10 border-l-2 border-l-primary'
+                                            : 'hover:bg-muted/50',
                                     )}
                                 >
                                     <Avatar className="h-10 w-10">
                                         <AvatarFallback className="bg-primary/10 text-primary">
-                                            {conv.customer?.firstName?.[0] || "?"}
+                                            {conv.customer?.firstName?.[0] || '?'}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-1">
                                             <span className="font-medium truncate">
-                                                {conv.customer ? `${conv.customer.firstName} ${conv.customer.lastName || ''}` : 'Unknown Customer'}
+                                                {conv.customer
+                                                    ? `${conv.customer.firstName} ${conv.customer.lastName || ''}`
+                                                    : 'Unknown Customer'}
                                             </span>
                                             <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                {formatWhatsAppDate(conv.lastMessage?.createdAt || conv.updatedAt)}
+                                                {formatWhatsAppDate(
+                                                    conv.lastMessage?.createdAt || conv.updatedAt,
+                                                )}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2 min-w-0">
                                             <p className="text-sm text-muted-foreground truncate flex-1 min-w-0">
-                                                {conv.lastMessage?.content || "No messages"}
+                                                {conv.lastMessage?.content || 'No messages'}
                                             </p>
                                             <div
                                                 role="button"
@@ -258,7 +267,8 @@ export default function ConversationsPage() {
                             </Avatar>
                             <div>
                                 <h3 className="font-semibold">
-                                    {selectedConversation.customer?.firstName} {selectedConversation.customer?.lastName}
+                                    {selectedConversation.customer?.firstName}{' '}
+                                    {selectedConversation.customer?.lastName}
                                 </h3>
                                 <p className="text-xs text-muted-foreground">
                                     {selectedConversation.customer?.phone}
@@ -288,29 +298,38 @@ export default function ConversationsPage() {
                                     <div
                                         key={msg._id}
                                         className={cn(
-                                            "flex w-full",
-                                            isMe ? "justify-end" : "justify-start"
+                                            'flex w-full',
+                                            isMe ? 'justify-end' : 'justify-start',
                                         )}
                                     >
                                         <div
                                             className={cn(
-                                                "max-w-[70%] px-4 py-2.5 rounded-2xl shadow-sm text-sm",
+                                                'max-w-[70%] px-4 py-2.5 rounded-2xl shadow-sm text-sm',
                                                 isMe
-                                                    ? "bg-primary text-primary-foreground rounded-br-md"
-                                                    : "bg-card border border-border/50 rounded-bl-md"
+                                                    ? 'bg-primary text-primary-foreground rounded-br-md'
+                                                    : 'bg-card border border-border/50 rounded-bl-md',
                                             )}
                                         >
-                                            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                            <p className="whitespace-pre-wrap break-words">
+                                                {msg.content}
+                                            </p>
                                             <div className="flex items-center justify-end gap-1.5 mt-1.5">
                                                 {isBot && (
-                                                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="text-[10px] h-4 px-1.5"
+                                                    >
                                                         BOT
                                                     </Badge>
                                                 )}
-                                                <span className={cn(
-                                                    "text-[10px]",
-                                                    isMe ? "text-primary-foreground/70" : "text-muted-foreground"
-                                                )}>
+                                                <span
+                                                    className={cn(
+                                                        'text-[10px]',
+                                                        isMe
+                                                            ? 'text-primary-foreground/70'
+                                                            : 'text-muted-foreground',
+                                                    )}
+                                                >
                                                     {format(new Date(msg.createdAt), 'HH:mm')}
                                                 </span>
                                             </div>
@@ -333,13 +352,20 @@ export default function ConversationsPage() {
                             >
                                 <Paperclip className="h-5 w-5 text-muted-foreground" />
                             </Button>
-                            <div className={cn(
-                                "flex-1 rounded-xl border border-border/50 bg-muted/30 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-200",
-                                selectedConversation.assignedTo === 'BOT' && "opacity-50 cursor-not-allowed"
-                            )}>
+                            <div
+                                className={cn(
+                                    'flex-1 rounded-xl border border-border/50 bg-muted/30 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-200',
+                                    selectedConversation.assignedTo === 'BOT' &&
+                                        'opacity-50 cursor-not-allowed',
+                                )}
+                            >
                                 <textarea
                                     className="w-full bg-transparent border-none p-3 text-sm focus:outline-none resize-none max-h-32 min-h-[44px] disabled:cursor-not-allowed"
-                                    placeholder={selectedConversation.assignedTo === 'BOT' ? "Join conversation to send messages" : "Type a message..."}
+                                    placeholder={
+                                        selectedConversation.assignedTo === 'BOT'
+                                            ? 'Join conversation to send messages'
+                                            : 'Type a message...'
+                                    }
                                     rows={1}
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
@@ -356,8 +382,10 @@ export default function ConversationsPage() {
                                 onClick={handleSendMessage}
                                 size="icon"
                                 className={cn(
-                                    "shrink-0 transition-all",
-                                    input.trim() ? "translate-x-0 opacity-100" : "translate-x-2 opacity-0 w-0 px-0 overflow-hidden"
+                                    'shrink-0 transition-all',
+                                    input.trim()
+                                        ? 'translate-x-0 opacity-100'
+                                        : 'translate-x-2 opacity-0 w-0 px-0 overflow-hidden',
                                 )}
                                 disabled={selectedConversation.assignedTo === 'BOT'}
                             >
@@ -371,7 +399,9 @@ export default function ConversationsPage() {
                     <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center mb-6">
                         <Phone className="h-16 w-16 text-muted-foreground/50" />
                     </div>
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">WhatsApp Conversations</h2>
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">
+                        WhatsApp Conversations
+                    </h2>
                     <p className="text-muted-foreground max-w-md">
                         Select a conversation to view messages and manage customer interactions.
                     </p>
@@ -387,11 +417,16 @@ export default function ConversationsPage() {
                         </div>
                         <div className="p-4 space-y-4">
                             <div>
-                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Contact Details</h4>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">
+                                    Contact Details
+                                </h4>
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 text-sm">
                                         <User className="h-4 w-4 text-muted-foreground" />
-                                        <span>{selectedConversation.customer?.firstName} {selectedConversation.customer?.lastName}</span>
+                                        <span>
+                                            {selectedConversation.customer?.firstName}{' '}
+                                            {selectedConversation.customer?.lastName}
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm">
                                         <Phone className="h-4 w-4 text-muted-foreground" />
@@ -403,7 +438,9 @@ export default function ConversationsPage() {
                             <div className="h-px bg-border/50" />
 
                             <div>
-                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Conversation Owner</h4>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">
+                                    Conversation Owner
+                                </h4>
                                 <div className="flex items-center gap-2">
                                     {selectedConversation.assignedTo === 'BOT' ? (
                                         <>
@@ -442,44 +479,85 @@ export default function ConversationsPage() {
                             <div className="h-px bg-border/50" />
 
                             <div className="flex-1">
-                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Booking History</h4>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">
+                                    Booking History
+                                </h4>
                                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
                                     {reservations.length === 0 ? (
                                         <div className="text-sm text-muted-foreground p-2 text-center bg-muted/30 rounded-lg">
                                             No booking history
                                         </div>
                                     ) : (
-                                        reservations.map(reservation => {
+                                        reservations.map((reservation) => {
                                             // Calculate end time
-                                            const [hours = 0, minutes = 0] = reservation.time.split(':').map(Number);
+                                            const [hours = 0, minutes = 0] = reservation.time
+                                                .split(':')
+                                                .map(Number);
                                             const startDate = new Date();
                                             startDate.setHours(hours, minutes, 0, 0);
-                                            const endDate = new Date(startDate.getTime() + reservation.duration * 60000);
+                                            const endDate = new Date(
+                                                startDate.getTime() + reservation.duration * 60000,
+                                            );
                                             const endTime = format(endDate, 'HH:mm');
 
-                                            let badgeVariant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "error" | "info" = "secondary";
+                                            let badgeVariant:
+                                                | 'default'
+                                                | 'secondary'
+                                                | 'destructive'
+                                                | 'outline'
+                                                | 'success'
+                                                | 'warning'
+                                                | 'error'
+                                                | 'info' = 'secondary';
                                             switch (reservation.status) {
-                                                case 'CONFIRMED': badgeVariant = 'success'; break;
-                                                case 'PENDING': badgeVariant = 'warning'; break;
-                                                case 'CANCELLED': badgeVariant = 'destructive'; break;
-                                                case 'SEATED': badgeVariant = 'info'; break;
-                                                case 'COMPLETED': badgeVariant = 'default'; break;
-                                                default: badgeVariant = 'secondary';
+                                                case 'CONFIRMED':
+                                                    badgeVariant = 'success';
+                                                    break;
+                                                case 'PENDING':
+                                                    badgeVariant = 'warning';
+                                                    break;
+                                                case 'CANCELLED':
+                                                    badgeVariant = 'destructive';
+                                                    break;
+                                                case 'SEATED':
+                                                    badgeVariant = 'info';
+                                                    break;
+                                                case 'COMPLETED':
+                                                    badgeVariant = 'default';
+                                                    break;
+                                                default:
+                                                    badgeVariant = 'secondary';
                                             }
 
                                             return (
-                                                <div key={reservation._id} className="p-3 border border-border/50 rounded-lg space-y-1 bg-muted/30">
+                                                <div
+                                                    key={reservation._id}
+                                                    className="p-3 border border-border/50 rounded-lg space-y-1 bg-muted/30"
+                                                >
                                                     <div className="flex items-center justify-between">
-                                                        <h5 className="text-sm font-medium">{reservation.table?.name || 'Unknown Table'}</h5>
-                                                        <Badge variant={badgeVariant} className="text-xs">
+                                                        <h5 className="text-sm font-medium">
+                                                            {reservation.table?.name ||
+                                                                'Unknown Table'}
+                                                        </h5>
+                                                        <Badge
+                                                            variant={badgeVariant}
+                                                            className="text-xs"
+                                                        >
                                                             {reservation.status.toLowerCase()}
                                                         </Badge>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                         <Calendar className="h-3 w-3" />
-                                                        <span>{format(new Date(reservation.date), 'MMM d, yyyy')}</span>
+                                                        <span>
+                                                            {format(
+                                                                new Date(reservation.date),
+                                                                'MMM d, yyyy',
+                                                            )}
+                                                        </span>
                                                         <span>•</span>
-                                                        <span>{reservation.time} - {endTime}</span>
+                                                        <span>
+                                                            {reservation.time} - {endTime}
+                                                        </span>
                                                     </div>
                                                     <div className="text-xs font-medium flex items-center gap-1">
                                                         <span>SAR</span>

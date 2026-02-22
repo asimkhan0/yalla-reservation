@@ -1,11 +1,13 @@
 # WhatsApp Integration Implementation Plan (Twilio & Meta)
 
 ## Goal
+
 Enable multi-tenant WhatsApp configuration, allowing restaurants to choose between **Twilio** (easier setup) and **Meta Cloud API** (lower cost, official).
 
 ## 1. Architecture & Backend Design
 
 ### A. Database Schema (`Restaurant` Collection)
+
 We will use a discriminated union pattern for the `whatsappConfig` to ensure type safety.
 
 **File:** `apps/api/src/modules/restaurants/restaurants.schema.ts`
@@ -30,36 +32,41 @@ const metaConfig = z.object({
 });
 
 // Main Config Field
-export const whatsappIntegrationSchema = z.discriminatedUnion('provider', [
-    twilioConfig,
-    metaConfig
-]).and(z.object({
-    enabled: z.boolean().default(false),
-}));
+export const whatsappIntegrationSchema = z
+    .discriminatedUnion('provider', [twilioConfig, metaConfig])
+    .and(
+        z.object({
+            enabled: z.boolean().default(false),
+        }),
+    );
 ```
 
 ### B. Provider Pattern implementation
+
 We will abstract the specific API calls behind a common interface.
 
 **File:** `apps/api/src/modules/whatsapp/providers/whatsapp.provider.interface.ts`
+
 ```typescript
 export interface IWhatsAppProvider {
     sendText(to: string, body: string): Promise<void>;
     sendTemplate(to: string, template: string, components: any[]): Promise<void>;
     // Validates incoming webhook request signature
-    validateWebhook(headers: any, body: any, secret: string): Promise<boolean>; 
+    validateWebhook(headers: any, body: any, secret: string): Promise<boolean>;
     // Normalizes payload to our internal Message format
-    parseWebhookPayload(body: any): IncomingMessageData; 
+    parseWebhookPayload(body: any): IncomingMessageData;
 }
 ```
 
 ### C. Webhook Strategy
+
 To support multiple providers cleanly, we will use distinct webhook endpoints.
 
-*   `POST /api/whatsapp/webhooks/twilio/:restaurantId`
-*   `POST /api/whatsapp/webhooks/meta/:restaurantId`
+- `POST /api/whatsapp/webhooks/twilio/:restaurantId`
+- `POST /api/whatsapp/webhooks/meta/:restaurantId`
 
 **Flow:**
+
 1.  Webhook hits the endpoint.
 2.  Middleware/Handler looks up `Restaurant` by `:restaurantId`.
 3.  Checks if `restaurant.whatsappConfig.provider` matches the endpoint (Security).
@@ -73,20 +80,23 @@ To support multiple providers cleanly, we will use distinct webhook endpoints.
 **Location:** Restaurant Dashboard > Settings > Integrations
 
 ### Section 1: Provider Selection
-*   **Header**: "WhatsApp Integration"
-*   **Description**: "Connect your WhatsApp Business account to enable AI agents."
-*   **UI**: A Radio Card group or Select Box.
-    *   **Option A: Twilio** (Icon: Twilio Logo)
-        *   *Label*: "Twilio (Simplest Setup)"
-        *   *Subtext*: "Reliable, easy to get started. Higher cost per message."
-    *   **Option B: Meta Cloud API** (Icon: Meta Logo)
-        *   *Label*: "Meta Cloud API (Official)"
-        *   *Subtext*: "Lower cost, requires Facebook Business Verification."
+
+- **Header**: "WhatsApp Integration"
+- **Description**: "Connect your WhatsApp Business account to enable AI agents."
+- **UI**: A Radio Card group or Select Box.
+    - **Option A: Twilio** (Icon: Twilio Logo)
+        - _Label_: "Twilio (Simplest Setup)"
+        - _Subtext_: "Reliable, easy to get started. Higher cost per message."
+    - **Option B: Meta Cloud API** (Icon: Meta Logo)
+        - _Label_: "Meta Cloud API (Official)"
+        - _Subtext_: "Lower cost, requires Facebook Business Verification."
 
 ### Section 2: Configuration Form (Status: Disconnected)
-*Dynamic form based on selection.*
+
+_Dynamic form based on selection._
 
 #### When Twilio is selected:
+
 1.  **Account SID**: [Input Text]
 2.  **Auth Token**: [Input Password]
 3.  **WhatsApp Number**: [Input Text] (e.g., +14155238886)
@@ -94,6 +104,7 @@ To support multiple providers cleanly, we will use distinct webhook endpoints.
 5.  **Webhook URL**: [Read-only Input] `https://api.getdineline.com/api/whatsapp/webhooks/twilio/{restaurant_id}` (Copy Button)
 
 #### When Meta is selected:
+
 1.  **Phone Number ID**: [Input Text]
 2.  **WABA ID**: [Input Text]
 3.  **Access Token**: [Input Password] (Note: "Use a System User Permanent Token")
@@ -102,15 +113,17 @@ To support multiple providers cleanly, we will use distinct webhook endpoints.
 6.  **Instructions**: "Configure this Webhook URL and Verify Token in your Meta App Dashboard."
 
 ### Section 3: Action Bar
-*   **Button**: "Save & Test Connection"
-    *   *Action*: Saves config, then backend attempts to send a "Ping" message to a test number or validates credentials via API lookup.
-*   **Visual Feedback**:
-    *   Success: Green checkmark badge "Connected".
-    *   Error: Red alert with specific API error message (e.g., "Invalid Auth Token").
+
+- **Button**: "Save & Test Connection"
+    - _Action_: Saves config, then backend attempts to send a "Ping" message to a test number or validates credentials via API lookup.
+- **Visual Feedback**:
+    - Success: Green checkmark badge "Connected".
+    - Error: Red alert with specific API error message (e.g., "Invalid Auth Token").
 
 ## 3. Implementation Steps
 
 ### Phase 1: Backend Core
+
 1.  [ ] **Schema Update**: Add `whatsappIntegrationSchema` to `Restaurant` model.
 2.  [ ] **Abstract Service**: Refactor `whatsapp.service.ts` to use `IWhatsAppProvider`.
 3.  [ ] **Implement Twilio**: Migrate existing code to `TwilioProvider`.
@@ -118,17 +131,20 @@ To support multiple providers cleanly, we will use distinct webhook endpoints.
 5.  [ ] **Webhooks**: Create the two new distinct webhook endpoints in `whatsapp.routes.ts`.
 
 ### Phase 2: Frontend (Settings)
+
 1.  [ ] **API Client**: Add `updateIntegration` method to frontend SDK.
 2.  [ ] **UI Component**: Build `WhatsAppIntegrationCard.tsx`.
 3.  [ ] **Forms**: Create Zod-validated forms for Twilio and Meta inputs.
 4.  [ ] **Feedback**: Implement the "Test Connection" toast/notification.
 
 ### Phase 3: Verification
+
 1.  [ ] **Manual Test**: Configure a test restaurant with Twilio (Sandbox).
 2.  [ ] **Manual Test**: Configure a test restaurant with Meta (Test App).
 3.  [ ] **Automated Test**: Unit tests for `MetaProvider` payload parsing (which is complex).
 
 ## Differences from previous plan
-*   **Removed WAHA/Other providers**: Focused strictly on the two requested.
-*   **Specific Webhook Strategy**: Defined distinct URL patterns for clarity.
-*   **UX Detail**: Added specific field requirements and "Copy" actions for webhooks.
+
+- **Removed WAHA/Other providers**: Focused strictly on the two requested.
+- **Specific Webhook Strategy**: Defined distinct URL patterns for clarity.
+- **UX Detail**: Added specific field requirements and "Copy" actions for webhooks.
