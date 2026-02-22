@@ -36,7 +36,8 @@ export const getDashboardStats = async (restaurantId: string, days = 30) => {
     });
 
     const totalCovers = activeReservations[0]?.totalCovers || 0;
-    const cancellationRate = totalReservations > 0 ? (cancelledReservations / totalReservations) * 100 : 0;
+    const cancellationRate =
+        totalReservations > 0 ? (cancelledReservations / totalReservations) * 100 : 0;
 
     // 2. Charts Data
 
@@ -118,10 +119,20 @@ export const getDashboardStats = async (restaurantId: string, days = 30) => {
             activeReservations: activeReservations[0]?.count || 0,
         },
         charts: {
-            bookingTrends: bookingTrends.map(item => ({ date: item._id, reservations: item.reservations, covers: item.covers })),
-            reservationsBySource: reservationsBySource.map(item => ({ name: item._id || 'Unknown', value: item.value })),
-            reservationsByStatus: reservationsByStatus.map(item => ({ name: item._id, value: item.value })),
-            popularTimes: popularTimes.map(item => ({ time: item._id, value: item.value })),
+            bookingTrends: bookingTrends.map((item) => ({
+                date: item._id,
+                reservations: item.reservations,
+                covers: item.covers,
+            })),
+            reservationsBySource: reservationsBySource.map((item) => ({
+                name: item._id || 'Unknown',
+                value: item.value,
+            })),
+            reservationsByStatus: reservationsByStatus.map((item) => ({
+                name: item._id,
+                value: item.value,
+            })),
+            popularTimes: popularTimes.map((item) => ({ time: item._id, value: item.value })),
         },
     };
 };

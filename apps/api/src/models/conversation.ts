@@ -22,10 +22,12 @@ const conversationSchema = new Schema<IConversation>(
         unreadCount: { type: Number, default: 0 },
         context: { type: Map, of: Schema.Types.Mixed, default: {} },
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 conversationSchema.index({ customer: 1, status: 1 });
 conversationSchema.index({ restaurant: 1 });
 
-export const Conversation = (mongoose.models.Conversation as mongoose.Model<IConversation>) || mongoose.model<IConversation>('Conversation', conversationSchema);
+export const Conversation =
+    (mongoose.models.Conversation as mongoose.Model<IConversation>) ||
+    mongoose.model<IConversation>('Conversation', conversationSchema);

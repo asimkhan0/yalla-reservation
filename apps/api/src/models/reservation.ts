@@ -7,7 +7,15 @@ export interface IReservation extends Document {
     time: string;
     partySize: number;
     duration: number;
-    status: 'PENDING' | 'CONFIRMED' | 'REMINDED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'WAITLISTED';
+    status:
+        | 'PENDING'
+        | 'CONFIRMED'
+        | 'REMINDED'
+        | 'SEATED'
+        | 'COMPLETED'
+        | 'CANCELLED'
+        | 'NO_SHOW'
+        | 'WAITLISTED';
     guestName: string;
     guestPhone: string;
     guestEmail?: string;
@@ -42,7 +50,16 @@ const reservationSchema = new Schema<IReservation>(
         duration: { type: Number, required: true, default: 90 },
         status: {
             type: String,
-            enum: ['PENDING', 'CONFIRMED', 'REMINDED', 'SEATED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'WAITLISTED'],
+            enum: [
+                'PENDING',
+                'CONFIRMED',
+                'REMINDED',
+                'SEATED',
+                'COMPLETED',
+                'CANCELLED',
+                'NO_SHOW',
+                'WAITLISTED',
+            ],
             default: 'PENDING',
         },
         guestName: { type: String, required: true },
@@ -67,13 +84,21 @@ const reservationSchema = new Schema<IReservation>(
         conversation: { type: Schema.Types.ObjectId, ref: 'Conversation' },
         reminders: [
             {
-                type: { type: String, enum: ['CONFIRMATION_REQUEST', 'REMINDER_24H', 'REMINDER_2H', 'POST_VISIT_FEEDBACK'] },
+                type: {
+                    type: String,
+                    enum: [
+                        'CONFIRMATION_REQUEST',
+                        'REMINDER_24H',
+                        'REMINDER_2H',
+                        'POST_VISIT_FEEDBACK',
+                    ],
+                },
                 scheduledFor: Date,
                 sentAt: Date,
             },
         ],
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 reservationSchema.index({ restaurant: 1, date: 1 });
@@ -88,6 +113,7 @@ reservationSchema.pre('save', function (next) {
     next();
 });
 
-export const Reservation = (mongoose.models.Reservation || mongoose.model<IReservation>('Reservation', reservationSchema)) as mongoose.Model<IReservation>;
+export const Reservation = (mongoose.models.Reservation ||
+    mongoose.model<IReservation>('Reservation', reservationSchema)) as mongoose.Model<IReservation>;
 
 // Duplicate Conversation and Message models removed. Imported from individual files where needed.

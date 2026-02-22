@@ -17,7 +17,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             const user = request.user as { restaurantId: string };
             const conversations = await service.listConversations(user.restaurantId);
             return reply.send({ conversations });
-        }
+        },
     );
 
     // Get Unread Count
@@ -35,7 +35,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             const user = request.user as { restaurantId: string };
             const unreadCount = await service.getUnreadConversationCount(user.restaurantId);
             return reply.send({ unreadCount });
-        }
+        },
     );
 
     // Get Messages
@@ -49,9 +49,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                 params: {
                     type: 'object',
                     properties: {
-                        id: { type: 'string' }
-                    }
-                }
+                        id: { type: 'string' },
+                    },
+                },
             },
             preHandler: fastify.authenticate,
         },
@@ -59,7 +59,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             const { id } = request.params as { id: string };
             const messages = await service.getConversationMessages(id);
             return reply.send({ messages });
-        }
+        },
     );
 
     // Assign Conversation
@@ -73,16 +73,16 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                 params: {
                     type: 'object',
                     properties: {
-                        id: { type: 'string' }
-                    }
+                        id: { type: 'string' },
+                    },
                 },
                 body: {
                     type: 'object',
                     required: ['assignedTo'],
                     properties: {
-                        assignedTo: { type: 'string', enum: ['BOT', 'AGENT'] }
-                    }
-                }
+                        assignedTo: { type: 'string', enum: ['BOT', 'AGENT'] },
+                    },
+                },
             },
             preHandler: fastify.authenticate,
         },
@@ -91,7 +91,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             const { assignedTo } = request.body as { assignedTo: 'BOT' | 'AGENT' };
             const conversation = await service.assignConversation(id, assignedTo);
             return reply.send({ conversation });
-        }
+        },
     );
 
     // Send Message (Agent)
@@ -105,16 +105,16 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                 params: {
                     type: 'object',
                     properties: {
-                        id: { type: 'string' }
-                    }
+                        id: { type: 'string' },
+                    },
                 },
                 body: {
                     type: 'object',
                     required: ['content'],
                     properties: {
-                        content: { type: 'string' }
-                    }
-                }
+                        content: { type: 'string' },
+                    },
+                },
             },
             preHandler: fastify.authenticate,
         },
@@ -123,6 +123,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             const { content } = request.body as { content: string };
             const message = await service.sendAgentMessage(id, content);
             return reply.send({ message });
-        }
+        },
     );
 }

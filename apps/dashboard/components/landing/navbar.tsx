@@ -1,7 +1,7 @@
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/logo';
 
 export function LandingNavbar() {
     return (
@@ -26,7 +26,10 @@ export function LandingNavbar() {
 
                 <div className="flex items-center gap-4">
                     <Link href="/login">
-                        <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/10">
+                        <Button
+                            variant="ghost"
+                            className="text-slate-300 hover:text-white hover:bg-white/10"
+                        >
                             Login
                         </Button>
                     </Link>

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { format, startOfWeek, addDays, isSameDay } from "date-fns";
-import { cn, statusColors } from "@/lib/utils";
+import { useMemo } from 'react';
+import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { cn, statusColors } from '@/lib/utils';
 
 interface Reservation {
     _id: string;
@@ -22,7 +22,7 @@ interface CalendarViewProps {
 // Time slots from 11:00 to 23:00
 const TIME_SLOTS = Array.from({ length: 13 }, (_, i) => {
     const hour = i + 11;
-    return `${hour.toString().padStart(2, "0")}:00`;
+    return `${hour.toString().padStart(2, '0')}:00`;
 });
 
 export function CalendarView({ reservations, currentDate, onDateSelect }: CalendarViewProps) {
@@ -37,7 +37,7 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
         const map = new Map<string, Reservation[]>();
         reservations.forEach((res) => {
             const dateKey = new Date(res.date).toDateString();
-            const timeKey = res.time.substring(0, 2) + ":00"; // Round to hour
+            const timeKey = res.time.substring(0, 2) + ':00'; // Round to hour
             const key = `${dateKey}-${timeKey}`;
             if (!map.has(key)) {
                 map.set(key, []);
@@ -57,23 +57,29 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
             <div className="min-w-[800px]">
                 {/* Header row with days */}
                 <div className="grid grid-cols-8 border-b border-border/50">
-                    <div className="p-3 text-sm font-medium text-muted-foreground border-r border-border/50">Time</div>
+                    <div className="p-3 text-sm font-medium text-muted-foreground border-r border-border/50">
+                        Time
+                    </div>
                     {weekDays.map((day, i) => (
                         <div
                             key={i}
                             onClick={() => onDateSelect(day)}
                             className={cn(
-                                "p-3 text-center cursor-pointer hover:bg-muted/50 transition-all duration-200",
-                                isSameDay(day, currentDate) && "bg-primary/10",
-                                isSameDay(day, new Date()) && "font-bold"
+                                'p-3 text-center cursor-pointer hover:bg-muted/50 transition-all duration-200',
+                                isSameDay(day, currentDate) && 'bg-primary/10',
+                                isSameDay(day, new Date()) && 'font-bold',
                             )}
                         >
-                            <div className="text-xs text-muted-foreground">{format(day, "EEE")}</div>
-                            <div className={cn(
-                                "text-lg font-medium",
-                                isSameDay(day, new Date()) && "text-primary"
-                            )}>
-                                {format(day, "d")}
+                            <div className="text-xs text-muted-foreground">
+                                {format(day, 'EEE')}
+                            </div>
+                            <div
+                                className={cn(
+                                    'text-lg font-medium',
+                                    isSameDay(day, new Date()) && 'text-primary',
+                                )}
+                            >
+                                {format(day, 'd')}
                             </div>
                         </div>
                     ))}
@@ -81,7 +87,10 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
 
                 {/* Time slots */}
                 {TIME_SLOTS.map((time) => (
-                    <div key={time} className="grid grid-cols-8 border-b border-border/50 min-h-[60px]">
+                    <div
+                        key={time}
+                        className="grid grid-cols-8 border-b border-border/50 min-h-[60px]"
+                    >
                         <div className="p-2 text-xs text-muted-foreground border-r border-border/50 flex items-start">
                             {time}
                         </div>
@@ -91,19 +100,22 @@ export function CalendarView({ reservations, currentDate, onDateSelect }: Calend
                                 <div
                                     key={i}
                                     className={cn(
-                                        "p-1 border-r border-border/50 min-h-[60px] hover:bg-muted/30 transition-colors",
-                                        isSameDay(day, currentDate) && "bg-primary/5"
+                                        'p-1 border-r border-border/50 min-h-[60px] hover:bg-muted/30 transition-colors',
+                                        isSameDay(day, currentDate) && 'bg-primary/5',
                                     )}
                                 >
                                     {slotReservations.map((res) => (
                                         <div
                                             key={res._id}
                                             className={cn(
-                                                "text-xs p-2 rounded-lg mb-1 cursor-pointer hover:opacity-90 transition-all duration-200",
-                                                statusColors[res.status] || "bg-muted text-muted-foreground"
+                                                'text-xs p-2 rounded-lg mb-1 cursor-pointer hover:opacity-90 transition-all duration-200',
+                                                statusColors[res.status] ||
+                                                    'bg-muted text-muted-foreground',
                                             )}
                                         >
-                                            <div className="font-medium truncate">{res.guestName}</div>
+                                            <div className="font-medium truncate">
+                                                {res.guestName}
+                                            </div>
                                             <div className="text-[10px] opacity-80">
                                                 {res.time} · {res.partySize} ppl
                                             </div>

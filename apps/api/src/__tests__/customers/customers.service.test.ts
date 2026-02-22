@@ -36,10 +36,12 @@ describe('Customers Service', () => {
         it('should return paginated customers', async () => {
             // Create 25 customers
             for (let i = 0; i < 25; i++) {
-                await Customer.create(createMockCustomerData(restaurantId, {
-                    phone: `+123456789${i.toString().padStart(2, '0')}`,
-                    firstName: `Customer${i}`,
-                }));
+                await Customer.create(
+                    createMockCustomerData(restaurantId, {
+                        phone: `+123456789${i.toString().padStart(2, '0')}`,
+                        firstName: `Customer${i}`,
+                    }),
+                );
             }
 
             const result = await listCustomers(restaurantId, { page: 1, limit: 10 });
@@ -53,10 +55,12 @@ describe('Customers Service', () => {
 
         it('should return correct page', async () => {
             for (let i = 0; i < 25; i++) {
-                await Customer.create(createMockCustomerData(restaurantId, {
-                    phone: `+123456789${i.toString().padStart(2, '0')}`,
-                    firstName: `Customer${i}`,
-                }));
+                await Customer.create(
+                    createMockCustomerData(restaurantId, {
+                        phone: `+123456789${i.toString().padStart(2, '0')}`,
+                        firstName: `Customer${i}`,
+                    }),
+                );
             }
 
             const result = await listCustomers(restaurantId, { page: 3, limit: 10 });
@@ -66,18 +70,24 @@ describe('Customers Service', () => {
         });
 
         it('should filter by search term (firstName)', async () => {
-            await Customer.create(createMockCustomerData(restaurantId, {
-                phone: '+1111111111',
-                firstName: 'John',
-            }));
-            await Customer.create(createMockCustomerData(restaurantId, {
-                phone: '+2222222222',
-                firstName: 'Jane',
-            }));
-            await Customer.create(createMockCustomerData(restaurantId, {
-                phone: '+3333333333',
-                firstName: 'Bob',
-            }));
+            await Customer.create(
+                createMockCustomerData(restaurantId, {
+                    phone: '+1111111111',
+                    firstName: 'John',
+                }),
+            );
+            await Customer.create(
+                createMockCustomerData(restaurantId, {
+                    phone: '+2222222222',
+                    firstName: 'Jane',
+                }),
+            );
+            await Customer.create(
+                createMockCustomerData(restaurantId, {
+                    phone: '+3333333333',
+                    firstName: 'Bob',
+                }),
+            );
 
             const result = await listCustomers(restaurantId, { search: 'John' });
 
@@ -86,14 +96,18 @@ describe('Customers Service', () => {
         });
 
         it('should filter by search term (phone)', async () => {
-            await Customer.create(createMockCustomerData(restaurantId, {
-                phone: '+1234567890',
-                firstName: 'John',
-            }));
-            await Customer.create(createMockCustomerData(restaurantId, {
-                phone: '+9876543210',
-                firstName: 'Jane',
-            }));
+            await Customer.create(
+                createMockCustomerData(restaurantId, {
+                    phone: '+1234567890',
+                    firstName: 'John',
+                }),
+            );
+            await Customer.create(
+                createMockCustomerData(restaurantId, {
+                    phone: '+9876543210',
+                    firstName: 'Jane',
+                }),
+            );
 
             const result = await listCustomers(restaurantId, { search: '1234' });
 
@@ -102,19 +116,25 @@ describe('Customers Service', () => {
         });
 
         it('should only return customers for the specified restaurant', async () => {
-            const otherRestaurant = await Restaurant.create(createMockRestaurantData({
-                slug: 'other-restaurant',
-                email: 'other@restaurant.com',
-            }));
+            const otherRestaurant = await Restaurant.create(
+                createMockRestaurantData({
+                    slug: 'other-restaurant',
+                    email: 'other@restaurant.com',
+                }),
+            );
 
-            await Customer.create(createMockCustomerData(restaurantId, {
-                phone: '+1111111111',
-                firstName: 'OurCustomer',
-            }));
-            await Customer.create(createMockCustomerData(otherRestaurant._id.toString(), {
-                phone: '+2222222222',
-                firstName: 'TheirCustomer',
-            }));
+            await Customer.create(
+                createMockCustomerData(restaurantId, {
+                    phone: '+1111111111',
+                    firstName: 'OurCustomer',
+                }),
+            );
+            await Customer.create(
+                createMockCustomerData(otherRestaurant._id.toString(), {
+                    phone: '+2222222222',
+                    firstName: 'TheirCustomer',
+                }),
+            );
 
             const result = await listCustomers(restaurantId, {});
 

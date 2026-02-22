@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export function Hero() {
     return (
@@ -30,10 +30,10 @@ export function Hero() {
                         transition={{ duration: 0.5, delay: 0.1 }}
                         className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white max-w-4xl"
                     >
-                        The Future of{" "}
+                        The Future of{' '}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
                             Reservations
-                        </span>{" "}
+                        </span>{' '}
                         is Here
                     </motion.h1>
 
@@ -43,7 +43,8 @@ export function Hero() {
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto"
                     >
-                        Stop losing customers to missed calls. Automate your bookings with an intelligent WhatsApp agent that works 24/7.
+                        Stop losing customers to missed calls. Automate your bookings with an
+                        intelligent WhatsApp agent that works 24/7.
                     </motion.p>
 
                     <motion.div
@@ -53,13 +54,20 @@ export function Hero() {
                         className="flex flex-col sm:flex-row gap-4 w-full justify-center"
                     >
                         <Link href="/register">
-                            <Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 border-0 shadow-lg shadow-purple-500/20">
+                            <Button
+                                size="lg"
+                                className="w-full sm:w-auto h-12 px-8 text-base bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 border-0 shadow-lg shadow-purple-500/20"
+                            >
                                 Start Free Trial
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </Link>
                         <Link href="#demo">
-                            <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 text-base border-white/20 text-white hover:bg-white/10 hover:text-white bg-transparent">
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="w-full sm:w-auto h-12 px-8 text-base border-white/20 text-white hover:bg-white/10 hover:text-white bg-transparent"
+                            >
                                 Watch Demo
                             </Button>
                         </Link>
@@ -82,7 +90,7 @@ export function Hero() {
                         </div>
                     </motion.div>
                 </div>
-            </div >
-        </section >
+            </div>
+        </section>
     );
 }

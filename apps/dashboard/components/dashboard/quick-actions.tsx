@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { CalendarDays, Users, MessageSquare, Clock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { CalendarDays, Users, MessageSquare, Clock } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export function QuickActions() {
     return (
@@ -12,7 +12,10 @@ export function QuickActions() {
             <CardContent>
                 <div className="grid grid-cols-2 gap-3">
                     <Link href="/reservations">
-                        <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200">
+                        <Button
+                            variant="outline"
+                            className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200"
+                        >
                             <div className="rounded-lg bg-primary/10 p-2">
                                 <CalendarDays className="h-5 w-5 text-primary" />
                             </div>
@@ -21,7 +24,10 @@ export function QuickActions() {
                     </Link>
 
                     <Link href="/reservations">
-                        <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200">
+                        <Button
+                            variant="outline"
+                            className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200"
+                        >
                             <div className="rounded-lg bg-primary/10 p-2">
                                 <Users className="h-5 w-5 text-primary" />
                             </div>
@@ -30,7 +36,10 @@ export function QuickActions() {
                     </Link>
 
                     <Link href="/conversations">
-                        <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200">
+                        <Button
+                            variant="outline"
+                            className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200"
+                        >
                             <div className="rounded-lg bg-primary/10 p-2">
                                 <MessageSquare className="h-5 w-5 text-primary" />
                             </div>
@@ -39,7 +48,10 @@ export function QuickActions() {
                     </Link>
 
                     <Link href="/settings?tab=hours">
-                        <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200">
+                        <Button
+                            variant="outline"
+                            className="w-full h-24 flex flex-col gap-2 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-foreground transition-all duration-200"
+                        >
                             <div className="rounded-lg bg-primary/10 p-2">
                                 <Clock className="h-5 w-5 text-primary" />
                             </div>

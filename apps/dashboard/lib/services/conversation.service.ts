@@ -28,5 +28,5 @@ export const ConversationService = {
     async getMessages(conversationId: string) {
         const { data } = await api.get(`/conversations/${conversationId}/messages`);
         return data.messages;
-    }
+    },
 };

@@ -1,8 +1,8 @@
-import { Metadata } from "next";
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Privacy Policy | DineLine",
-    description: "Privacy Policy for DineLine services, including WhatsApp data processing.",
+    title: 'Privacy Policy | DineLine',
+    description: 'Privacy Policy for DineLine services, including WhatsApp data processing.',
 };
 
 export default function PrivacyPage() {
@@ -14,13 +14,17 @@ export default function PrivacyPage() {
 
                 <h2>1. Introduction</h2>
                 <p>
-                    DineLine ("we," "our," or "us") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and our AI-powered reservation management services via WhatsApp (the "Service").
+                    DineLine ("we," "our," or "us") respects your privacy. This Privacy Policy
+                    explains how we collect, use, disclose, and safeguard your information when you
+                    use our website and our AI-powered reservation management services via WhatsApp
+                    (the "Service").
                 </p>
 
                 <h2>2. Data We Collect</h2>
                 <h3>2.1 Personal Information</h3>
                 <p>
-                    We may collect personal information that you voluntarily provide to us when you register for the Service, specifically:
+                    We may collect personal information that you voluntarily provide to us when you
+                    register for the Service, specifically:
                 </p>
                 <ul>
                     <li>Name and Contact Details (Email address, Phone number).</li>
@@ -30,7 +34,8 @@ export default function PrivacyPage() {
 
                 <h3>2.2 WhatsApp Data</h3>
                 <p>
-                    By using our Service, you authorize us to process messages sent to and from your business WhatsApp account to facilitate automated reservations. This includes:
+                    By using our Service, you authorize us to process messages sent to and from your
+                    business WhatsApp account to facilitate automated reservations. This includes:
                 </p>
                 <ul>
                     <li>Message content (transcribed voice notes, text).</li>
@@ -39,9 +44,7 @@ export default function PrivacyPage() {
                 </ul>
 
                 <h2>3. How We Use Your Information</h2>
-                <p>
-                    We use the information we collect to:
-                </p>
+                <p>We use the information we collect to:</p>
                 <ul>
                     <li>Provide, operate, and maintain our AI reservation agent.</li>
                     <li>Process and confirm bookings with your customers via WhatsApp.</li>
@@ -52,29 +55,45 @@ export default function PrivacyPage() {
                 <h2>4. Data Sharing and Disclosure</h2>
                 <h3>4.1 Third-Party Service Providers</h3>
                 <p>
-                    We may share information with third-party vendors who perform services on our behalf, specifically:
+                    We may share information with third-party vendors who perform services on our
+                    behalf, specifically:
                 </p>
                 <ul>
-                    <li><strong>Meta Platforms, Inc. (WhatsApp):</strong> To facilitate message delivery and API integration.</li>
-                    <li><strong>OpenAI:</strong> To process natural language understanding and voice transcription (solely for the purpose of booking automation).</li>
+                    <li>
+                        <strong>Meta Platforms, Inc. (WhatsApp):</strong> To facilitate message
+                        delivery and API integration.
+                    </li>
+                    <li>
+                        <strong>OpenAI:</strong> To process natural language understanding and voice
+                        transcription (solely for the purpose of booking automation).
+                    </li>
                 </ul>
 
                 <h2>5. User Consent and Opt-In</h2>
                 <p>
-                    <strong>For End Users (Restaurant Customers):</strong> By messaging your restaurant's WhatsApp number, customers initiate a conversation and consent to receive automated responses regarding their inquiry.
+                    <strong>For End Users (Restaurant Customers):</strong> By messaging your
+                    restaurant's WhatsApp number, customers initiate a conversation and consent to
+                    receive automated responses regarding their inquiry.
                 </p>
                 <p>
-                    <strong>For Businesses:</strong> By connecting your WhatsApp Business account to DineLine, you explicitly consent to our processing of your business messages for the purpose of reservation management.
+                    <strong>For Businesses:</strong> By connecting your WhatsApp Business account to
+                    DineLine, you explicitly consent to our processing of your business messages for
+                    the purpose of reservation management.
                 </p>
 
                 <h2>6. Data Retention</h2>
                 <p>
-                    We retain your personal information only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use your information to the extent necessary to comply with our legal obligations.
+                    We retain your personal information only for as long as is necessary for the
+                    purposes set out in this Privacy Policy. We will retain and use your information
+                    to the extent necessary to comply with our legal obligations.
                 </p>
 
                 <h2>7. Security of Your Information</h2>
                 <p>
-                    We use administrative, technical, and physical security measures to help protect your personal information. However, please be aware that no electronic transmission over the internet or information storage technology can be guaranteed to be 100% secure.
+                    We use administrative, technical, and physical security measures to help protect
+                    your personal information. However, please be aware that no electronic
+                    transmission over the internet or information storage technology can be
+                    guaranteed to be 100% secure.
                 </p>
 
                 {/* <h2>8. Contact Us</h2>

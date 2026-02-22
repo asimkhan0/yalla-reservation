@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { toast } from "@/components/ui/sonner";
+import { toast } from '@/components/ui/sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
@@ -16,10 +16,13 @@ interface WhatsAppIntegrationCardProps {
     initialConfig?: WhatsAppConfig;
 }
 
-export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAppIntegrationCardProps) {
+export function WhatsAppIntegrationCard({
+    restaurantId,
+    initialConfig,
+}: WhatsAppIntegrationCardProps) {
     const [config, setConfig] = useState<WhatsAppConfig | undefined>(initialConfig);
     const [activeTab, setActiveTab] = useState<'twilio' | 'meta'>(
-        initialConfig?.provider || 'twilio'
+        initialConfig?.provider || 'twilio',
     );
 
     // Determine connection status for each provider
@@ -44,7 +47,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                 provider: 'twilio',
                 accountSid: twilioConfig.accountSid,
                 authToken: twilioConfig.authToken,
-                phoneNumber: twilioConfig.phoneNumber
+                phoneNumber: twilioConfig.phoneNumber,
             };
 
             await RestaurantService.updateIntegration(restaurantId, newConfig);
@@ -68,7 +71,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
             // First, verify the credentials with Meta Graph API
             const verifyResult = await RestaurantService.verifyMetaConnection(
                 metaConfig.phoneNumberId!,
-                metaConfig.accessToken!
+                metaConfig.accessToken!,
             );
 
             if (!verifyResult.valid) {
@@ -84,11 +87,14 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                 accessToken: metaConfig.accessToken,
                 // Store verified business info
                 businessName: verifyResult.verifiedName,
-                displayPhoneNumber: verifyResult.displayPhoneNumber
+                displayPhoneNumber: verifyResult.displayPhoneNumber,
             };
 
             // Save and get the response with the generated webhookVerifyToken
-            const savedRestaurant = await RestaurantService.updateIntegration(restaurantId, newConfig);
+            const savedRestaurant = await RestaurantService.updateIntegration(
+                restaurantId,
+                newConfig,
+            );
 
             // Extract the webhookVerifyToken from the saved config
             const savedConfig = savedRestaurant?.whatsappConfig;
@@ -96,7 +102,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
             // Update local state with the actual verify token from backend
             setConfig({
                 ...newConfig,
-                webhookVerifyToken: savedConfig?.webhookVerifyToken || 'Refresh page to see token'
+                webhookVerifyToken: savedConfig?.webhookVerifyToken || 'Refresh page to see token',
             });
             toast.success(`Connected to ${verifyResult.verifiedName || 'WhatsApp Business'}!`);
         } catch (error: any) {
@@ -120,12 +126,16 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
     };
 
     // Handle Embedded Signup (One-Click Connection)
-    const handleEmbeddedSignup = async (data: { code: string; wabaId: string; phoneNumberId: string }) => {
+    const handleEmbeddedSignup = async (data: {
+        code: string;
+        wabaId: string;
+        phoneNumberId: string;
+    }) => {
         try {
             const result = await RestaurantService.exchangeEmbeddedSignupToken(
                 data.code,
                 data.wabaId,
-                data.phoneNumberId
+                data.phoneNumberId,
             );
 
             if (!result.success) {
@@ -140,7 +150,7 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                 wabaId: data.wabaId,
                 businessName: result.businessName,
                 displayPhoneNumber: result.displayPhoneNumber,
-                webhookVerifyToken: result.webhookVerifyToken
+                webhookVerifyToken: result.webhookVerifyToken,
             });
 
             toast.success(`Connected to ${result.businessName || 'WhatsApp Business'}!`);
@@ -210,12 +220,16 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                     <TabsContent value="twilio" className="mt-0">
                         <TwilioSetupForm
                             restaurantId={restaurantId}
-                            config={isTwilioConnected ? {
-                                accountSid: config?.accountSid,
-                                authToken: config?.authToken,
-                                phoneNumber: config?.phoneNumber,
-                                enabled: config?.enabled
-                            } : undefined}
+                            config={
+                                isTwilioConnected
+                                    ? {
+                                          accountSid: config?.accountSid,
+                                          authToken: config?.authToken,
+                                          phoneNumber: config?.phoneNumber,
+                                          enabled: config?.enabled,
+                                      }
+                                    : undefined
+                            }
                             webhookUrl={twilioWebhookUrl}
                             onSave={handleTwilioSave}
                             onTest={handleTest}
@@ -225,15 +239,19 @@ export function WhatsAppIntegrationCard({ restaurantId, initialConfig }: WhatsAp
                     <TabsContent value="meta" className="mt-0">
                         <MetaSetupForm
                             restaurantId={restaurantId}
-                            config={isMetaConnected ? {
-                                phoneNumberId: config?.phoneNumberId,
-                                wabaId: config?.wabaId,
-                                accessToken: config?.accessToken,
-                                webhookVerifyToken: config?.webhookVerifyToken,
-                                businessName: config?.businessName,
-                                displayPhoneNumber: config?.displayPhoneNumber,
-                                enabled: config?.enabled
-                            } : undefined}
+                            config={
+                                isMetaConnected
+                                    ? {
+                                          phoneNumberId: config?.phoneNumberId,
+                                          wabaId: config?.wabaId,
+                                          accessToken: config?.accessToken,
+                                          webhookVerifyToken: config?.webhookVerifyToken,
+                                          businessName: config?.businessName,
+                                          displayPhoneNumber: config?.displayPhoneNumber,
+                                          enabled: config?.enabled,
+                                      }
+                                    : undefined
+                            }
                             webhookUrl={metaWebhookUrl}
                             onSave={handleMetaSave}
                             onDisconnect={handleDisconnect}

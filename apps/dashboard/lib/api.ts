@@ -18,7 +18,10 @@ const api: AxiosInstance = axios.create({
  * - Alternative format: { message: "..." }
  * - Axios errors
  */
-export const extractErrorMessage = (error: any, defaultMessage = 'Something went wrong'): string => {
+export const extractErrorMessage = (
+    error: any,
+    defaultMessage = 'Something went wrong',
+): string => {
     // Check for axios response error
     if (error?.response?.data) {
         const data = error.response.data;
@@ -59,7 +62,7 @@ api.interceptors.request.use(
         }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
 );
 
 // Response interceptor: Handle 401 & Refresh Token
@@ -70,7 +73,7 @@ api.interceptors.response.use(
         const requestUrl = originalRequest?.url || '';
 
         // Skip token refresh for auth endpoints (401 means invalid credentials, not expired token)
-        const isAuthEndpoint = authEndpoints.some(endpoint => requestUrl.includes(endpoint));
+        const isAuthEndpoint = authEndpoints.some((endpoint) => requestUrl.includes(endpoint));
         if (isAuthEndpoint) {
             return Promise.reject(error);
         }
@@ -101,7 +104,6 @@ api.interceptors.response.use(
                 // Update header and retry original request
                 originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
                 return api(originalRequest);
-
             } catch (refreshError) {
                 // Refresh failed - logout user
                 localStorage.removeItem('accessToken');
@@ -122,8 +124,7 @@ api.interceptors.response.use(
         }
 
         return Promise.reject(error);
-    }
+    },
 );
 
 export default api;
-

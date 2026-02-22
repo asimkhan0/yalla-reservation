@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { connectDatabase } from './config/database.js';
-import './config/redis.js'; // Initialize Redis connection
+import { connectDatabase, disconnectDatabase } from './config/database.js';
+import { redis } from './config/redis.js';
 import { env } from './config/env.js';
 import { buildApp } from './app.js';
 
@@ -17,17 +17,28 @@ const startServer = async () => {
         console.error(err);
         process.exit(1);
     }
-}
+};
 
-const shutdown = async () => {
-    console.log('\n🛑 Shutting down server...');
+const shutdown = async (signal: string) => {
+    console.log(`\n🛑 Received ${signal}. Shutting down server...`);
+
     if (appInstance) {
         await appInstance.close();
+        console.log('HTTP server closed.');
     }
+
+    if (redis) {
+        await redis.quit();
+        console.log('Redis connection closed.');
+    }
+
+    await disconnectDatabase();
+    console.log('Database connection closed.');
+
     process.exit(0);
 };
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 startServer();

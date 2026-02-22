@@ -1,24 +1,20 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Sidebar } from '@/components/layout/sidebar';
+import { Header } from '@/components/layout/header';
 
-import { OnboardingBanner } from "@/components/dashboard/onboarding-banner";
+import { OnboardingBanner } from '@/components/dashboard/onboarding-banner';
 
-export default function DashboardLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem('accessToken');
         if (!token) {
-            router.push("/login");
+            router.push('/login');
         } else {
             setIsLoading(false);
         }

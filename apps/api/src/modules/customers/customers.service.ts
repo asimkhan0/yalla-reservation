@@ -24,11 +24,8 @@ export const listCustomers = async (restaurantId: string, query: ListCustomersQu
     }
 
     const [customers, total] = await Promise.all([
-        Customer.find(filter)
-            .sort({ updatedAt: -1 })
-            .skip(skip)
-            .limit(limit),
-        Customer.countDocuments(filter)
+        Customer.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limit),
+        Customer.countDocuments(filter),
     ]);
 
     return {
@@ -37,7 +34,7 @@ export const listCustomers = async (restaurantId: string, query: ListCustomersQu
             total,
             page,
             limit,
-            pages: Math.ceil(total / limit)
-        }
+            pages: Math.ceil(total / limit),
+        },
     };
 };

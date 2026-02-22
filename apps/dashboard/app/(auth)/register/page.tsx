@@ -1,29 +1,36 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
-import { setAuthCookies } from "@/lib/cookies";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import api from '@/lib/api';
+import { setAuthCookies } from '@/lib/cookies';
 
 const registerSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Please enter a valid email"),
-    phone: z.string().min(1, "Phone number is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    restaurantName: z.string().min(1, "Restaurant name is required"),
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Please enter a valid email'),
+    phone: z.string().min(1, 'Phone number is required'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    restaurantName: z.string().min(1, 'Restaurant name is required'),
     restaurantSlug: z
         .string()
-        .min(1, "URL slug is required")
-        .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
+        .min(1, 'URL slug is required')
+        .regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -44,16 +51,16 @@ export default function RegisterPage() {
     });
 
     // Auto-generate slug from restaurant name
-    const restaurantName = watch("restaurantName");
+    const restaurantName = watch('restaurantName');
     const handleRestaurantNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const name = e.target.value;
-        setValue("restaurantName", name);
+        setValue('restaurantName', name);
         setValue(
-            "restaurantSlug",
+            'restaurantSlug',
             name
                 .toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-|-$/g, "")
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, ''),
         );
     };
 
@@ -61,25 +68,25 @@ export default function RegisterPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const { data } = await api.post("/auth/register", values);
+            const { data } = await api.post('/auth/register', values);
 
             // Store tokens in localStorage (for API calls)
-            localStorage.setItem("accessToken", data.accessToken);
-            localStorage.setItem("refreshToken", data.refreshToken);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            localStorage.setItem("restaurant", JSON.stringify(data.restaurant));
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('restaurant', JSON.stringify(data.restaurant));
 
             // Set cookies for SSR middleware detection
             setAuthCookies(data.accessToken, data.refreshToken);
 
-            router.push("/dashboard");
+            router.push('/dashboard');
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data?.error || "Registration failed");
+            setError(err.response?.data?.error || 'Registration failed');
         } finally {
             setIsLoading(false);
         }
-    };
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -97,9 +104,7 @@ export default function RegisterPage() {
                         </div>
                     </div>
                     <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
-                    <CardDescription>
-                        Get started with DineLine
-                    </CardDescription>
+                    <CardDescription>Get started with DineLine</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <CardContent className="space-y-4">
@@ -112,16 +117,20 @@ export default function RegisterPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="firstName">First name</Label>
-                                <Input id="firstName" {...register("firstName")} />
+                                <Input id="firstName" {...register('firstName')} />
                                 {errors.firstName && (
-                                    <p className="text-sm text-red-400">{errors.firstName.message}</p>
+                                    <p className="text-sm text-red-400">
+                                        {errors.firstName.message}
+                                    </p>
                                 )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName">Last name</Label>
-                                <Input id="lastName" {...register("lastName")} />
+                                <Input id="lastName" {...register('lastName')} />
                                 {errors.lastName && (
-                                    <p className="text-sm text-red-400">{errors.lastName.message}</p>
+                                    <p className="text-sm text-red-400">
+                                        {errors.lastName.message}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -132,7 +141,7 @@ export default function RegisterPage() {
                                 id="email"
                                 type="email"
                                 placeholder="you@restaurant.com"
-                                {...register("email")}
+                                {...register('email')}
                             />
                             {errors.email && (
                                 <p className="text-sm text-red-400">{errors.email.message}</p>
@@ -145,7 +154,7 @@ export default function RegisterPage() {
                                 id="phone"
                                 type="tel"
                                 placeholder="+1234567890"
-                                {...register("phone")}
+                                {...register('phone')}
                             />
                             {errors.phone && (
                                 <p className="text-sm text-red-400">{errors.phone.message}</p>
@@ -158,7 +167,7 @@ export default function RegisterPage() {
                                 id="password"
                                 type="password"
                                 placeholder="••••••••"
-                                {...register("password")}
+                                {...register('password')}
                             />
                             {errors.password && (
                                 <p className="text-sm text-red-400">{errors.password.message}</p>
@@ -176,36 +185,45 @@ export default function RegisterPage() {
                             <Input
                                 id="restaurantName"
                                 placeholder="My Restaurant"
-                                {...register("restaurantName")}
+                                {...register('restaurantName')}
                                 onChange={handleRestaurantNameChange}
                             />
                             {errors.restaurantName && (
-                                <p className="text-sm text-red-400">{errors.restaurantName.message}</p>
+                                <p className="text-sm text-red-400">
+                                    {errors.restaurantName.message}
+                                </p>
                             )}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="restaurantSlug">URL Slug</Label>
                             <div className="flex items-center">
-                                <span className="text-sm text-muted-foreground mr-1">getdineline.com/</span>
+                                <span className="text-sm text-muted-foreground mr-1">
+                                    getdineline.com/
+                                </span>
                                 <Input
                                     id="restaurantSlug"
                                     placeholder="my-restaurant"
-                                    {...register("restaurantSlug")}
+                                    {...register('restaurantSlug')}
                                 />
                             </div>
                             {errors.restaurantSlug && (
-                                <p className="text-sm text-red-400">{errors.restaurantSlug.message}</p>
+                                <p className="text-sm text-red-400">
+                                    {errors.restaurantSlug.message}
+                                </p>
                             )}
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4">
                         <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? "Creating account..." : "Create account"}
+                            {isLoading ? 'Creating account...' : 'Create account'}
                         </Button>
                         <p className="text-sm text-center text-muted-foreground">
-                            Already have an account?{" "}
-                            <Link href="/login" className="text-primary hover:underline font-medium">
+                            Already have an account?{' '}
+                            <Link
+                                href="/login"
+                                className="text-primary hover:underline font-medium"
+                            >
                                 Sign in
                             </Link>
                         </p>

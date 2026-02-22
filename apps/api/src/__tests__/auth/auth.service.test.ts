@@ -163,11 +163,13 @@ describe('Auth Service', () => {
 
             await registerUser(input);
 
-            await expect(registerUser({
-                ...input,
-                restaurantName: 'Second Restaurant',
-                restaurantSlug: 'second-restaurant',
-            })).rejects.toThrow('Email already registered');
+            await expect(
+                registerUser({
+                    ...input,
+                    restaurantName: 'Second Restaurant',
+                    restaurantSlug: 'second-restaurant',
+                }),
+            ).rejects.toThrow('Email already registered');
         });
 
         it('should throw error for duplicate restaurant slug', async () => {
@@ -183,11 +185,13 @@ describe('Auth Service', () => {
 
             await registerUser(input);
 
-            await expect(registerUser({
-                ...input,
-                email: 'user2@example.com',
-                restaurantName: 'Another Restaurant',
-            })).rejects.toThrow('Restaurant slug already taken');
+            await expect(
+                registerUser({
+                    ...input,
+                    email: 'user2@example.com',
+                    restaurantName: 'Another Restaurant',
+                }),
+            ).rejects.toThrow('Restaurant slug already taken');
         });
     });
 
@@ -219,17 +223,21 @@ describe('Auth Service', () => {
         });
 
         it('should throw error for invalid email', async () => {
-            await expect(loginUser({
-                email: 'nonexistent@example.com',
-                password: 'correctPassword123',
-            })).rejects.toThrow('Invalid email or password');
+            await expect(
+                loginUser({
+                    email: 'nonexistent@example.com',
+                    password: 'correctPassword123',
+                }),
+            ).rejects.toThrow('Invalid email or password');
         });
 
         it('should throw error for invalid password', async () => {
-            await expect(loginUser({
-                email: 'login@example.com',
-                password: 'wrongPassword',
-            })).rejects.toThrow('Invalid email or password');
+            await expect(
+                loginUser({
+                    email: 'login@example.com',
+                    password: 'wrongPassword',
+                }),
+            ).rejects.toThrow('Invalid email or password');
         });
     });
 
@@ -252,7 +260,9 @@ describe('Auth Service', () => {
         });
 
         it('should throw error for invalid refresh token', async () => {
-            await expect(refreshAccessToken('invalid-token')).rejects.toThrow('Invalid refresh token');
+            await expect(refreshAccessToken('invalid-token')).rejects.toThrow(
+                'Invalid refresh token',
+            );
         });
     });
 

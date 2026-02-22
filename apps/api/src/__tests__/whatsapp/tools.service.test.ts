@@ -62,11 +62,15 @@ describe('WhatsApp Tools Service', () => {
     describe('checkAvailability', () => {
         it('should return available=true for an open slot', async () => {
             // Use a Monday date
-            const result = await executeTool('checkAvailability', {
-                date: '2025-01-20', // Monday
-                time: '19:00',
-                partySize: 4,
-            }, restaurantId);
+            const result = await executeTool(
+                'checkAvailability',
+                {
+                    date: '2025-01-20', // Monday
+                    time: '19:00',
+                    partySize: 4,
+                },
+                restaurantId,
+            );
 
             expect(result.available).toBe(true);
             expect(result.message).toContain('19:00');
@@ -74,21 +78,29 @@ describe('WhatsApp Tools Service', () => {
 
         it('should return available=false for closed day', async () => {
             // Use a Sunday date
-            const result = await executeTool('checkAvailability', {
-                date: '2025-01-19', // Sunday
-                time: '19:00',
-                partySize: 4,
-            }, restaurantId);
+            const result = await executeTool(
+                'checkAvailability',
+                {
+                    date: '2025-01-19', // Sunday
+                    time: '19:00',
+                    partySize: 4,
+                },
+                restaurantId,
+            );
 
             expect(result.available).toBe(false);
             expect(result.message).toContain('closed');
         });
 
         it('should return list of slots when no time specified', async () => {
-            const result = await executeTool('checkAvailability', {
-                date: '2025-01-20', // Monday
-                partySize: 4,
-            }, restaurantId);
+            const result = await executeTool(
+                'checkAvailability',
+                {
+                    date: '2025-01-20', // Monday
+                    partySize: 4,
+                },
+                restaurantId,
+            );
 
             expect(result.available).toBe(true);
             expect(result.slots).toBeDefined();
@@ -110,11 +122,15 @@ describe('WhatsApp Tools Service', () => {
                 });
             }
 
-            const result = await executeTool('checkAvailability', {
-                date: '2025-01-20',
-                time: '19:00',
-                partySize: 4,
-            }, restaurantId);
+            const result = await executeTool(
+                'checkAvailability',
+                {
+                    date: '2025-01-20',
+                    time: '19:00',
+                    partySize: 4,
+                },
+                restaurantId,
+            );
 
             expect(result.available).toBe(false);
             expect(result.message).toContain('not available');
@@ -123,13 +139,17 @@ describe('WhatsApp Tools Service', () => {
 
     describe('createReservation', () => {
         it('should create a reservation successfully', async () => {
-            const result = await executeTool('createReservation', {
-                date: '2025-01-20',
-                time: '19:00',
-                partySize: 4,
-                guestName: 'John Doe',
-                guestPhone: '+1234567890',
-            }, restaurantId);
+            const result = await executeTool(
+                'createReservation',
+                {
+                    date: '2025-01-20',
+                    time: '19:00',
+                    partySize: 4,
+                    guestName: 'John Doe',
+                    guestPhone: '+1234567890',
+                },
+                restaurantId,
+            );
 
             expect(result.success).toBe(true);
             expect(result.confirmationCode).toBeDefined();
@@ -138,14 +158,18 @@ describe('WhatsApp Tools Service', () => {
         });
 
         it('should create a reservation with special requests', async () => {
-            const result = await executeTool('createReservation', {
-                date: '2025-01-20',
-                time: '19:00',
-                partySize: 4,
-                guestName: 'John Doe',
-                guestPhone: '+1234567890',
-                specialRequests: 'Window seat please',
-            }, restaurantId);
+            const result = await executeTool(
+                'createReservation',
+                {
+                    date: '2025-01-20',
+                    time: '19:00',
+                    partySize: 4,
+                    guestName: 'John Doe',
+                    guestPhone: '+1234567890',
+                    specialRequests: 'Window seat please',
+                },
+                restaurantId,
+            );
 
             expect(result.success).toBe(true);
             expect(result.confirmationCode).toBeDefined();

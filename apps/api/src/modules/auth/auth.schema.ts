@@ -9,7 +9,10 @@ export const registerSchema = z.object({
     phone: z.string().optional(),
     // Restaurant info for new registration
     restaurantName: z.string().min(1, 'Restaurant name is required'),
-    restaurantSlug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase with hyphens only'),
+    restaurantSlug: z
+        .string()
+        .min(1)
+        .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase with hyphens only'),
 });
 
 // Login schema

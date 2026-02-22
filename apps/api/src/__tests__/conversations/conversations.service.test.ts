@@ -163,7 +163,7 @@ describe('Conversations Service', () => {
             const originalUpdatedAt = conversation.updatedAt;
 
             // Wait a bit to ensure potential update would be noticeable
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
             await getConversationMessages(conversation._id.toString());
 
@@ -221,9 +221,9 @@ describe('Conversations Service', () => {
 
         it('should throw error for non-existent conversation', async () => {
             const fakeId = new mongoose.Types.ObjectId().toString();
-            await expect(
-                sendAgentMessage(fakeId, 'Hello!')
-            ).rejects.toThrow('Conversation not found');
+            await expect(sendAgentMessage(fakeId, 'Hello!')).rejects.toThrow(
+                'Conversation not found',
+            );
         });
     });
 });

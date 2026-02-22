@@ -1,21 +1,28 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import api, { extractErrorMessage } from "@/lib/api";
-import { setAuthCookies } from "@/lib/cookies";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import api, { extractErrorMessage } from '@/lib/api';
+import { setAuthCookies } from '@/lib/cookies';
 
 const loginSchema = z.object({
-    email: z.string().email("Please enter a valid email"),
-    password: z.string().min(1, "Password is required"),
+    email: z.string().email('Please enter a valid email'),
+    password: z.string().min(1, 'Password is required'),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -38,22 +45,22 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const response = await api.post("/auth/login", data);
+            const response = await api.post('/auth/login', data);
             const result = response.data;
 
             // Store tokens in localStorage (for API calls)
-            localStorage.setItem("accessToken", result.accessToken);
-            localStorage.setItem("refreshToken", result.refreshToken);
-            localStorage.setItem("user", JSON.stringify(result.user));
-            localStorage.setItem("restaurant", JSON.stringify(result.restaurant));
+            localStorage.setItem('accessToken', result.accessToken);
+            localStorage.setItem('refreshToken', result.refreshToken);
+            localStorage.setItem('user', JSON.stringify(result.user));
+            localStorage.setItem('restaurant', JSON.stringify(result.restaurant));
 
             // Set cookies for SSR middleware detection
             setAuthCookies(result.accessToken, result.refreshToken);
 
             // Redirect to dashboard
-            router.push("/dashboard");
+            router.push('/dashboard');
         } catch (err: any) {
-            setError(extractErrorMessage(err, "Login failed"));
+            setError(extractErrorMessage(err, 'Login failed'));
         } finally {
             setIsLoading(false);
         }
@@ -75,9 +82,7 @@ export default function LoginPage() {
                         </div>
                     </div>
                     <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-                    <CardDescription>
-                        Sign in to your DineLine account
-                    </CardDescription>
+                    <CardDescription>Sign in to your DineLine account</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <CardContent className="space-y-4">
@@ -92,7 +97,7 @@ export default function LoginPage() {
                                 id="email"
                                 type="email"
                                 placeholder="you@restaurant.com"
-                                {...register("email")}
+                                {...register('email')}
                             />
                             {errors.email && (
                                 <p className="text-sm text-red-400">{errors.email.message}</p>
@@ -104,7 +109,7 @@ export default function LoginPage() {
                                 id="password"
                                 type="password"
                                 placeholder="••••••••"
-                                {...register("password")}
+                                {...register('password')}
                             />
                             {errors.password && (
                                 <p className="text-sm text-red-400">{errors.password.message}</p>
@@ -113,11 +118,14 @@ export default function LoginPage() {
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4">
                         <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? "Signing in..." : "Sign in"}
+                            {isLoading ? 'Signing in...' : 'Sign in'}
                         </Button>
                         <p className="text-sm text-center text-muted-foreground">
-                            Don't have an account?{" "}
-                            <Link href="/register" className="text-primary hover:underline font-medium">
+                            Don't have an account?{' '}
+                            <Link
+                                href="/register"
+                                className="text-primary hover:underline font-medium"
+                            >
                                 Sign up
                             </Link>
                         </p>

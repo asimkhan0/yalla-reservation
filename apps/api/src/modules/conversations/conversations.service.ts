@@ -6,7 +6,7 @@ export const listConversations = async (restaurantId: string) => {
     // Get conversations, most recent updated first
     const conversations = await Conversation.find({
         restaurant: restaurantId,
-        status: { $ne: 'ARCHIVED' }
+        status: { $ne: 'ARCHIVED' },
     })
         .sort({ updatedAt: -1 })
         .populate('customer')
@@ -14,15 +14,18 @@ export const listConversations = async (restaurantId: string) => {
         .lean();
 
     // For each conversation, get the last message
-    const populated = await Promise.all(conversations.map(async (conv: any) => {
-        const lastMessage = await Message.findOne({ conversation: conv._id })
-            .sort({ createdAt: -1 });
+    const populated = await Promise.all(
+        conversations.map(async (conv: any) => {
+            const lastMessage = await Message.findOne({ conversation: conv._id }).sort({
+                createdAt: -1,
+            });
 
-        return {
-            ...conv,
-            lastMessage
-        };
-    }));
+            return {
+                ...conv,
+                lastMessage,
+            };
+        }),
+    );
 
     return populated;
 };
@@ -31,29 +34,30 @@ export const getConversationMessages = async (conversationId: string) => {
     // Reset unread count when messages are requested (opening conversation)
     await Conversation.findByIdAndUpdate(conversationId, { unreadCount: 0 }, { timestamps: false });
 
-    return Message.find({ conversation: conversationId })
-        .sort({ createdAt: 1 }); // Oldest first for chat history
+    return Message.find({ conversation: conversationId }).sort({ createdAt: 1 }); // Oldest first for chat history
 };
 
 export const getUnreadConversationCount = async (restaurantId: string) => {
     const result = await Conversation.aggregate([
-        { $match: { restaurant: new mongoose.Types.ObjectId(restaurantId), unreadCount: { $gt: 0 } } },
-        { $count: "count" }
+        {
+            $match: {
+                restaurant: new mongoose.Types.ObjectId(restaurantId),
+                unreadCount: { $gt: 0 },
+            },
+        },
+        { $count: 'count' },
     ]);
     return result[0]?.count || 0;
 };
 
 export const getConversation = async (conversationId: string, restaurantId: string) => {
-    return Conversation.findOne({ _id: conversationId, restaurant: restaurantId })
-        .populate('customer');
+    return Conversation.findOne({ _id: conversationId, restaurant: restaurantId }).populate(
+        'customer',
+    );
 };
 
 export const assignConversation = async (conversationId: string, assignedTo: 'BOT' | 'AGENT') => {
-    return Conversation.findByIdAndUpdate(
-        conversationId,
-        { assignedTo },
-        { new: true }
-    );
+    return Conversation.findByIdAndUpdate(conversationId, { assignedTo }, { new: true });
 };
 
 export const sendAgentMessage = async (conversationId: string, content: string) => {
@@ -67,7 +71,7 @@ export const sendAgentMessage = async (conversationId: string, content: string) 
         direction: 'OUTBOUND',
         sender: 'AGENT',
         status: 'SENT',
-        conversation: conversationId
+        conversation: conversationId,
     });
 
     // Update conversation timestamp
@@ -75,7 +79,11 @@ export const sendAgentMessage = async (conversationId: string, content: string) 
 
     // 3. Send via WhatsApp
     if (conversation.customer && (conversation.customer as any).phone) {
-        await sendWhatsAppMessage(conversation.restaurant.toString(), (conversation.customer as any).phone, content);
+        await sendWhatsAppMessage(
+            conversation.restaurant.toString(),
+            (conversation.customer as any).phone,
+            content,
+        );
     }
 
     return message;

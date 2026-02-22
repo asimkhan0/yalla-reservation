@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { StatsGrid } from "@/components/dashboard/stats-grid";
-import { UpcomingReservations } from "@/components/dashboard/upcoming-reservations";
-import { QuickActions } from "@/components/dashboard/quick-actions";
+import { useEffect, useState } from 'react';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { StatsGrid } from '@/components/dashboard/stats-grid';
+import { UpcomingReservations } from '@/components/dashboard/upcoming-reservations';
+import { QuickActions } from '@/components/dashboard/quick-actions';
 
-import api from "@/lib/api";
+import api from '@/lib/api';
 
-import { useUserStore } from "@/stores/use-user-store";
+import { useUserStore } from '@/stores/use-user-store';
 
 export default function DashboardPage() {
     const { user, fetchUser } = useUserStore();
@@ -17,7 +17,7 @@ export default function DashboardPage() {
     const [stats, setStats] = useState({
         todayCount: 0,
         totalCovers: 0,
-        activeChats: 0
+        activeChats: 0,
     });
 
     useEffect(() => {
@@ -37,10 +37,9 @@ export default function DashboardPage() {
 
                 // Calc stats
                 const covers = todays.reduce((acc: number, r: any) => acc + (r.partySize || 0), 0);
-                setStats(prev => ({ ...prev, todayCount: todays.length, totalCovers: covers }));
-
+                setStats((prev) => ({ ...prev, todayCount: todays.length, totalCovers: covers }));
             } catch (error) {
-                console.error("Failed to fetch dashboard data", error);
+                console.error('Failed to fetch dashboard data', error);
             } finally {
                 setLoading(false);
             }
@@ -48,7 +47,6 @@ export default function DashboardPage() {
 
         fetchData();
     }, [user, fetchUser]);
-
 
     return (
         <div className="space-y-6">

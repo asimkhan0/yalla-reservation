@@ -25,7 +25,7 @@ export const RestaurantService = {
 
         let payload: any = {
             enabled: config.enabled,
-            provider: config.provider
+            provider: config.provider,
         };
 
         if (config.provider === 'twilio') {
@@ -33,7 +33,7 @@ export const RestaurantService = {
                 ...payload,
                 accountSid: config.accountSid,
                 authToken: config.authToken,
-                phoneNumber: config.phoneNumber
+                phoneNumber: config.phoneNumber,
             };
         } else if (config.provider === 'meta') {
             payload = {
@@ -42,12 +42,12 @@ export const RestaurantService = {
                 wabaId: config.wabaId,
                 accessToken: config.accessToken,
                 businessName: config.businessName,
-                displayPhoneNumber: config.displayPhoneNumber
+                displayPhoneNumber: config.displayPhoneNumber,
             };
         }
 
         const response = await api.patch(`/restaurants/me`, {
-            whatsappConfig: payload
+            whatsappConfig: payload,
         });
         return response.data;
     },
@@ -55,7 +55,7 @@ export const RestaurantService = {
     disconnect: async (restaurantId: string) => {
         const response = await api.patch(`/restaurants/me`, {
             whatsappConfig: null,
-            whatsappEnabled: false
+            whatsappEnabled: false,
         });
         return response.data;
     },
@@ -64,7 +64,7 @@ export const RestaurantService = {
         const response = await api.post(`/whatsapp/chat-test`, {
             restaurantId,
             message,
-            phoneNumber // The user's phone number to send to
+            phoneNumber, // The user's phone number to send to
         });
         return response.data;
     },
@@ -72,7 +72,7 @@ export const RestaurantService = {
     verifyMetaConnection: async (phoneNumberId: string, accessToken: string) => {
         const response = await api.post(`/whatsapp/verify-meta-connection`, {
             phoneNumberId,
-            accessToken
+            accessToken,
         });
         return response.data as {
             valid: boolean;
@@ -87,7 +87,7 @@ export const RestaurantService = {
         const response = await api.post(`/whatsapp/embedded-signup/exchange`, {
             code,
             wabaId,
-            phoneNumberId
+            phoneNumberId,
         });
         return response.data as {
             success: boolean;
@@ -97,6 +97,5 @@ export const RestaurantService = {
             webhookVerifyToken?: string;
             error?: string;
         };
-    }
+    },
 };
-

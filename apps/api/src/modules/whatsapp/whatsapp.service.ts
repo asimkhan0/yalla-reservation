@@ -18,12 +18,12 @@ export function getProvider(restaurant: any): IWhatsAppProvider {
             return new TwilioProvider({
                 accountSid: config.accountSid,
                 authToken: config.authToken,
-                phoneNumber: config.phoneNumber
+                phoneNumber: config.phoneNumber,
             });
         case 'meta':
             return new MetaProvider({
                 phoneNumberId: config.phoneNumberId,
-                accessToken: config.accessToken
+                accessToken: config.accessToken,
             });
         default:
             throw new Error(`Unsupported provider: ${config.provider}`);
@@ -43,7 +43,7 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
         // 1. Find Customer
         let customer = await Customer.findOne({
             restaurant: restaurant._id, // Scoped to restaurant
-            phone: phone
+            phone: phone,
         });
 
         if (!customer) {
@@ -60,7 +60,7 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
                 lastName,
                 restaurant: restaurant._id,
                 isVip: false,
-                preferences: {}
+                preferences: {},
             });
         }
 
@@ -68,7 +68,7 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
         let conversation = await Conversation.findOne({
             customer: customer._id,
             restaurant: restaurant._id,
-            status: { $ne: 'resolved' }
+            status: { $ne: 'resolved' },
         }).sort({ updatedAt: -1 });
 
         if (!conversation) {
@@ -78,13 +78,13 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
                 status: 'ACTIVE',
                 source: 'WHATSAPP',
                 unreadCount: 1,
-                context: {}
+                context: {},
             });
         } else {
             // Increment unread count for existing conversation
             await Conversation.findByIdAndUpdate(conversation._id, {
                 $inc: { unreadCount: 1 },
-                updatedAt: new Date()
+                updatedAt: new Date(),
             });
         }
 
@@ -93,7 +93,9 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
         let currentMessage = await Message.findOne({ whatsappMsgId: data.messageId });
 
         if (currentMessage) {
-            console.log(`[WhatsApp Service] Message ${data.messageId} already exists, skipping creation.`);
+            console.log(
+                `[WhatsApp Service] Message ${data.messageId} already exists, skipping creation.`,
+            );
         } else {
             currentMessage = await Message.create({
                 content: body,
@@ -101,18 +103,19 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
                 sender: 'CUSTOMER',
                 whatsappMsgId: data.messageId,
                 status: 'DELIVERED',
-                conversation: conversation._id
+                conversation: conversation._id,
             });
         }
 
         if (conversation.assignedTo === 'AGENT') {
-            console.log(`[WhatsApp] Conversation ${conversation._id} assigned to AGENT. Bot skipping.`);
+            console.log(
+                `[WhatsApp] Conversation ${conversation._id} assigned to AGENT. Bot skipping.`,
+            );
             return;
         }
 
         // 4. Trigger AI Agent
         await triggerAiAgent(conversation, currentMessage, body, provider);
-
     } catch (error) {
         console.error('[WhatsApp Service] Error processing webhook:', error);
         throw error;
@@ -120,11 +123,16 @@ export async function handleIncomingWebhook(restaurant: any, payload: any) {
 }
 
 // AI Agent Trigger Logic
-async function triggerAiAgent(conversation: any, currentMessage: any, userMessage: string, provider: IWhatsAppProvider) {
+async function triggerAiAgent(
+    conversation: any,
+    currentMessage: any,
+    userMessage: string,
+    provider: IWhatsAppProvider,
+) {
     // Fetch conversation history
     const rawHistory = await Message.find({
         conversation: conversation._id,
-        _id: { $ne: currentMessage._id }
+        _id: { $ne: currentMessage._id },
     })
         .sort({ createdAt: -1 }) // Newest first
         .limit(10) // Limit context window
@@ -147,7 +155,11 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
     }
 
     // Initial call to AI
-    let aiResponse = await processUserMessage(userMessage, formattedHistory as any[], restaurantInfo);
+    let aiResponse = await processUserMessage(
+        userMessage,
+        formattedHistory as any[],
+        restaurantInfo,
+    );
     let iterations = 0;
     const MAX_ITERATIONS = 3;
 
@@ -167,14 +179,14 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
                 formattedHistory.push({
                     role: 'tool',
                     tool_call_id: toolCall.id,
-                    content: JSON.stringify(result)
+                    content: JSON.stringify(result),
                 } as any);
             } catch (err: any) {
                 console.error(`[AI Agent] Tool execution failed: ${err.message}`);
                 formattedHistory.push({
                     role: 'tool',
                     tool_call_id: toolCall.id,
-                    content: JSON.stringify({ error: err.message })
+                    content: JSON.stringify({ error: err.message }),
                 } as any);
             }
         }
@@ -197,7 +209,7 @@ async function triggerAiAgent(conversation: any, currentMessage: any, userMessag
             direction: 'OUTBOUND',
             sender: 'BOT',
             status: 'SENT',
-            conversation: conversation._id
+            conversation: conversation._id,
         });
 
         // Update conversation timestamp
@@ -215,7 +227,11 @@ export async function sendWhatsAppMessage(restaurantId: string, to: string, body
 }
 
 // Handle Test Chat (Simulated)
-export async function handleTestChat(restaurantId: string, message: string, phoneNumber: string = '1234567890') {
+export async function handleTestChat(
+    restaurantId: string,
+    message: string,
+    phoneNumber: string = '1234567890',
+) {
     // 1. Find Restaurant
     let restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) throw new Error('Restaurant not found');
@@ -230,14 +246,14 @@ export async function handleTestChat(restaurantId: string, message: string, phon
             lastName: 'User',
             restaurant: restaurant._id,
             isVip: false,
-            preferences: {}
+            preferences: {},
         });
     }
 
     // 3. Find/Create Conversation
     let conversation = await Conversation.findOne({
         customer: customer._id,
-        status: { $ne: 'resolved' }
+        status: { $ne: 'resolved' },
     }).sort({ updatedAt: -1 });
 
     if (!conversation) {
@@ -247,11 +263,11 @@ export async function handleTestChat(restaurantId: string, message: string, phon
             status: 'ACTIVE',
             source: 'API_TEST',
             unreadCount: 1,
-            context: {}
+            context: {},
         });
     } else {
         await Conversation.findByIdAndUpdate(conversation._id, {
-            $inc: { unreadCount: 1 }
+            $inc: { unreadCount: 1 },
         });
     }
 
@@ -262,11 +278,11 @@ export async function handleTestChat(restaurantId: string, message: string, phon
         sender: 'CUSTOMER',
         whatsappMsgId: `test-${Date.now()}`,
         status: 'DELIVERED',
-        conversation: conversation._id
+        conversation: conversation._id,
     });
 
     if (conversation.assignedTo === 'AGENT') {
-        return "Conversation is assigned to a human agent. Bot is paused.";
+        return 'Conversation is assigned to a human agent. Bot is paused.';
     }
 
     // 5. Trigger AI Agent (Reuse Logic mostly, but distinct for return value)
@@ -276,8 +292,12 @@ export async function handleTestChat(restaurantId: string, message: string, phon
     // Fetch conversation history
     const rawHistory = await Message.find({
         conversation: conversation._id,
-        _id: { $ne: currentMessage._id }
-    }).sort({ createdAt: -1 }).limit(10).select('role content sender -_id').lean();
+        _id: { $ne: currentMessage._id },
+    })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .select('role content sender -_id')
+        .lean();
 
     const history = rawHistory.reverse();
 
@@ -287,7 +307,7 @@ export async function handleTestChat(restaurantId: string, message: string, phon
     }));
 
     const restaurantInfo = await getRestaurantInfoForAgent(restaurantId);
-    if (!restaurantInfo) return "Error: No restaurant info available.";
+    if (!restaurantInfo) return 'Error: No restaurant info available.';
 
     let aiResponse = await processUserMessage(message, formattedHistory as any[], restaurantInfo);
     let iterations = 0;
@@ -302,7 +322,7 @@ export async function handleTestChat(restaurantId: string, message: string, phon
             formattedHistory.push({
                 role: 'tool',
                 tool_call_id: toolCall.id,
-                content: JSON.stringify(result)
+                content: JSON.stringify(result),
             } as any);
         }
         aiResponse = await processUserMessage('', formattedHistory as any, restaurantInfo);
@@ -314,10 +334,10 @@ export async function handleTestChat(restaurantId: string, message: string, phon
             direction: 'OUTBOUND',
             sender: 'BOT',
             status: 'SENT',
-            conversation: conversation._id
+            conversation: conversation._id,
         });
         return aiResponse.content;
     }
 
-    return "No response from AI.";
+    return 'No response from AI.';
 }

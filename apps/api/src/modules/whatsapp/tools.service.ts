@@ -8,12 +8,14 @@ async function getCachedRestaurant(restaurantId: string) {
     return cacheService.getOrSetCache(
         CacheKeys.restaurantConfig(restaurantId),
         async () => Restaurant.findById(restaurantId).lean(),
-        3600 // 1 hour TTL
+        3600, // 1 hour TTL
     );
 }
 
 // Helper: Convert DB restaurant to RestaurantInfo for agent
-export async function getRestaurantInfoForAgent(restaurantId: string): Promise<RestaurantInfo | null> {
+export async function getRestaurantInfoForAgent(
+    restaurantId: string,
+): Promise<RestaurantInfo | null> {
     const restaurant = await getCachedRestaurant(restaurantId);
     if (!restaurant) return null;
 
@@ -72,7 +74,7 @@ export async function executeTool(name: string, args: any, restaurantId: string)
                 case 'hours':
                     return {
                         operatingHours: formatOperatingHours(restaurant.operatingHours),
-                        message: `Our operating hours are:\n${formatOperatingHours(restaurant.operatingHours)}`
+                        message: `Our operating hours are:\n${formatOperatingHours(restaurant.operatingHours)}`,
                     };
 
                 case 'location':
@@ -83,7 +85,7 @@ export async function executeTool(name: string, args: any, restaurantId: string)
                         country: restaurant.country,
                         postalCode: restaurant.postalCode,
                         googleMapsUrl: restaurant.location?.googleMapsUrl,
-                        message: `We are located at ${restaurant.address}, ${restaurant.city}, ${restaurant.state} ${restaurant.postalCode}`
+                        message: `We are located at ${restaurant.address}, ${restaurant.city}, ${restaurant.state} ${restaurant.postalCode}`,
                     };
 
                 case 'contact':
@@ -91,7 +93,7 @@ export async function executeTool(name: string, args: any, restaurantId: string)
                         phone: restaurant.phone,
                         email: restaurant.email,
                         website: restaurant.website,
-                        message: `You can reach us at ${restaurant.phone} or email ${restaurant.email}`
+                        message: `You can reach us at ${restaurant.phone} or email ${restaurant.email}`,
                     };
 
                 case 'services':
@@ -99,13 +101,13 @@ export async function executeTool(name: string, args: any, restaurantId: string)
                         services: restaurant.services || [],
                         message: restaurant.services?.length
                             ? `We offer: ${restaurant.services.map((s: any) => s.name).join(', ')}`
-                            : 'No special services configured'
+                            : 'No special services configured',
                     };
 
                 case 'policies':
                     return {
                         additionalContext: restaurant.additionalContext,
-                        message: restaurant.additionalContext || 'No specific policies noted'
+                        message: restaurant.additionalContext || 'No specific policies noted',
                     };
 
                 case 'general':
@@ -118,7 +120,7 @@ export async function executeTool(name: string, args: any, restaurantId: string)
                         email: restaurant.email,
                         address: `${restaurant.address}, ${restaurant.city}`,
                         operatingHours: formatOperatingHours(restaurant.operatingHours),
-                        message: `${restaurant.name} - ${restaurant.description || 'No description available'}`
+                        message: `${restaurant.name} - ${restaurant.description || 'No description available'}`,
                     };
             }
         }
@@ -132,7 +134,15 @@ export async function executeTool(name: string, args: any, restaurantId: string)
 
             // 1. Determine Day of Week
             const dateObj = new Date(date);
-            const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const days = [
+                'sunday',
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+            ];
             const dayName = days[dateObj.getDay()];
 
             // 2. Get Operating Hours
@@ -159,7 +169,11 @@ export async function executeTool(name: string, args: any, restaurantId: string)
 
             // Fetch tables to determine capacity (tables not cached as they may change more frequently)
             const tables = await Table.find({ restaurant: restaurant._id, isActive: true });
-            const totalCapacity = tables.reduce((sum: number, t: any) => sum + (t.capacity >= (partySize || 1) ? 1 : 0), 0) || 5; // Default to 5 "tables" if none defined
+            const totalCapacity =
+                tables.reduce(
+                    (sum: number, t: any) => sum + (t.capacity >= (partySize || 1) ? 1 : 0),
+                    0,
+                ) || 5; // Default to 5 "tables" if none defined
 
             // Simple loop to generate slots
             while (current < closeTime) {
@@ -178,10 +192,17 @@ export async function executeTool(name: string, args: any, restaurantId: string)
             // 4. Return result
             if (requestedTime) {
                 if (slots.includes(requestedTime)) {
-                    return { available: true, message: `Yes, ${requestedTime} is available for ${partySize} people.` };
+                    return {
+                        available: true,
+                        message: `Yes, ${requestedTime} is available for ${partySize} people.`,
+                    };
                 } else {
-                    const suggestions = slots.length > 0 ? slots.slice(0, 5).join(', ') : 'No other times';
-                    return { available: false, message: `Sorry, ${requestedTime} is not available. We have openings at: ${suggestions}` };
+                    const suggestions =
+                        slots.length > 0 ? slots.slice(0, 5).join(', ') : 'No other times';
+                    return {
+                        available: false,
+                        message: `Sorry, ${requestedTime} is not available. We have openings at: ${suggestions}`,
+                    };
                 }
             } else {
                 // Return list of slots
@@ -190,7 +211,11 @@ export async function executeTool(name: string, args: any, restaurantId: string)
                 }
                 // Determine appropriate logical "chunks" to show? for now, list first few and some evening ones?
                 // Or just first 10?
-                return { available: true, slots, message: `We have the following times available: ${slots.join(', ')}` };
+                return {
+                    available: true,
+                    slots,
+                    message: `We have the following times available: ${slots.join(', ')}`,
+                };
             }
         }
 
@@ -211,7 +236,7 @@ export async function executeTool(name: string, args: any, restaurantId: string)
                 success: true,
                 confirmationCode: reservation.confirmationCode,
                 id: reservation._id,
-                message: 'Reservation created successfully.'
+                message: 'Reservation created successfully.',
             };
         }
 
@@ -221,4 +246,3 @@ export async function executeTool(name: string, args: any, restaurantId: string)
         return { error: error.message || 'Internal tool error' };
     }
 }
-
